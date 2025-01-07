@@ -1,27 +1,41 @@
 import streamlit as st
-st.set_page_config(
-    page_title="Hello",
-    page_icon="👋",
-)
+from pymongo import MongoClient
 
-st.write("# Welcome to Streamlit! 👋")
+host = "localhost"  # The host part of the MongoDB URI
+port = 27017  # The port number, extracted from the URI
+username = "E20030"  # Replace with your MongoDB username
+password = "E20030"  # Replace with your MongoDB password
 
-st.sidebar.success("Select a demo above.")
+# Define Starter Data
+Users = [
+    {'name': 'Ilena',
+     'surname': 'Gkova',
+     'username': 'Admin',
+     'passowrd': 'Admin123',
+     'repeat_preference': 5,
+     'age_category': '18-25',
+     'level': 1,
+     'score': 500,
+     'streak': 0,
+     'days_summed': 0,   
+     'status': 2, 
+     'role': 'Admin'},
+]
 
-st.markdown(
-    """
-    Streamlit is an open-source app framework built specifically for
-    Machine Learning and Data Science projects.
-    **👈 Select a demo from the sidebar** to see some examples
-    of what Streamlit can do!
-    ### Want to learn more?
-    - Check out [streamlit.io](https://streamlit.io)
-    - Jump into our [documentation](https://docs.streamlit.io)
-    - Ask a question in our [community
-        forums](https://discuss.streamlit.io)
-    ### See more complex demos
-    - Use a neural net to [analyze the Udacity Self-driving Car Image
-        Dataset](https://github.com/streamlit/demo-self-driving)
-    - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-"""
-)
+def get_database():
+    client = client = MongoClient(host=host, port=port, username=username, password=password)
+    return client.StressTest
+
+def insert_starter_data():
+    data = get_database
+    collection = data['StressUser']
+    for entries in Users:
+        if collection.count_documents({'username': entries['username']}) == 0:
+            print(f"Inserting data for user: {entries['username']}...")
+            try:
+                data['StressUser'].insert_one(data)
+            except Exception as e:
+                print(f"Error inserting data: {e}")
+        else:
+            print(f"Data for user: {data['username']} already exists. Skipping insert.")
+    return True
