@@ -33,19 +33,20 @@ Users = [
      'role': 'Admin'},
 ]
 
+@st.cache_resource
 def get_database():
-    return client.StressApp
+    return client
 
 def insert_starter_data():
-    data = get_database
-    collection = data.StressUser
+    data = get_database()
+    collection = data['StressApp']['User']
     for entries in Users:
         if collection.count_documents({'username': entries['username']}) == 0:
             print(f"Inserting data for user: {entries['username']}...")
             try:
-                data.StressUser.insert_one(entries)
+                data['User'].insert_one(entries)
             except Exception as e:
                 print(f"Error inserting data: {e}")
         else:
             print(f"Data for user: {entries['username']} already exists. Skipping insert.")
-    return True
+
