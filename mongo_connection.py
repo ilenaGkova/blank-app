@@ -1,10 +1,21 @@
 import streamlit as st
 from pymongo import MongoClient
+import pymongo
 
-host = "localhost"  # The host part of the MongoDB URI
-port = 27017  # The port number, extracted from the URI
-username = "E20030"  # Replace with your MongoDB username
-password = "E20030"  # Replace with your MongoDB password
+# Uses st.cache_resource to only run once.
+@st.cache_resource
+def init_connection():
+    try:
+        client = pymongo.MongoClient(**st.secrets["mongo"])
+        # Ping the server to check the connection
+        client.admin.command('ping')
+        st.success("Connected to MongoDB!")
+        return client
+    except Exception as e:
+        st.error(f"Error connecting to MongoDB: {e}")
+        return None
+
+client = init_connection()
 
 # Define Starter Data
 Users = [
@@ -23,20 +34,18 @@ Users = [
 ]
 
 def get_database():
-    client = client = MongoClient(host=host, port=port, username=username, password=password)
-    return client.StressTest
+    return client
 
 def insert_starter_data():
     data = get_database
-    collection = data['StressUser']
+    collection = data.StressUser
     for entries in Users:
         if collection.count_documents({'username': entries['username']}) == 0:
             print(f"Inserting data for user: {entries['username']}...")
             try:
-                data['StressUser'].insert_one(data)
+                data.StressUser.insert_one(data)
             except Exception as e:
                 print(f"Error inserting data: {e}")
         else:
             print(f"Data for user: {data['username']} already exists. Skipping insert.")
     return True
-
