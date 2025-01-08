@@ -34,7 +34,7 @@ Users = [
 ]
 
 def get_database():
-    return client
+    return client.StressApp
 
 def insert_starter_data():
     data = get_database
