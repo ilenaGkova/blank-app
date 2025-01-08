@@ -43,9 +43,9 @@ def insert_starter_data():
         if collection.count_documents({'username': entries['username']}) == 0:
             print(f"Inserting data for user: {entries['username']}...")
             try:
-                data.StressUser.insert_one(data)
+                data.StressUser.insert_one(entries)
             except Exception as e:
                 print(f"Error inserting data: {e}")
         else:
-            print(f"Data for user: {data['username']} already exists. Skipping insert.")
+            print(f"Data for user: {entries['username']} already exists. Skipping insert.")
     return True
