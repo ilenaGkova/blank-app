@@ -7,22 +7,11 @@ st.set_page_config(
 )
 
 def log_in_user(username, password):
-    query = {
-        'username': username,
-        'password': password
-    }
-    data = get_database()
-    if data is not None:
-        user_collection = data['StressApp']['User']
-        if user_collection.count_documents(query) == 0:
-            st.sidebar.write('You do not have an account')
-        else:
-            st.sidebar.write('You have an account')
-        return True
-    else:
-        st.error("Database connection not established. Please check your connection settings.")
-        st.sidebar.write('No database connection - try again later')
-        return False
+    factor = validate_user(username, password)
+    if factor == 1:
+        st.sidebar.write('You do not have an account')
+    elif factor == 2:
+        st.sidebar.write('You have an account')
 
 st.sidebar.write ('Already have an account? Sign it!')
 username = st.sidebar.text_input("Your Username", key="username")
