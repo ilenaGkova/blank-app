@@ -2,7 +2,7 @@ Users = [
     {'name': 'Ilena',
      'surname': 'Gkova',
      'username': 'Admin',
-     'passowrd': 'Admin123',
+     'password': 'Admin123',
      'repeat_preference': 5,
      'age_category': '18-25',
      'level': 1,
@@ -14,7 +14,7 @@ Users = [
     {'name': 'Ilena',
      'surname': 'Gkova',
      'username': 'Admin',
-     'passowrd': 'Admin123',
+     'password': 'Admin123',
      'repeat_preference': 10,
      'age_category': '18-25',
      'level': 6,
@@ -26,7 +26,7 @@ Users = [
     {'name': 'Mary',
      'surname': 'Jane',
      'username': 'User1',
-     'passowrd': 'Password1',
+     'password': 'Password1',
      'repeat_preference': 3,
      'age_category': '26-35',
      'level': 2,
@@ -36,6 +36,3 @@ Users = [
      'status': 0, 
      'role': 'User'},
 ]
-
-def get_users():
-    return Users
