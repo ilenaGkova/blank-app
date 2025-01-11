@@ -21,7 +21,7 @@ def new_user(first_name,last_name,username,password,chosen):
             valid_password = not Users[index]["password"] == password
             index += 1  
         if valid_username and valid_password:
-            New_user = [
+            new_user = [
                 {
                     'name': first_name,
                     'surname': last_name,
