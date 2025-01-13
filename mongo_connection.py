@@ -1,5 +1,5 @@
 from datetime import datetime
-from Tables import Users, Questions
+from Tables import Users, Questions, Status
 
 def validate_user(username, password):
     if not username.strip() or not password.strip():
@@ -50,7 +50,7 @@ def new_user(first_name,last_name,username,password,age):
         else:
             return False, "You need to enter a unique username and password"
         
-def record_question (question,answer,username):
+def record_question(question,answer,username):
     new_entry = [
         {
             'username': username,
@@ -60,3 +60,19 @@ def record_question (question,answer,username):
         }
     ]
     Questions.append(new_entry)
+
+def record_status(username,focus_area,stress_level,time_available,suggestions):
+    if not focus_area.strip() or not stress_level==0 or not time_available.strip() or not suggestions==0:
+        return False, "You need to fill in all fields provided to proceed"
+    else:
+        new_entry = [
+            {
+                'username': username,
+                'focus_area': focus_area,
+                'stress_level': stress_level,
+                'suggestions': suggestions,
+                'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+        Status.append(new_entry)
+        return True, "Status recorded"
