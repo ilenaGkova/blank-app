@@ -62,7 +62,7 @@ def record_question(question,answer,username):
     Questions.append(new_entry)
 
 def record_status(username,focus_area,stress_level,time_available,suggestions):
-    if not focus_area.strip() or not stress_level==0 or not time_available.strip() or not suggestions==0:
+    if not focus_area.strip() or not stress_level==0 or not time_available==0 or not suggestions==0:
         return False, "You need to fill in all fields provided to proceed"
     else:
         new_entry = [
