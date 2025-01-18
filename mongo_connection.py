@@ -1,12 +1,12 @@
-from datetime import datetime
-from Tables import Users, Questions, Status
+from datetime import datetime, timedelta
+from Tables import Users, Questions, Status, Favorite, Recommendations_Per_Person, Recommendations, Tags
 
 def validate_user(username, password):
     if not username.strip() or not password.strip():
         return False, "You need to fill in all fields provided to proceed"
     for user in Users:
-        if user["username"] == username and user["password"] == password:
-            user["status"] = 1
+        if user["Username"] == username and user["Password"] == password:
+            user["Status"] = 1
             return True, "You have an account"
     return False, "You do not have an account"
 
@@ -38,7 +38,7 @@ def new_user(first_name,last_name,username,password,age):
                     'days_summed': 0,   
                     'status': 1, 
                     'role': 'User',
-                    'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
             ]
             Users.append(new_entry)
@@ -56,7 +56,7 @@ def record_question(question,answer,username):
             'username': username,
             'question': question,
             'answer': answer,
-            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     ]
     Questions.append(new_entry)
@@ -67,12 +67,26 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
     else:
         new_entry = [
             {
-                'username': username,
-                'focus_area': focus_area,
-                'stress_level': stress_level,
-                'suggestions': suggestions,
-                'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                'Username': username,
+                'Focus_Area': focus_area,
+                'Stress_Level': stress_level,
+                'Suggestions': suggestions,
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
         Status.append(new_entry)
         return True, "Status recorded"
+    
+def get_favorites(username):
+    user_favorites = [Favorite["user_username"] == username]
+    return user_favorites
+
+def get_past_recomendations(username,days_behind):
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
+    start_date = current_datetime - timedelta(days=days_behind)
+    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    user_past_recomendations = [
+        (Recommendations_Per_Person["created_at"] >= start_of_range) & 
+        (Recommendations_Per_Person["created_at"] <= end_of_today) & 
+        (Recommendations_Per_Person["user_username"] == username)
