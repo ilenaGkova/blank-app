@@ -108,13 +108,6 @@ def get_status(username):
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         time_diff = current_datetime - last_status
         return time_diff <= timedelta(hours=24), index
-    index = len(Status) - 1
-    found = False
-    while index >= 0 and not found:
-        found = Users[index]['Username'] == username
-        index -= 1
-    if found:
-        return True, index 
     return False, -1 
 
 def get_recomendations(username):
@@ -129,6 +122,8 @@ def get_recomendations(username):
         user_past_recomendations = get_past_recomendations(username,Users[index-1]['Repeat_Prefence'])
         age = Users[index-1]['Age_Category']
         condition, index = get_status(username)
+        if index == -1 :
+            return False, user_recomendations
         focus_area = Status[index]['Focus_Area']
         stress_level = Status[index]['Stress_Level']
         time_available = Status[index]['Time_Available']
