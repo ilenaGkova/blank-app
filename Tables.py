@@ -10,6 +10,8 @@ Favorite = []
 
 Recommendations_Per_Person = []
 
+Records = []
+
 Recommendations = [
     {'ID': 1, 'Created_By': 'Admin', 'Created_At': '2025-01-18 12:00:00', 'Title': '5-Minute Breathing Exercise', 'Description': 'A quick guIDed breathing session to reduce stress and refocus.', 'Link': 'https://example.com/breathing' },
     {'ID': 2, 'Created_By': 'Admin', 'Created_At': '2025-01-18 12:00:00', 'Title': 'Budget Planning Made Simple', 'Description': 'Practical tips and a worksheet for managing finances effectively.', 'Link': 'https://example.com/budget' },
