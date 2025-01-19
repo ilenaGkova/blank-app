@@ -1,5 +1,6 @@
 import streamlit as st
-from mongo_connection import record_status, record_question
+from mongo_connection import get_user, record_status, record_question, update_user_streak
+from Tables import Users
 
 st.title("Tell us how you're doing today!")
 st.write("Hello", st.session_state.current_username, "Please answer the questions below")
@@ -9,6 +10,9 @@ if "menu" not in st.session_state:
 
 if "current_username" not in st.session_state:
     st.session_state.current_username = "username"
+
+index = get_user(st.session_state.current_username)
+
 
 min_limit = 1
 max_limit = 10
@@ -36,3 +40,18 @@ status_button = st.button('Let us get started', on_click=make_status, args=[focu
 
 if st.session_state.menu and status_button:
     st.switch_page("pages/main.py")
+
+if not index == -1:
+    st.sidebar.write(update_user_streak(st.session_state.current_username))
+    st.sidebar.write('Name:', Users[index]['Name'])
+    st.sidebar.write('Surname:', Users[index]['Surname'])
+    st.sidebar.write('Username:', Users[index]['Username'])
+    st.sidebar.write('Password:', Users[index]['Password'])
+    st.sidebar.write('Age Category:', Users[index]['Age_Category'])
+    st.sidebar.write('Level:', Users[index]['Level'])
+    st.sidebar.write('Score:', Users[index]['Score'])
+    st.sidebar.write('Days connected:', Users[index]['Days_Summed'])
+    st.sidebar.write('Streak:', Users[index]['Streak'])
+    st.sidebar.write('Role:', Users[index]['Role'])
+    st.sidebar.write('Created:', Users[index]['Created_At'])
+    st.sidebar.write("Don't show me the same saggestion for ", Users[index]['Repeat_Preference'], ' day(s) after') 
