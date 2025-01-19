@@ -1,16 +1,18 @@
 from datetime import datetime, timedelta
 import random
-from Tables import Users, Questions, Status, Favorite, Recommendations_Per_Person, Recommendations, Tags
+from Tables import Users, Questions, Status, Favorite, Recommendations_Per_Person, Recommendations, Tags, Records, Removed_Recomendations
 
+# Start Page Function
 def validate_user(username, password):
     if not username.strip() or not password.strip():
         return False, "You need to fill in all fields provided to proceed"
     for user in Users:
-        if user["Username"] == username and user["Password"] == password:
-            user["Status"] = 1
+        if user['Username'] == username and user["Password"] == password:
+            user['Status'] = 1
             return True, "You have an account"
     return False, "You do not have an account"
 
+# Start Page Function
 def new_user(first_name,last_name,username,password,age):
     if not first_name.strip() or not last_name.strip() or not username.strip() or not password.strip() or not age.strip():
         return False, "You need to fill in all fields provided to proceed"
@@ -50,7 +52,8 @@ def new_user(first_name,last_name,username,password,age):
             return False, "You need to enter a unique password"
         else:
             return False, "You need to enter a unique username and password"
-        
+
+# Start/Status Page Function       
 def record_question(question,answer,username):
     new_entry = [
         {
@@ -62,6 +65,7 @@ def record_question(question,answer,username):
     ]
     Questions.append(new_entry)
 
+# Status Page Function
 def record_status(username,focus_area,stress_level,time_available,suggestions):
     if not focus_area.strip() or not stress_level==0 or not time_available==0 or not suggestions==0:
         return False, "You need to fill in all fields provided to proceed"
@@ -77,24 +81,48 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
             }
         ]
         Status.append(new_entry)
+        index = get_user(username)
+        if index == -1:
+            return False,"Something went wrong, user not registered."
+        Users[index]['Status'] = 2
         return True, "Status recorded"
-    
-def get_favorites(username):
-    user_favorites = [Favorite["user_username"] == username]
-    return user_favorites
 
-def get_past_recomendations(username,days_behind):
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
-    start_date = current_datetime - timedelta(days=days_behind)
-    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    user_past_recomendations = [
-        (Recommendations_Per_Person["created_at"] >= start_of_range) & 
-        (Recommendations_Per_Person["created_at"] <= end_of_today) & 
-        (Recommendations_Per_Person["user_username"] == username)
-    ]
-    return user_past_recomendations
+# Status Page
+def update_user_streak(username):
+    today = datetime.now().strftime("%Y-%m-%d")
+    user_record_today = []
+    if len(Records):
+        user_record_today =  [
+            (Records['Username'] == username) &
+            (Records['Action'] == 'Streak increased/reset') &
+            (Records['Created_At'].startswith(today))
+        ]
+    if not len(user_record_today) == 0:
+        return "You have already signed it today, your streak will not be increased"
+    else:
+        index = get_user(username)
+        if index == -1:
+            return "Something went wrong, user not registered."
+        Users[index]['Days_Summed'] = Users[index]['Days_Summed'] + 1
+        streak_increased, index_status = get_status(username) 
+        message = None
+        if streak_increased:
+            Users[index]['Streak'] = Users[index]['Streak'] + 1
+            message =  "Your streak was increased."
+        else:
+            Users[index]['Streak'] = 1
+            message =  "You did not check in less than 48 hours ago. Your streak was reseted."
+        new_entry = [
+            {
+                'Username': username,
+                'Action': 'Streak increased/reset',
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+        Records.append(new_entry)
+        return message
 
+# Status/Main Page Function
 def get_status(username):
     index = len(Status) - 1
     found = False
@@ -107,9 +135,23 @@ def get_status(username):
         last_status = datetime.strptime(Status[index+1]['Created_At'].to_datetime,'%Y-%m-%d %H:%M:%S')
         current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         time_diff = current_datetime - last_status
-        return time_diff <= timedelta(hours=24), index
-    return False, -1 
+        return time_diff <= timedelta(hours=48), index+1
+    return False, -1
 
+# Main Page Function
+def get_past_recomendations(username,days_behind):
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
+    start_date = current_datetime - timedelta(days=days_behind)
+    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    user_past_recomendations = [
+        (Recommendations_Per_Person['Created_At'] >= start_of_range) & 
+        (Recommendations_Per_Person['Created_At'] <= end_of_today) & 
+        (Recommendations_Per_Person['Username'] == username)
+    ]
+    return user_past_recomendations 
+
+# Main Page Function
 def get_recomendations(username):
     index = 0
     found = False
@@ -132,36 +174,44 @@ def get_recomendations(username):
         while index <= suggestions:
             pottential_recomendation_index = random.randint(1, len(Recommendations))
             valid = True
-            table_filtered = [(user_past_recomendations[pottential_recomendation_index]['ID'] == pottential_recomendation_index)]  
-            for entry in table_filtered:
-                valid = False
+            table_filtered = [(user_past_recomendations['ID'] == pottential_recomendation_index)]  
+            valid = len(table_filtered) == 0
             if valid or fails == 3:
-                table_filtered = [(user_recomendations[pottential_recomendation_index]['ID'] == pottential_recomendation_index)]
-                for entry in table_filtered:
-                    valid = False
+                table_filtered = [(user_recomendations['ID'] == pottential_recomendation_index)]
+                valid = len(table_filtered) == 0
                 if valid or fails == 3:
-                    table_filtered = [(Tags[pottential_recomendation_index]['ID'] == pottential_recomendation_index)]
-                    for entry in table_filtered:
-                        if entry['Title_Of_Criteria'] == 'Age Variant':
-                            valid = entry['Category'] == age
-                        elif entry['Title_Of_Criteria'] == 'Focus Area':
-                            valid = entry['Category'] == focus_area
-                        elif entry['Title_Of_Criteria'] == 'Stress Level':
-                            valid = entry['Category'] == stress_level
+                    table_filtered = [(Tags['ID'] == pottential_recomendation_index)]
+                    index = 0
+                    while index <=len(table_filtered) - 1 and valid:
+                        if table_filtered[index]['Title_Of_Criteria'] == 'Age Variant':
+                            valid = table_filtered[index]['Category'] == age
+                        elif table_filtered[index]['Title_Of_Criteria'] == 'Focus Area':
+                            valid = table_filtered[index]['Category'] == focus_area
+                        elif table_filtered[index]['Title_Of_Criteria'] == 'Stress Level':
+                            valid = table_filtered[index]['Category'] == stress_level
                         else:
-                            valid = entry['Category'] == time_available
-                    if valid or fails == 3:
-                        new_entry = [
-                            {
-                                'Username': username,
-                                'ID': pottential_recomendation_index,
-                                'Outcome': None,
-                                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            }
-                        ]
-                        user_recomendations.append(new_entry)
+                            valid = table_filtered[index]['Category'] == time_available
                         index += 1
-                        fails = 0
+                    if valid or fails == 3:
+                        table_filtered = [
+                            (Removed_Recomendations['ID'] == pottential_recomendation_index) & 
+                            (Removed_Recomendations['Username'] == username)
+                        ]
+                        valid = len(table_filtered) == 0
+                        if valid or fails == 3:
+                            new_entry = [
+                                {
+                                    'Username': username,
+                                    'ID': pottential_recomendation_index,
+                                    'Outcome': None,
+                                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                                }
+                            ]
+                            user_recomendations.append(new_entry)
+                            index += 1
+                            fails = 0
+                        else:
+                            fails += 1
                     else:
                         fails += 1
                 else:
@@ -171,3 +221,12 @@ def get_recomendations(username):
         Recommendations_Per_Person.append(user_recomendations)
         return True, user_recomendations
     return False, user_recomendations
+
+# Status/Main Page Function
+def get_user(username):
+    index = 0
+    for entry in Users:
+        if entry['Username'] == username:
+            return index
+        index += 1
+    return -1    
