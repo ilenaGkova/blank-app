@@ -1,5 +1,5 @@
 Users = [
-    {'Name': 'Ilena', 'Surname': 'Gkova', 'Username': 'Admin', 'Password': 'Admin123','Repeat_Preference': 5, 'Age_category': '18-25', 'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0,'Status': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'}
+    {'Name': 'Ilena', 'Surname': 'Gkova', 'Username': 'Admin', 'Password': 'Admin123','Repeat_Preference': 5, 'Age_Category': '18-25', 'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0,'Status': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'}
 ]
 
 Questions = []
@@ -11,6 +11,8 @@ Favorite = []
 Recommendations_Per_Person = []
 
 Records = []
+
+Removed_Recomendations = []
 
 Recommendations = [
     {'ID': 1, 'Created_By': 'Admin', 'Created_At': '2025-01-18 12:00:00', 'Title': '5-Minute Breathing Exercise', 'Description': 'A quick guIDed breathing session to reduce stress and refocus.', 'Link': 'https://example.com/breathing' },
