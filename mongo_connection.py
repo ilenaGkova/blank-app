@@ -70,6 +70,9 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
     if not focus_area.strip() or not stress_level==0 or not time_available==0 or not suggestions==0:
         return False, "You need to fill in all fields provided to proceed"
     else:
+        index = get_user(username)
+        if index == -1:
+            return False,"Something went wrong, user not registered."
         new_entry = [
             {
                 'Username': username,
@@ -81,9 +84,6 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
             }
         ]
         Status.append(new_entry)
-        index = get_user(username)
-        if index == -1:
-            return False,"Something went wrong, user not registered."
         Users[index]['Status'] = 2
         return True, "Status recorded"
 
