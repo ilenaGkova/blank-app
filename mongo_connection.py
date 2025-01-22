@@ -89,15 +89,7 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
 
 # Status Page
 def update_user_streak(username):
-    today = datetime.now().strftime("%Y-%m-%d")
-    user_record_today = []
-    if len(Records):
-        user_record_today =  [
-            (Records['Username'] == username) &
-            (Records['Action'] == 'Streak increased/reset') &
-            (Records['Created_At'].startswith(today))
-        ]
-    if not len(user_record_today) == 0:
+    if find_action_in_record(username,'Streak increased/reset'):
         return "You have already signed it today, your streak will not be increased"
     else:
         index = get_user(username)
@@ -117,10 +109,27 @@ def update_user_streak(username):
                 'Username': username,
                 'Action': 'Streak increased/reset',
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            },
+            {
+                'Username': username,
+                'Action': 'Days connected increased',
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
         Records.append(new_entry)
         return message
+
+# General function used everywhere
+def find_action_in_record(username, action):
+    today = datetime.now().strftime("%Y-%m-%d")
+    user_record_today = []
+    if len(Records):
+        user_record_today =  [
+            (Records['Username'] == username) &
+            (Records['Action'] == action) &
+            (Records['Created_At'].startswith(today))
+        ]
+    return len(user_record_today) == 1
 
 # Status/Main Page Function
 def get_status(username):
@@ -153,74 +162,75 @@ def get_past_recomendations(username,days_behind):
 
 # Main Page Function
 def get_recomendations(username):
-    index = 0
-    found = False
-    age = None
-    while index <= len(Users) - 1 and not found:
-        found = Users[index]['Username'] == username
-        index += 1
+    index = get_user(username)
     user_recomendations = []
-    if found:
-        user_past_recomendations = get_past_recomendations(username,Users[index-1]['Repeat_Prefence'])
-        age = Users[index-1]['Age_Category']
+    if index >= 0:
         condition, index = get_status(username)
-        if index == -1 :
-            return False, user_recomendations
-        focus_area = Status[index]['Focus_Area']
-        stress_level = Status[index]['Stress_Level']
-        time_available = Status[index]['Time_Available']
         suggestions = Status[index]['Suggestions']
         index = 1
+        fails = 0
         while index <= suggestions:
             pottential_recomendation_index = random.randint(1, len(Recommendations))
-            valid = True
-            table_filtered = [(user_past_recomendations['ID'] == pottential_recomendation_index)]  
-            valid = len(table_filtered) == 0
-            if valid or fails == 3:
-                table_filtered = [(user_recomendations['ID'] == pottential_recomendation_index)]
-                valid = len(table_filtered) == 0
-                if valid or fails == 3:
-                    table_filtered = [(Tags['ID'] == pottential_recomendation_index)]
-                    index = 0
-                    while index <=len(table_filtered) - 1 and valid:
-                        if table_filtered[index]['Title_Of_Criteria'] == 'Age Variant':
-                            valid = table_filtered[index]['Category'] == age
-                        elif table_filtered[index]['Title_Of_Criteria'] == 'Focus Area':
-                            valid = table_filtered[index]['Category'] == focus_area
-                        elif table_filtered[index]['Title_Of_Criteria'] == 'Stress Level':
-                            valid = table_filtered[index]['Category'] == stress_level
-                        else:
-                            valid = table_filtered[index]['Category'] == time_available
-                        index += 1
-                    if valid or fails == 3:
-                        table_filtered = [
-                            (Removed_Recomendations['ID'] == pottential_recomendation_index) & 
-                            (Removed_Recomendations['Username'] == username)
-                        ]
-                        valid = len(table_filtered) == 0
-                        if valid or fails == 3:
-                            new_entry = [
-                                {
-                                    'Username': username,
-                                    'ID': pottential_recomendation_index,
-                                    'Outcome': None,
-                                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                                }
-                            ]
-                            user_recomendations.append(new_entry)
-                            index += 1
-                            fails = 0
-                        else:
-                            fails += 1
-                    else:
-                        fails += 1
-                else:
-                    fails += 1
+            if (has_the_user_seen_this_recomendation_before(pottential_recomendation_index) and will_the_user_see_this_recomendation_twice(username, pottential_recomendation_index) and do_the_tags_match(username, pottential_recomendation_index) and has_the_user_rejected_this_suggestion(username, pottential_recomendation_index)) or fails == 3:
+                new_entry = [
+                    {
+                        'Username': username,
+                        'ID': pottential_recomendation_index,
+                        'Outcome': 'Incomplete',
+                        'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                ]
+                user_recomendations.append(new_entry)
+                index += 1
+                fails = 0
             else:
                 fails += 1
         Recommendations_Per_Person.append(user_recomendations)
-        return True, user_recomendations
-    return False, user_recomendations
+        return True, user_recomendations, 'Feel free to try any of the below'
+    return False, None, 'Something went wrong, user not registered.' 
+
+# Main page side function
+def has_the_user_rejected_this_suggestion(username, pottential_recomendation_index):
+    table_filtered = [
+        (Removed_Recomendations['ID'] == pottential_recomendation_index) & 
+        (Removed_Recomendations['Username'] == username)
+    ]
+    return len(table_filtered) == 0
+
+# Main page side function
+def do_the_tags_match(username, pottential_recomendation_index):
+    table_filtered = [(Tags['ID'] == pottential_recomendation_index)]
+    index = get_user(username)
+    age = Users[index]['Age_Category']
+    condition, index = get_status(username)
+    focus_area = Status[index]['Focus_Area']
+    stress_level = Status[index]['Stress_Level']
+    time_available = Status[index]['Time_Available']
+    index = 0
+    valid = True
+    while index <= len(table_filtered) - 1 and valid:
+        if table_filtered[index]['Title_Of_Criteria'] == 'Age Variant':
+            valid = table_filtered[index]['Category'] == age
+        elif table_filtered[index]['Title_Of_Criteria'] == 'Focus Area':
+            valid = table_filtered[index]['Category'] == focus_area
+        elif table_filtered[index]['Title_Of_Criteria'] == 'Stress Level':
+            valid = table_filtered[index]['Category'] == stress_level
+        else:
+            valid = table_filtered[index]['Category'] == time_available
+        index += 1
+    return valid
+
+# Main page side function
+def will_the_user_see_this_recomendation_twice(user_recomendations, pottential_recomendation_index):
+    table_filtered = [(user_recomendations['ID'] == pottential_recomendation_index)]
+    return len(table_filtered) == 0
+
+# Main page side function
+def has_the_user_seen_this_recomendation_before(username,pottential_recomendation_index):
+    index = get_user(username)
+    user_past_recomendations = get_past_recomendations(username,Users[index]['Repeat_Prefence'])
+    table_filtered = [(user_past_recomendations['ID'] == pottential_recomendation_index)]  
+    return len(table_filtered) == 0
 
 # Status/Main Page Function
 def get_user(username):
