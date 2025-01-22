@@ -3,7 +3,6 @@ from mongo_connection import get_user, record_status, record_question, update_us
 from Tables import Users
 
 st.title("Tell us how you're doing today!")
-st.write("Hello", st.session_state.current_username, "Please answer the questions below")
 
 if "menu" not in st.session_state:
     st.session_state.menu = False
@@ -11,8 +10,12 @@ if "menu" not in st.session_state:
 if "current_username" not in st.session_state:
     st.session_state.current_username = "username"
 
-index = get_user(st.session_state.current_username)
+if not st.session_state.current_username == "username":
+    st.write("Hello", st.session_state.current_username, "Please answer the questions below")
+else:
+    st.write('Something went wrong, user not registered.')
 
+index = get_user(st.session_state.current_username)
 
 min_limit = 1
 max_limit = 10
@@ -23,14 +26,15 @@ question_time_available = "How much time are you willing to spend in reducing st
 question_suggestions = "How many suggestions do you want?"
 
 def make_status(focus_area,stress_level,time_available,suggestions):
-    move_on, message = record_status(st.session_state.username,focus_area,stress_level,time_available,suggestions)
-    st.session_state.menu = move_on
-    if move_on:
-        record_question(question_focus_area,focus_area,st.session_state.username)
-        record_question(question_stress_level,stress_level,st.session_state.username)
-        record_question(question_suggestions,suggestions,st.session_state.username)
-        record_question(question_time_available,time_available,st.session_state.username)
-    st.sidebar.write(message)
+    if not st.session_state.current_username == "username":
+        move_on, message = record_status(st.session_state.username,focus_area,stress_level,time_available,suggestions)
+        st.session_state.menu = move_on
+        if move_on:
+            record_question(question_focus_area,focus_area,st.session_state.username)
+            record_question(question_stress_level,stress_level,st.session_state.username)
+            record_question(question_suggestions,suggestions,st.session_state.username)
+            record_question(question_time_available,time_available,st.session_state.username)
+        st.sidebar.write(message)
 
 focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
 stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
@@ -38,20 +42,17 @@ time_available = st.number_input(question_time_available, min_value=min_limit+2,
 suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_limit)
 status_button = st.button('Let us get started', on_click=make_status, args=[focus_area,stress_level,time_available,suggestions])
 
-if st.session_state.menu and status_button:
+if st.session_state.menu and status_button and not index == -1:
     st.switch_page("pages/main.py")
 
 if not index == -1:
     st.sidebar.write(update_user_streak(st.session_state.current_username))
     st.sidebar.write('Name:', Users[index]['Name'])
     st.sidebar.write('Surname:', Users[index]['Surname'])
-    st.sidebar.write('Username:', Users[index]['Username'])
-    st.sidebar.write('Password:', Users[index]['Password'])
-    st.sidebar.write('Age Category:', Users[index]['Age_Category'])
     st.sidebar.write('Level:', Users[index]['Level'])
     st.sidebar.write('Score:', Users[index]['Score'])
     st.sidebar.write('Days connected:', Users[index]['Days_Summed'])
     st.sidebar.write('Streak:', Users[index]['Streak'])
-    st.sidebar.write('Role:', Users[index]['Role'])
-    st.sidebar.write('Created:', Users[index]['Created_At'])
     st.sidebar.write("Don't show me the same saggestion for ", Users[index]['Repeat_Preference'], ' day(s) after') 
+else:
+    st.sidebar.write('Something went wrong, user not registered.')
