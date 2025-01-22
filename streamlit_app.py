@@ -1,5 +1,5 @@
 import streamlit as st
-from mongo_connection import validate_user, new_user, record_question
+from mongo_connection import get_status, validate_user, new_user, record_question
 from Tables import Questions
 
 st.set_page_config(
@@ -59,5 +59,9 @@ sign_in_button = st.button('Let us get started', on_click=create_user, args=[fir
 def set_username (username):
     st.session_state.current_username = username 
 
-if st.session_state.menu and (sign_in_button or log_in_button):
+condition, index = get_status(st.session_state.current_username)
+
+if st.session_state.menu and (sign_in_button or log_in_button) and index == -1 :
     st.switch_page("pages/status_page.py")
+elif st.session_state.menu and (sign_in_button or log_in_button):
+    st.switch_page("pages/main.py")
