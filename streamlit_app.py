@@ -1,8 +1,11 @@
 import streamlit as st
-from mongo_connection import get_user, record_status, record_question, update_user_streak
-from Tables import Users
+from mongo_connection import get_status, validate_user, new_user, record_question
+from Tables import Questions
 
-st.title("Tell us how you're doing today!")
+st.set_page_config(
+    page_title="Log In",
+    page_icon="👋",
+)
 
 if "menu" not in st.session_state:
     st.session_state.menu = False
@@ -10,49 +13,55 @@ if "menu" not in st.session_state:
 if "current_username" not in st.session_state:
     st.session_state.current_username = "username"
 
-if not st.session_state.current_username == "username":
-    st.write("Hello", st.session_state.current_username, "Please answer the questions below")
-else:
-    st.write('Something went wrong, user not registered.')
+st.sidebar.write ('Already have an account? Sign it!')
 
-index = get_user(st.session_state.current_username)
+def log_in_user(username, password):
+    move_on, message = validate_user(username, password)
+    st.session_state.menu = move_on
+    if move_on:
+        set_username(username)
+    st.sidebar.write(message)
 
-min_limit = 1
-max_limit = 10
+username = st.sidebar.text_input("Your Username", key="username")
+password = st.sidebar.text_input("Your Password", key="password")
+log_in_button = st.sidebar.button('Log in', on_click=log_in_user, args=[username, password])
 
-question_focus_area = "Where would you like to focus today?"
-question_stress_level = "How would you rate your stress level?"
-question_time_available = "How much time are you willing to spend in reducing stress today?"
-question_suggestions = "How many suggestions do you want?"
+"""
+# Wellcome to Stress Test!
+Please answer the following questions and we'll create your account
+"""
 
-def make_status(focus_area,stress_level,time_available,suggestions):
-    if not st.session_state.current_username == "username":
-        move_on, message = record_status(st.session_state.username,focus_area,stress_level,time_available,suggestions)
-        st.session_state.menu = move_on
-        if move_on:
-            record_question(question_focus_area,focus_area,st.session_state.username)
-            record_question(question_stress_level,stress_level,st.session_state.username)
-            record_question(question_suggestions,suggestions,st.session_state.username)
-            record_question(question_time_available,time_available,st.session_state.username)
-        st.sidebar.write(message)
+question_first_name = "What's your first name?"
+question_last_name = "What's your last name?"
+question_username = "What's your username?"
+question_password = "What's your password?"
+question_age = "Age"
 
-focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
-stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
-time_available = st.number_input(question_time_available, min_value=min_limit+2, max_value=2*max_limit)
-suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_limit)
-status_button = st.button('Let us get started', on_click=make_status, args=[focus_area,stress_level,time_available,suggestions])
+def create_user(first_name,last_name,user_username,user_password,age):
+    move_on, message = new_user(first_name,last_name,user_username,user_password,age)
+    st.session_state.menu = move_on
+    if move_on:
+        record_question(question_first_name,first_name,user_username)
+        record_question(question_last_name,last_name,user_username)
+        record_question(question_username,user_username,user_username)
+        record_question(question_password,user_password,user_username)
+        record_question(question_age,age,user_username)
+        set_username(user_username)
+    st.sidebar.write(message)
 
-if st.session_state.menu and status_button and not index == -1:
+first_name = st.text_input(question_first_name, key="first_name")
+last_name = st.text_input(question_last_name, key="last_name")
+user_username = st.text_input(question_username, key="user_username")
+user_password = st.text_input(question_password, key="user_password")
+age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
+sign_in_button = st.button('Let us get started', on_click=create_user, args=[first_name,last_name,user_username,user_password,age])
+
+def set_username (username):
+    st.session_state.current_username = username 
+
+condition, index = get_status(st.session_state.current_username)
+
+if st.session_state.menu and (sign_in_button or log_in_button) and index == -1 :
+    st.switch_page("pages/status_page.py")
+elif st.session_state.menu and (sign_in_button or log_in_button):
     st.switch_page("pages/main.py")
-
-if not index == -1:
-    st.sidebar.write(update_user_streak(st.session_state.current_username))
-    st.sidebar.write('Name:', Users[index]['Name'])
-    st.sidebar.write('Surname:', Users[index]['Surname'])
-    st.sidebar.write('Level:', Users[index]['Level'])
-    st.sidebar.write('Score:', Users[index]['Score'])
-    st.sidebar.write('Days connected:', Users[index]['Days_Summed'])
-    st.sidebar.write('Streak:', Users[index]['Streak'])
-    st.sidebar.write("Don't show me the same saggestion for ", Users[index]['Repeat_Preference'], ' day(s) after') 
-else:
-    st.sidebar.write('Something went wrong, user not registered.')
