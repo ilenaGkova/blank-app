@@ -33,7 +33,7 @@ def new_user(first_name,last_name,username,password,age):
                     'Surname': last_name,
                     'Username': username,
                     'Password': password,
-                    'Repeat_Prefence': 1,
+                    'Repeat_Preference': 1,
                     'Age_Category': age,
                     'Level': 0,
                     'Score': 0,
@@ -44,7 +44,7 @@ def new_user(first_name,last_name,username,password,age):
                     'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
             ]
-            Users.append(new_entry)
+            Users.extend(new_entry)
             return True, "You have been added to our service"
         elif valid_username and not valid_password:
             return False, "You need to enter a unique username"
@@ -63,11 +63,11 @@ def record_question(question,answer,username):
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     ]
-    Questions.append(new_entry)
+    Questions.extend(new_entry)
 
 # Status Page Function
 def record_status(username,focus_area,stress_level,time_available,suggestions):
-    if not focus_area.strip() or not stress_level==0 or not time_available==0 or not suggestions==0:
+    if not focus_area.strip() or stress_level==0 or time_available==0 or suggestions==0:
         return False, "You need to fill in all fields provided to proceed"
     else:
         index = get_user(username)
@@ -83,7 +83,7 @@ def record_status(username,focus_area,stress_level,time_available,suggestions):
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
-        Status.append(new_entry)
+        Status.extend(new_entry)
         Users[index]['Status'] = 2
         return True, "Status recorded"
 
@@ -116,35 +116,32 @@ def update_user_streak(username):
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
-        Records.append(new_entry)
+        Records.extend(new_entry)
         return message
 
 # General function used everywhere
 def find_action_in_record(username, action):
     today = datetime.now().strftime("%Y-%m-%d")
-    user_record_today = []
-    if len(Records):
-        user_record_today =  [
-            (Records['Username'] == username) &
-            (Records['Action'] == action) &
-            (Records['Created_At'].startswith(today))
-        ]
-    return len(user_record_today) == 1
+    if not len(Records) == 0:
+        index = 0
+        while index <= len(Records) - 1:
+            if Records[index]['Username'] == username and Records[index]['Action'] == action and Records[index]['Created_At'].startswith(today):
+                return True
+            index += 1
+    return False
 
 # Status/Main Page Function
 def get_status(username):
     index = len(Status) - 1
-    found = False
-    while index >= 0 and not found:
-        found = Status[index]['Username'] == username
-        index -= 1
     last_status = None
-    time_diff = None
-    if found:
-        last_status = datetime.strptime(Status[index+1]['Created_At'].to_datetime,'%Y-%m-%d %H:%M:%S')
-        current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        time_diff = current_datetime - last_status
-        return time_diff <= timedelta(hours=48), index+1
+    time_diff = None 
+    while index >= 0:
+        if Status[index]['Username'] == username:
+            last_status = datetime.strptime(Status[index]['Created_At'],'%Y-%m-%d %H:%M:%S')
+            current_datetime = datetime.now()
+            time_diff = current_datetime - last_status
+            return time_diff <= timedelta(hours=48), index
+        index -= 1  
     return False, -1
 
 # Main Page Function
@@ -153,12 +150,12 @@ def get_past_recomendations(username,days_behind):
     end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
     start_date = current_datetime - timedelta(days=days_behind)
     start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    user_past_recomendations = [
-        (Recommendations_Per_Person['Created_At'] >= start_of_range) & 
-        (Recommendations_Per_Person['Created_At'] <= end_of_today) & 
-        (Recommendations_Per_Person['Username'] == username)
+    user_past_recommendations = [
+        rec 
+        for rec in Recommendations_Per_Person
+        if start_of_range <= rec['Created_At'] <= end_of_today and rec['Username'] == username
     ]
-    return user_past_recomendations 
+    return user_past_recommendations
 
 # Main Page Function
 def get_recomendations(username):
@@ -180,26 +177,30 @@ def get_recomendations(username):
                         'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     }
                 ]
-                user_recomendations.append(new_entry)
+                user_recomendations.extend(new_entry)
                 index += 1
                 fails = 0
             else:
                 fails += 1
-        Recommendations_Per_Person.append(user_recomendations)
+        Recommendations_Per_Person.extend(user_recomendations)
         return True, user_recomendations, 'Feel free to try any of the below'
     return False, None, 'Something went wrong, user not registered.' 
 
 # Main page side function
 def has_the_user_rejected_this_suggestion(username, pottential_recomendation_index):
     table_filtered = [
-        (Removed_Recomendations['ID'] == pottential_recomendation_index) & 
-        (Removed_Recomendations['Username'] == username)
+        rec for rec in Removed_Recomendations 
+        if rec['ID'] == pottential_recomendation_index and rec['Username'] == username
     ]
     return len(table_filtered) == 0
 
 # Main page side function
 def do_the_tags_match(username, pottential_recomendation_index):
-    table_filtered = [(Tags['ID'] == pottential_recomendation_index)]
+    table_filtered = [
+        rec 
+        for rec in Tags 
+        if rec['ID'] == pottential_recomendation_index
+    ]
     index = get_user(username)
     age = Users[index]['Age_Category']
     condition, index = get_status(username)
@@ -222,14 +223,22 @@ def do_the_tags_match(username, pottential_recomendation_index):
 
 # Main page side function
 def will_the_user_see_this_recomendation_twice(user_recomendations, pottential_recomendation_index):
-    table_filtered = [(user_recomendations['ID'] == pottential_recomendation_index)]
+    table_filtered = [
+        rec 
+        for rec in user_recomendations 
+        if rec['ID'] == pottential_recomendation_index
+    ]
     return len(table_filtered) == 0
 
 # Main page side function
 def has_the_user_seen_this_recomendation_before(username,pottential_recomendation_index):
     index = get_user(username)
     user_past_recomendations = get_past_recomendations(username,Users[index]['Repeat_Prefence'])
-    table_filtered = [(user_past_recomendations['ID'] == pottential_recomendation_index)]  
+    table_filtered = [
+        rec 
+        for rec in user_past_recomendations 
+        if rec['ID'] == pottential_recomendation_index
+    ] 
     return len(table_filtered) == 0
 
 # Status/Main Page Function
