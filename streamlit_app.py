@@ -5,8 +5,7 @@ st.set_page_config(
     page_icon="👋",
 )
 
-from mongo_connection import generate_unique_passcode, get_status, validate_user, new_user, record_question
-from faker import Faker
+from mongo_connection import generate_animal_username, generate_unique_passcode, get_status, validate_user, new_user, record_question
 
 if "menu" not in st.session_state:
     st.session_state.menu = False
@@ -55,8 +54,7 @@ def create_user(user_username,user_passcode,age,focus_area,time_available,sugges
         set_username(user_passcode)
     st.sidebar.write(message)
 
-fake = Faker()
-user_username = st.text_input(question_username, key="user_username", value=fake.user_name())
+user_username = st.text_input(question_username, key="user_username", value=generate_animal_username())
 user_passcode = st.text_input(question_passcode, key="user_password", value=generate_unique_passcode(), disabled=True)
 age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
 focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
