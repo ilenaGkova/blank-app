@@ -3,8 +3,8 @@ from mongo_connection import init_connection, record_status, record_question, up
 
 st.title("Tell us how you're doing today!")
 
-if "menu" not in st.session_state:
-    st.session_state.menu = False
+if "menu1" not in st.session_state:
+    st.session_state.menu1 = False
 
 if "current_passcode" not in st.session_state:
     st.session_state.current_passcode = 1
@@ -27,7 +27,7 @@ question_stress_level = "How would you rate your stress level?"
 def make_status(stress_level):
     if not current_user == None:
         move_on, message = record_status(st.session_state.current_passcode,stress_level)
-        st.session_state.menu = move_on
+        st.session_state.menu1 = move_on
         if move_on: record_question(question_stress_level,stress_level,st.session_state.current_passcode)
         st.sidebar.write(message)
 
@@ -35,7 +35,7 @@ def make_status(stress_level):
 stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
 status_button = st.button('Let us get started', on_click=make_status, args=[stress_level])
 
-if st.session_state.menu and status_button and not current_user == None:
+if st.session_state.menu1 and status_button and not current_user == None:
     st.switch_page("pages/main.py")
 
 if not current_user == None:
