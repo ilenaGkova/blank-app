@@ -1,251 +1,125 @@
 from datetime import datetime, timedelta
 import random
-from Tables import Users, Questions, Status, Favorite, Recommendations_Per_Person, Recommendations, Tags, Records, Removed_Recomendations
+import pymongo
+import streamlit as st
+from Tables import Users
+
+@st.cache_resource
+def init_connection():
+    return pymongo.MongoClient(st.secrets["mongo"]["uri"])
+
+client = init_connection()
+db = client.StressTest
+Status = db["Status"]
+User = db["User"]
+Question = db["Question"]
+Record = db["Record"]
+
+if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
 
 # Start Page Function
-def validate_user(username, password):
-    if not username.strip() or not password.strip():
-        return False, "You need to fill in all fields provided to proceed"
-    for user in Users:
-        if user['Username'] == username and user["Password"] == password:
-            user['Status'] = 1
-            return True, "You have an account"
-    return False, "You do not have an account"
+def validate_user(passcode):
+    if not passcode.strip():
+        return False, "You need to enter your passcode"
+    potential_user = User.find_one({"Passcode": passcode})
+    return (True, "You have an account") if potential_user else (False, "You do not have an account")
 
 # Start Page Function
-def new_user(first_name,last_name,username,password,age):
-    if not first_name.strip() or not last_name.strip() or not username.strip() or not password.strip() or not age.strip():
-        return False, "You need to fill in all fields provided to proceed"
-    else:
-        if username == "username":
-            return False, "You can't use the word 'username' for a username"
-        valid_username = True
-        valid_password = True
-        index = 0
-        while index <= len(Users) - 1 and valid_username and valid_password:
-            valid_username = not Users[index]['Username'] == username
-            valid_password = not Users[index]['Password'] == password
-            index += 1  
-        if valid_username and valid_password:
-            new_entry = [
-                {
-                    'Name': first_name,
-                    'Surname': last_name,
-                    'Username': username,
-                    'Password': password,
-                    'Repeat_Preference': 1,
-                    'Age_Category': age,
-                    'Level': 0,
-                    'Score': 0,
-                    'Streak': 0,
-                    'Days_Summed': 0,   
-                    'Status': 1, 
-                    'Role': 'User',
-                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-            ]
-            Users.extend(new_entry)
-            return True, "You have been added to our service"
-        elif valid_username and not valid_password:
-            return False, "You need to enter a unique username"
-        elif not valid_username and valid_password:
-            return False, "You need to enter a unique password"
-        else:
-            return False, "You need to enter a unique username and password"
-
-# Start/Status Page Function       
-def record_question(question,answer,username):
-    new_entry = [
+def new_user(username, passcode, age,focus_area,time_available,suggestions):
+    if not username.strip() or passcode.strip() == "Please reload the page" or not age.strip() or not focus_area.strip() or time_available==0 or suggestions==0:
+        return False, "You need to fill in all fields provided to proceed. If Passcode not available reload the page."
+    if User.find_one({"Username": username}): return False, "You need to enter a unique username"
+    User.insert_one(
         {
-            'username': username,
-            'question': question,
-            'answer': answer,
+            'Username': username,
+            'Passcode': passcode,
+            'Repeat_Preference': 1,
+            'Age_Category': age,
+            'Focus_Area': focus_area,
+            'Suggestions': suggestions,
+            'Time_Available': time_available,
+            'Level': 0,
+            'Score': 0,
+            'Streak': 0,
+            'Days_Summed': 0,    
+            'Role': 'User',
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
-    ]
-    Questions.extend(new_entry)
+    )
+    return True, "You have been added to our service"
+
+# Start Page Function
+def generate_unique_passcode(max_attempts=100):
+    attempt_count = 0
+    while attempt_count < max_attempts:
+        passcode = str(random.randint(1000000000, 9999999999))
+        if not User.find_one({"Passcode": passcode}): return passcode
+        attempt_count += 1
+    return "Please reload the page"
+
+# Start/Status Page Function       
+def record_question(question,answer,passcode):
+    Question.insert_one(
+        {
+            'Passcode': passcode,
+            'Question': question,
+            'Answer': answer,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
+
+# Status/Main Page Function
+def get_status(passcode):
+    latest_status = Status.find_one({"passcode": passcode}, sort=[("Created_At", -1)])
+    if not latest_status: return False, -1
+    last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%d %H:%M:%S')
+    return (datetime.now() - last_status_time) <= timedelta(hours=48), latest_status["_id"]
 
 # Status Page Function
-def record_status(username,focus_area,stress_level,time_available,suggestions):
-    if not focus_area.strip() or stress_level==0 or time_available==0 or suggestions==0:
+def record_status(passcode,stress_level):
+    if stress_level==0:
         return False, "You need to fill in all fields provided to proceed"
     else:
-        index = get_user(username)
-        if index == -1:
-            return False,"Something went wrong, user not registered."
-        new_entry = [
+        if not User.find_one({"Passcode": passcode}): return False,"Something went wrong, user not registered."
+        Status.insert_one( 
             {
-                'Username': username,
-                'Focus_Area': focus_area,
+                'Passcode': passcode,
                 'Stress_Level': stress_level,
-                'Suggestions': suggestions,
-                'Time_Available': time_available,
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
-        ]
-        Status.extend(new_entry)
-        Users[index]['Status'] = 2
+        )
         return True, "Status recorded"
 
 # Status Page
-def update_user_streak(username):
-    if find_action_in_record(username,'Streak increased/reset'):
-        return "You have already signed it today, your streak will not be increased"
+def update_user_streak(passcode):
+    if Record.find_one({"Passcode": passcode, "Action": "Days connected increased", "Created_At": {"$gte": datetime.combine(datetime.today(), datetime.min.time())}}):
+        return "You have already signed it today, your streak will not change"
     else:
-        index = get_user(username)
-        if index == -1:
-            return "Something went wrong, user not registered."
-        Users[index]['Days_Summed'] = Users[index]['Days_Summed'] + 1
-        streak_increased, index_status = get_status(username) 
+        if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
+        User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
+        streak_increased, index_status = get_status(passcode) 
         message = None
+        streak_action = None
         if streak_increased:
-            Users[index]['Streak'] = Users[index]['Streak'] + 1
+            User.update_one({"Passcode": passcode}, {"$inc": {"Streak": 1}})
             message =  "Your streak was increased."
+            streak_action = 'Streak increased'
         else:
-            Users[index]['Streak'] = 1
-            message =  "You did not check in less than 48 hours ago. Your streak was reseted."
-        new_entry = [
-            {
-                'Username': username,
-                'Action': 'Streak increased/reset',
-                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            },
-            {
-                'Username': username,
-                'Action': 'Days connected increased',
-                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-        ]
-        Records.extend(new_entry)
+            User.update_one({"Passcode": passcode},{"$set": {"Streak": 1}})
+            message =  "You did not check in less than 48 hours ago. Your streak was reset."
+            streak_action = 'Streak reset'
+        Record.insert_many(
+            [
+                {
+                    'Passcode': passcode,
+                    'Action': streak_action,
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                },
+                {
+                    'Passcode': passcode,
+                    'Action': 'Days connected increased',
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+            ]
+        )
         return message
-
-# General function used everywhere
-def find_action_in_record(username, action):
-    today = datetime.now().strftime("%Y-%m-%d")
-    if not len(Records) == 0:
-        index = 0
-        while index <= len(Records) - 1:
-            if Records[index]['Username'] == username and Records[index]['Action'] == action and Records[index]['Created_At'].startswith(today):
-                return True
-            index += 1
-    return False
-
-# Status/Main Page Function
-def get_status(username):
-    index = len(Status) - 1
-    last_status = None
-    time_diff = None 
-    while index >= 0:
-        if Status[index]['Username'] == username:
-            last_status = datetime.strptime(Status[index]['Created_At'],'%Y-%m-%d %H:%M:%S')
-            current_datetime = datetime.now()
-            time_diff = current_datetime - last_status
-            return time_diff <= timedelta(hours=48), index
-        index -= 1  
-    return False, -1
-
-# Main Page Function
-def get_past_recomendations(username,days_behind):
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
-    start_date = current_datetime - timedelta(days=days_behind)
-    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    user_past_recommendations = [
-        rec 
-        for rec in Recommendations_Per_Person
-        if start_of_range <= rec['Created_At'] <= end_of_today and rec['Username'] == username
-    ]
-    return user_past_recommendations
-
-# Main Page Function
-def get_recomendations(username):
-    index = get_user(username)
-    user_recomendations = []
-    if index >= 0:
-        condition, index = get_status(username)
-        suggestions = Status[index]['Suggestions']
-        index = 1
-        fails = 0
-        while index <= suggestions:
-            pottential_recomendation_index = random.randint(1, len(Recommendations))
-            if (has_the_user_seen_this_recomendation_before(pottential_recomendation_index) and will_the_user_see_this_recomendation_twice(username, pottential_recomendation_index) and do_the_tags_match(username, pottential_recomendation_index) and has_the_user_rejected_this_suggestion(username, pottential_recomendation_index)) or fails == 3:
-                new_entry = [
-                    {
-                        'Username': username,
-                        'ID': pottential_recomendation_index,
-                        'Outcome': 'Incomplete',
-                        'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    }
-                ]
-                user_recomendations.extend(new_entry)
-                index += 1
-                fails = 0
-            else:
-                fails += 1
-        Recommendations_Per_Person.extend(user_recomendations)
-        return True, user_recomendations, 'Feel free to try any of the below'
-    return False, None, 'Something went wrong, user not registered.' 
-
-# Main page side function
-def has_the_user_rejected_this_suggestion(username, pottential_recomendation_index):
-    table_filtered = [
-        rec for rec in Removed_Recomendations 
-        if rec['ID'] == pottential_recomendation_index and rec['Username'] == username
-    ]
-    return len(table_filtered) == 0
-
-# Main page side function
-def do_the_tags_match(username, pottential_recomendation_index):
-    table_filtered = [
-        rec 
-        for rec in Tags 
-        if rec['ID'] == pottential_recomendation_index
-    ]
-    index = get_user(username)
-    age = Users[index]['Age_Category']
-    condition, index = get_status(username)
-    focus_area = Status[index]['Focus_Area']
-    stress_level = Status[index]['Stress_Level']
-    time_available = Status[index]['Time_Available']
-    index = 0
-    valid = True
-    while index <= len(table_filtered) - 1 and valid:
-        if table_filtered[index]['Title_Of_Criteria'] == 'Age Variant':
-            valid = table_filtered[index]['Category'] == age
-        elif table_filtered[index]['Title_Of_Criteria'] == 'Focus Area':
-            valid = table_filtered[index]['Category'] == focus_area
-        elif table_filtered[index]['Title_Of_Criteria'] == 'Stress Level':
-            valid = table_filtered[index]['Category'] == stress_level
-        else:
-            valid = table_filtered[index]['Category'] == time_available
-        index += 1
-    return valid
-
-# Main page side function
-def will_the_user_see_this_recomendation_twice(user_recomendations, pottential_recomendation_index):
-    table_filtered = [
-        rec 
-        for rec in user_recomendations 
-        if rec['ID'] == pottential_recomendation_index
-    ]
-    return len(table_filtered) == 0
-
-# Main page side function
-def has_the_user_seen_this_recomendation_before(username,pottential_recomendation_index):
-    index = get_user(username)
-    user_past_recomendations = get_past_recomendations(username,Users[index]['Repeat_Prefence'])
-    table_filtered = [
-        rec 
-        for rec in user_past_recomendations 
-        if rec['ID'] == pottential_recomendation_index
-    ] 
-    return len(table_filtered) == 0
-
-# Status/Main Page Function
-def get_user(username):
-    index = 0
-    for entry in Users:
-        if entry['Username'] == username:
-            return index
-        index += 1
-    return -1    
