@@ -39,7 +39,7 @@ if st.session_state.menu1 and status_button and not current_user == None:
     st.switch_page("pages/main.py")
 
 if not current_user == None:
-    st.sidebar.write(update_user_streak(st.session_state.current_passcode))
+    st.sidebar.write(update_user_streak(current_user['Passcode']))
     st.sidebar.write('Username:', current_user['Username'])
     st.sidebar.write('Focus Area:', current_user['Focus_Area'])
     st.sidebar.write('Number of Suggestions:', current_user['Suggestions'])
