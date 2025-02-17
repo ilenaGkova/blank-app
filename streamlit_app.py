@@ -64,7 +64,7 @@ time_available = st.number_input(question_time_available, min_value=min_limit+2,
 suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_limit)
 sign_in_button = st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions])
 
-def set_username (passcode):
+def set_username(passcode):
     st.session_state.current_passcode = passcode
 
 condition, index = get_status(st.session_state.current_passcode)
