@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 import random
 import pymongo
+import names
 import streamlit as st
+from random_word import RandomWords
 from Tables import Users
 
 @st.cache_resource
@@ -26,7 +28,7 @@ def validate_user(passcode):
 
 # Start Page Function
 def new_user(username, passcode, age,focus_area,time_available,suggestions):
-    if not username.strip() or passcode.strip() == "Please reload the page" or not age.strip() or not focus_area.strip() or time_available==0 or suggestions==0:
+    if not username.strip() or passcode == "Please reload the page" or not age.strip() or not focus_area.strip() or time_available==0 or suggestions==0:
         return False, "You need to fill in all fields provided to proceed. If Passcode not available reload the page."
     if User.find_one({"Username": username}): return False, "You need to enter a unique username"
     User.insert_one(
@@ -57,6 +59,17 @@ def generate_unique_passcode(max_attempts=100):
         attempt_count += 1
     return "Please reload the page"
 
+# Start Page Function
+def generate_animal_username(max_attempts=100):
+    attempt_count = 0
+    animals = ['Lion', 'Tiger', 'Elephant', 'Giraffe', 'Zebra', 'Panda', 'Koala', 'Kangaroo', 'Cheetah', 'Penguin']
+    adjectives = ['Fluffy', 'Mighty', 'Sneaky', 'Grumpy', 'Mysterious', 'Sleepy', 'Bold', 'Spiky', 'Shiny', 'Wild']
+    while attempt_count < max_attempts:
+        username = f"{random.choice(adjectives)}{random.choice(animals)}#{random.randint(1000, 9999)}"
+        if not User.find_one({"Username": username}): return username
+        attempt_count += 1
+    return "Please reload the page"
+        
 # Start/Status Page Function       
 def record_question(question,answer,passcode):
     Question.insert_one(
