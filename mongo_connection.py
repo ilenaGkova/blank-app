@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import random
 import pymongo
-import names
 import streamlit as st
-from random_word import RandomWords
 from Tables import Users
 
 @st.cache_resource
@@ -83,10 +81,11 @@ def record_question(question,answer,passcode):
 
 # Status/Main Page Function
 def get_status(passcode):
-    latest_status = Status.find_one({"passcode": passcode}, sort=[("Created_At", -1)])
+    latest_status = Status.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
     if not latest_status: return False, -1
     last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%d %H:%M:%S')
-    return (datetime.now() - last_status_time) <= timedelta(hours=48), latest_status["_id"]
+    now = datetime.now()
+    return ((now.date() - last_status_time.date()).days == 1), latest_status["_id"]
 
 # Status Page Function
 def record_status(passcode,stress_level):
@@ -105,34 +104,37 @@ def record_status(passcode,stress_level):
 
 # Status Page
 def update_user_streak(passcode):
-    if Record.find_one({"Passcode": passcode, "Action": "Days connected increased", "Created_At": {"$gte": datetime.combine(datetime.today(), datetime.min.time())}}):
-        return "You have already signed it today, your streak will not change"
+    last_record = Record.find_one({"Passcode": passcode, "Action": "Days connected increased"}, sort=[("Created_At", -1)])
+    if last_record:
+        last_time = datetime.strptime(last_record["Created_At"], "%Y-%m-%d %H:%M:%S")
+        now = datetime.now()
+        if last_time.date() == now.date():
+            return "You have already signed in today, your streak will not change."
+    if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
+    User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
+    streak_increased, index_status = get_status(passcode) 
+    message = None
+    streak_action = None
+    if streak_increased:
+        User.update_one({"Passcode": passcode}, {"$inc": {"Streak": 1}})
+        message =  "Your streak was increased."
+        streak_action = 'Streak increased'
     else:
-        if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
-        User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
-        streak_increased, index_status = get_status(passcode) 
-        message = None
-        streak_action = None
-        if streak_increased:
-            User.update_one({"Passcode": passcode}, {"$inc": {"Streak": 1}})
-            message =  "Your streak was increased."
-            streak_action = 'Streak increased'
-        else:
-            User.update_one({"Passcode": passcode},{"$set": {"Streak": 1}})
-            message =  "You did not check in less than 48 hours ago. Your streak was reset."
-            streak_action = 'Streak reset'
-        Record.insert_many(
-            [
-                {
-                    'Passcode': passcode,
-                    'Action': streak_action,
-                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                },
-                {
-                    'Passcode': passcode,
-                    'Action': 'Days connected increased',
-                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-            ]
-        )
-        return message
+        User.update_one({"Passcode": passcode},{"$set": {"Streak": 1}})
+        message =  "You did not check in less than 48 hours ago. Your streak was reset."
+        streak_action = 'Streak reset'
+    Record.insert_many(
+        [
+            {
+                'Passcode': passcode,
+                'Action': streak_action,
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            },
+            {
+                'Passcode': passcode,
+                'Action': 'Days connected increased',
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+    )
+    return message
