@@ -228,3 +228,41 @@ def get_recomendations(passcode):
             fails += 1
     Recommendation_Per_Person.insert_many(user_recommendations)
     return True, user_recommendations, 'Feel free to try any of the below.' 
+
+# Main Page Function
+def determine_level_change(passcode):
+    user = User.find_one({"Passcode": passcode})
+    x = 100 * user["Level"]
+    y = 50 - 5 * user["Level"]
+    move_up_threshold = x * user["Level"]
+    move_down_threshold = move_up_threshold * (1 - y / 100)
+    message_for_user = f"You have remained at level {user['Level']}."
+    message_for_system = f"User remained at level {user['Level']}."
+    if user["Score"] > move_up_threshold:
+        User.update_one({"Passcode": passcode}, {"$inc": {"Level": 1}})
+        message_for_user = f"You have moved up to level {user['Level']}."
+        message_for_system = f"User moved up to level {user['Level']}."
+    elif user["Score"] < move_down_threshold:
+        if user["Level"] != 1:
+            User.update_one({"Passcode": passcode}, {"$set": {"Level": user['Level'] - 1}})
+            message_for_user = f"You have been demoted to level {user['Level']}."
+            message_for_system = f"User has been demoted to level {user['Level']}."
+        else:
+            message_for_user = "You have been demoted but remained at level 1."
+            message_for_system = "User has been demoted but remained at level 1." 
+    User.update_one({"Passcode": passcode},{"$set": {"Score": 0}})
+    Record.insert_many(
+        [
+            {
+                'Passcode': passcode,
+                'Action': message_for_system,
+                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+            },
+            {
+                'Passcode': passcode,
+                'Action': 'Score Reset',
+                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+            }
+        ]
+    )
+    return message_for_user
