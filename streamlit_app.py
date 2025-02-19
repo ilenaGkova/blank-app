@@ -124,7 +124,7 @@ elif st.session_state.page == 2:
 
     # The Title
     if not user == None:
-        st.sidebar.write("Hello", user['Username']) 
+        st.title(f"Hello {user['Username']}") 
         """Please answer the questions below"""
     else:
         st.write('Something went wrong, user not registered.')
