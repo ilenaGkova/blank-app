@@ -17,7 +17,7 @@ Record = db["Record"]
 Recommendation_Per_Person = db["Recommendations_Per_Person"]
 Tag = db["Tag"]
 Recommendation = db["Recommendation"]
-Removed_Recomendations = db["Removed_Recomendations"]
+Removed_Recommendation = db["Removed_Recommendation"]
 Favorite = db["Favorite"]
 
 if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
@@ -50,7 +50,7 @@ def new_user(username, passcode, age,focus_area,time_available,suggestions):
             'Streak': 0,
             'Days_Summed': 0,    
             'Role': 'User',
-            'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
     return True, "You have been added to our service"
@@ -82,7 +82,7 @@ def record_question(question,answer,passcode):
             'Passcode': passcode,
             'Question': question,
             'Answer': answer,
-            'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
 
@@ -104,11 +104,11 @@ def record_status(passcode,stress_level):
             {
                 'Passcode': passcode,
                 'Stress_Level': stress_level,
-                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         )
         return True, "Status recorded"
-
+        
 # Status Page
 def update_user_streak(passcode):
     last_record = Record.find_one({"Passcode": passcode, "Action": "Days connected increased"}, sort=[("Created_At", -1)])
@@ -119,7 +119,7 @@ def update_user_streak(passcode):
             return "You have already signed in today, your streak will not change."
     if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
     User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
-    streak_increased, index_status = get_status(passcode) 
+    streak_increased, index = get_status(passcode) 
     message = None
     streak_action = None
     if streak_increased:
@@ -135,21 +135,21 @@ def update_user_streak(passcode):
             {
                 'Passcode': passcode,
                 'Action': streak_action,
-                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             },
             {
                 'Passcode': passcode,
                 'Action': 'Days connected increased',
-                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
     )
     return message
-
+    
 # Main page side side function
 def calculate_fail_count():
-    number_of_recomedations_in_total = Recommendations.count_documents({})  
-    last_entry_added = Recommendations.find_one({}, sort=[('ID', -1)])
+    number_of_recomedations_in_total = Recommendation.count_documents({})  
+    last_entry_added = Recommendation.find_one({}, sort=[('ID', -1)])
     max_ID = last_entry_added['ID'] 
     total_possible_IDs = max_ID 
     number_of_recommendation_after_removing_deleted_entries = total_possible_IDs - number_of_recomedations_in_total
@@ -158,17 +158,17 @@ def calculate_fail_count():
 # Main page side function
 def generate_valid_index():
     recommendation_fail = 0
-    potential_recommendation_index = random.randint(1, Recommendations.count_documents({}))
-    while Recommendations.find_one({"ID": potential_recommendation_index}) is None and recommendation_fail <= calculate_fail_count():
+    potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))
+    while Recommendation.find_one({"ID": potential_recommendation_index}) is None and recommendation_fail <= calculate_fail_count():
         recommendation_fail += 1
-        potential_recommendation_index = random.randint(1, Recommendations.count_documents({}))
+        potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))
     if recommendation_fail > calculate_fail_count():
-        potential_recommendation_index = Recommendations.find_one({}, sort=[('ID', -1)])['ID']
+        potential_recommendation_index = Recommendation.find_one({}, sort=[('ID', -1)])['ID']
     return potential_recommendation_index
 
 # Main Page Side Side Function
 def get_past_recomendations(passcode,days_behind):
-    current_datetime = datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
     start_date = current_datetime - timedelta(days=days_behind)
     start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -196,11 +196,15 @@ def do_the_tags_match(passcode, potential_recommendation_index):
 
 # Main Page Function
 def get_recomendations(passcode):
-    if Recommendations.count_documents({}) == 0: return False, None, 'There are no recommendations available for you.'
+    if Recommendation.count_documents({}) == 0: return False, None, 'There are no recommendations available for you.'
     user = User.find_one({"Passcode": passcode})
     if not user: return False, None, 'Something went wrong, user not registered'
     condition, index = get_status(passcode)
     if not condition: return False, None, 'Something went wrong, status was not found'
+    status = Status.find_one({"_id": index})
+    latest_recommendation = Recommendation_Per_Person.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
+    if latest_recommendation and status['Created_At'] == latest_recommendation['Status_Created_At']:
+        return True, list(Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At']}, sort=[("Pointer", 1)])), 'Feel free to try any of the below.' 
     user_recommendations = []
     suggestions = user['Suggestions']
     index = 1
@@ -211,14 +215,16 @@ def get_recomendations(passcode):
             has_the_user_seen_this_recomendation_before(passcode, potential_recommendation_index) and
             sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) < 2 and
             do_the_tags_match(passcode, potential_recommendation_index) and
-            Removed_Recomendations.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None
+            Removed_Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None
         ) or fails == 3:
             new_entry = [
                 {
                     'Passcode': passcode,
                     'ID': potential_recommendation_index,
+                    'Pointer': index,
                     'Outcome': 'Incomplete',
-                    'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'Status_Created_At': status['Created_At']
                 }
             ]
             user_recommendations.extend(new_entry)
@@ -230,21 +236,28 @@ def get_recomendations(passcode):
     return True, user_recommendations, 'Feel free to try any of the below.' 
 
 # Main Page Function
-def determine_level_change(passcode):
-    user = User.find_one({"Passcode": passcode})
+def get_limits(user):
     x = 100 * user["Level"]
     y = 50 - 5 * user["Level"]
     move_up_threshold = x * user["Level"]
     move_down_threshold = move_up_threshold * (1 - y / 100)
+    return move_up_threshold,move_down_threshold
+
+# Main Page Function
+def determine_level_change(passcode):
+    user = User.find_one({"Passcode": passcode})
+    move_up_threshold, move_down_threshold = get_limits(user)
     message_for_user = f"You have remained at level {user['Level']}."
     message_for_system = f"User remained at level {user['Level']}."
     if user["Score"] > move_up_threshold:
         User.update_one({"Passcode": passcode}, {"$inc": {"Level": 1}})
+        user = User.find_one({"Passcode": passcode})
         message_for_user = f"You have moved up to level {user['Level']}."
         message_for_system = f"User moved up to level {user['Level']}."
     elif user["Score"] < move_down_threshold:
         if user["Level"] != 1:
-            User.update_one({"Passcode": passcode}, {"$set": {"Level": user['Level'] - 1}})
+            User.update_one({"Passcode": passcode}, {"$inc": {"Level": -1}})
+            user = User.find_one({"Passcode": passcode})
             message_for_user = f"You have been demoted to level {user['Level']}."
             message_for_system = f"User has been demoted to level {user['Level']}."
         else:
@@ -256,12 +269,12 @@ def determine_level_change(passcode):
             {
                 'Passcode': passcode,
                 'Action': message_for_system,
-                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             },
             {
                 'Passcode': passcode,
                 'Action': 'Score Reset',
-                'Created_At': datetime.now().strftime("%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
         ]
     )
