@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 import random
 import pymongo
 import streamlit as st
@@ -18,7 +17,7 @@ Recommendation_Per_Person = db["Recommendations_Per_Person"]
 Tag = db["Tag"]
 Recommendation = db["Recommendation"]
 Removed_Recommendation = db["Removed_Recommendation"]
-Favorite = db["Favorite"]
+Favorite_Recommendation = db["Favorite"]
 
 if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
 if not Tag.find_one({"ID": 1}): Tag.insert_many(Tags)
@@ -89,10 +88,10 @@ def record_question(question,answer,passcode):
 # Status/Main Page Function
 def get_status(passcode):
     latest_status = Status.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
-    if not latest_status: return False, -1
-    last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S')
+    if not latest_status: return False, False, -1
+    last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%d %H:%M:%S')
     now = datetime.now()
-    return ((now.date() - last_status_time.date()).days == 1), latest_status["_id"]
+    return (now.date() == last_status_time.date()),((now.date() - last_status_time.date()).days == 1), latest_status["_id"]
 
 # Status Page Function
 def record_status(passcode,stress_level):
@@ -113,16 +112,16 @@ def record_status(passcode,stress_level):
 def update_user_streak(passcode):
     last_record = Record.find_one({"Passcode": passcode, "Action": "Days connected increased"}, sort=[("Created_At", -1)])
     if last_record:
-        last_time = datetime.strptime(last_record["Created_At"], "%Y-%m-%number_of_recommendation_after_removing_deleted_entries %H:%M:%S")
+        last_time = datetime.strptime(last_record["Created_At"], "%Y-%m-%d %H:%M:%S")
         now = datetime.now()
         if last_time.date() == now.date():
             return "You have already signed in today, your streak will not change."
     if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
     User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
-    streak_increased, index = get_status(passcode) 
+    today, yesterday, index = get_status(passcode) 
     message = None
     streak_action = None
-    if streak_increased:
+    if yesterday:
         User.update_one({"Passcode": passcode}, {"$inc": {"Streak": 1}})
         message =  "Your streak was increased."
         streak_action = 'Streak increased'
@@ -185,7 +184,7 @@ def has_the_user_seen_this_recomendation_before(passcode,potential_recommendatio
 def do_the_tags_match(passcode, potential_recommendation_index):
     tags = list(Tag.find({"ID": potential_recommendation_index}))
     user = User.find_one({"Passcode": passcode})
-    condition, index = get_status(passcode)
+    today,yesterday, index = get_status(passcode)
     status = Status.find_one({"_id": index})
     for tag in tags:
         if tag['Title_Of_Criteria'] == 'Age Variant' and tag['Category'] != user['Age']: return False
@@ -199,8 +198,8 @@ def get_recomendations(passcode):
     if Recommendation.count_documents({}) == 0: return False, None, 'There are no recommendations available for you.'
     user = User.find_one({"Passcode": passcode})
     if not user: return False, None, 'Something went wrong, user not registered'
-    condition, index = get_status(passcode)
-    if not condition: return False, None, 'Something went wrong, status was not found'
+    today,yesterday, index = get_status(passcode)
+    if not today: return False, None, 'Something went wrong, status was not found'
     status = Status.find_one({"_id": index})
     latest_recommendation = Recommendation_Per_Person.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
     if latest_recommendation and status['Created_At'] == latest_recommendation['Status_Created_At']:
@@ -243,6 +242,16 @@ def get_limits(user):
     move_down_threshold = move_up_threshold * (1 - y / 100)
     return move_up_threshold,move_down_threshold
 
+def get_record(passcode):
+    today = datetime.today().date()
+    week_start = today
+    if not today.weekday() == 0: week_start = today - timedelta(days=today.weekday())   
+    return Record.find_one({
+        "Passcode": passcode,
+        "Action": "Score Reset",
+        "Created_At": {"$gte": week_start.isoformat()}
+    }) is None
+
 # Main Page Function
 def determine_level_change(passcode):
     user = User.find_one({"Passcode": passcode})
@@ -279,3 +288,5 @@ def determine_level_change(passcode):
         ]
     )
     return message_for_user
+
+
