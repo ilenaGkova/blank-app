@@ -17,8 +17,7 @@ if "current_passcode" not in st.session_state:
 
 # Part B: The Imports
 
-from datetime import datetime
-from mongo_connection import generate_animal_username, generate_unique_passcode, get_status, init_connection, record_status, update_user_streak, validate_user, new_user, record_question
+from mongo_connection import determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_record, get_status, init_connection, record_status, update_user_streak, validate_user, new_user, record_question
 
 # Part C: The Functions
 
@@ -28,24 +27,19 @@ Status = db["Status"]
 User = db["User"]
 
 user = User.find_one({"Passcode": st.session_state.current_passcode})
+today,yesterday, index = get_status(st.session_state.current_passcode)
+
+def change_page(new_page): st.session_state.page = new_page
 
 def set_username(passcode):
     st.session_state.current_passcode = passcode
-    latest_status = Status.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
-    if not latest_status: 
-        st.session_state.page = 2
-    else:
-        last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%d %H:%M:%S')
-        now = datetime.now()
-        if (now.date() == last_status_time.date()):
-            st.session_state.page = 3
-        else:
-            st.session_state.page = 2
+    if index == -1: change_page(2)
+    elif today: change_page(3)
+    else: change_page(2)
 
 def log_in_user(passcode):
     move_on, message = validate_user(passcode)
-    if not move_on:
-        st.sidebar.write(message)
+    if not move_on: st.sidebar.write(message)
     else:
         record_question(question_passcode,passcode,passcode)
         set_username(passcode)
@@ -53,8 +47,7 @@ def log_in_user(passcode):
 
 def create_user(user_username,user_passcode,age,focus_area,time_available,suggestions):
     move_on, message = new_user(user_username,user_passcode,age,focus_area,time_available,suggestions)
-    if not move_on:
-        st.sidebar.write(message)
+    if not move_on: st.sidebar.write(message)
     else:
         record_question(question_username,user_username,passcode)
         record_question(question_passcode,user_passcode,passcode)
@@ -136,6 +129,47 @@ elif st.session_state.page == 2:
     stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
     status_button = st.button('Let us get started', on_click=make_status, args=[stress_level])
 
-elif st.session_state.page == 3:
+elif st.session_state.page >= 3:
 
-    st.write('The page is now', st.session_state.page)
+    # The Menu
+    if not user == None and not index == -1:
+        column1, column2, column3, column4, column5 = st.columns([1, 1, 1, 1, 1])
+        go_to_main_page = column1.button('Main Page', use_container_width=True, on_click=change_page, arg=[3])
+        see_user_profile_and_record = column2.button(user['Username'], use_container_width=True, on_click=change_page, arg=[4])
+        make_new_status = column3.button('Make New Status', use_container_width=True, on_click=change_page, arg=[2])
+        see_preferences = column4.button('Your Preferences', use_container_width=True, on_click=change_page, arg=[5])
+        log_out = column5.button('Log Out', use_container_width=True, on_click=change_page, arg=[1])
+
+    if st.session_state.page == 3:
+        
+        # The SideBar - User Level
+        if not user == None:
+            if get_record(st.session_state.current_passcode): 
+                st.sidebar.header(determine_level_change(st.session_state.current_passcode))
+                user = User.find_one({"Passcode": st.session_state.current_passcode})
+            st.sidebar.subheader('Level')
+            st.sidebar.header(user['Level'])
+            st.sidebar.subheader('Score')
+            st.sidebar.header(user['Score'])
+            up, down = get_limits(user)
+            if user['Score'] > up: st.sidebar.write(' Congratulations! You are above the promotion score to', user['Level'] + 1, '.')
+            elif user['score'] < down:
+                if user['Level'] > 1: st.sidebar.write('Be aware you need ', (down - user['Score']) + 1, ' points to be safe from demotion to level', user['Level'] - 1)
+                else: st.sidebar.write('Be aware you need ', (up - user['Score']) + 1, ' to move to lever 2.')
+            else: st.sidebar.write('You are safe from demotion to level', user['Level'] - 1, ' by ', (user['Score'] - down) - 1, ' points. To be promoted to level ', user['Level'] + 1, ' you need ', (up - user['Score']) + 1, ' more points.')
+            if user['Level'] > 1: st.sidebar.write('Users on level ', user['Level'], ' will advance to level ', user['Level'] + 1, ' with score more than ', up, '. Users with score lower than ', down, ' will be demoted to level ', user['Level'] - 1)
+            else: st.sidebar.write('Users on level ', user['Level'], ' will advance to level ', user['Level'] + 1, ' with score more than ', up, '.')
+            st.sidebar.write('Scores and levels get updated every Monday')
+        else:
+            st.sidebar.write('Something went wrong, user not registered.')
+
+        # The Title
+        if not user == None:
+            st.title(f"Hello {user['Username']}, we are happy to see you") 
+            """We hope wa can help you today"""
+        else:
+            st.write('Something went wrong, user not registered.')
+    
+    else:
+
+        st.write('You are on page ', st.session_state.page)
