@@ -119,9 +119,8 @@ def get_time():
     return f"{days}:{hours:02}:{minutes:02}:{seconds:02}"
 
 def completed_recommedation(index, status):
-    condition, number = add_points(index,st.session_state.current_passcode,status)
+    condition = add_points(index,st.session_state.current_passcode,status)
     if condition: change_page(3)
-    else: st.write (number)
 
 def hate_recommendation(index):
     condition = change_recommendation_preference_for_user(-1,st.session_state.current_passcode,index)
