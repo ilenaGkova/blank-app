@@ -45,7 +45,7 @@ def new_user(username, passcode, age,focus_area,time_available,suggestions):
             'Focus_Area': focus_area,
             'Suggestions': suggestions,
             'Time_Available': time_available,
-            'Level': 0,
+            'Level': 1,
             'Score': 0,
             'Streak': 0,
             'Days_Summed': 0,    
@@ -333,7 +333,7 @@ def add_points(index,passcode,status):
     recommendation_per_person_entry = Recommendation_Per_Person.find_one({"ID": index, "Passcode": passcode, "Status_Created_At": status})
     if not recommendation_per_person_entry: return False
     up, down = get_limits(user)
-    if user['score']+user['Level']*recommendation['Points'] <= up+50: User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level']*recommendation['Points']}})
+    if user['Score']+user['Level']*recommendation['Points'] <= up+50: User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level']*recommendation['Points']}})
     else: User.update_one({"Passcode": passcode}, {"$set": {"Score": up+50}})
     Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {"$set": {"Outcome": False, "Completed_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}})
     return True
