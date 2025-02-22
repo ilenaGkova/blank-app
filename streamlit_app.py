@@ -1,3 +1,5 @@
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 import streamlit as st
 
 # Configeration Command
@@ -15,15 +17,17 @@ if "page" not in st.session_state:
 if "current_passcode" not in st.session_state:
     st.session_state.current_passcode = 1
 
+if "open_recomendation" not in st.session_state:
+    st.session_state.open_recomendation = -1
+
 # Part B: The Imports
 
-from mongo_connection import determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_record, get_status, init_connection, record_status, update_user_streak, validate_user, new_user, record_question
+from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_recomendations, get_record, get_status, init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, record_question
 
 # Part C: The Functions
 
 client = init_connection()
 db = client.StressTest
-Status = db["Status"]
 User = db["User"]
 
 user = User.find_one({"Passcode": st.session_state.current_passcode})
@@ -44,7 +48,6 @@ def log_in_user(passcode):
         record_question(question_passcode,passcode,passcode)
         set_username(passcode)
     
-
 def create_user(user_username,user_passcode,age,focus_area,time_available,suggestions):
     move_on, message = new_user(user_username,user_passcode,age,focus_area,time_available,suggestions)
     if not move_on: st.sidebar.write(message)
@@ -56,17 +59,81 @@ def create_user(user_username,user_passcode,age,focus_area,time_available,sugges
         record_question(question_time_available,time_available,passcode)
         record_question(question_suggestions,suggestions,passcode)
         set_username(user_passcode)
-    
 
 def make_status(stress_level):
     if not user == None:
         move_on, message = record_status(st.session_state.current_passcode,stress_level)
-        if not move_on:
-            st.sidebar.write(message)
+        if not move_on: st.sidebar.write(message)
         else:
             record_question(question_stress_level,stress_level,st.session_state.current_passcode)
-            st.session_state.page = 3
+            change_page(3)
+
+def create_custom_slider(min_value, max_value, down, up, score):
+    fig = go.Figure()
+    fig.add_shape(type="line", x0=min_value, y0=0, x1=max_value, y1=0, line=dict(color="RoyalBlue", width=4))
+    fig.add_trace(go.Scatter(
+        x=[down], 
+        y=[0], 
+        mode="markers", 
+        marker=dict(size=15, color="red"), 
+        name="Demotion Point",
+        hovertemplate="Demotion Point: %{x}<extra></extra>"
+    ))
+    fig.add_trace(go.Scatter(
+        x=[up], 
+        y=[0], 
+        mode="markers", 
+        marker=dict(size=15, color="green"), 
+        name="Promotion Point",
+        hovertemplate="Promotion Point: %{x}<extra></extra>"
+    ))
+    fig.add_trace(go.Scatter(
+        x=[score], 
+        y=[0], 
+        mode="markers", 
+        marker=dict(size=15, color="RoyalBlue"), 
+        name="Your Score",
+        hovertemplate="Your Score: %{x}<extra></extra>"
+    ))
+    fig.update_layout(
+        height=150,
+        xaxis=dict(range=[min_value, max_value], title=None),
+        yaxis=dict(visible=False, range=[-1, 1]),
+        margin=dict(l=0, r=0, t=0, b=0),
+        plot_bgcolor="white",
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        hovermode="x"
+    )
+    return fig
+
+def get_time():
+    now = datetime.now()
+    days_until_sunday = (6 - now.weekday()) % 7  # Sunday is 6 in Python's weekday()
+    if days_until_sunday == 0: days_until_sunday = 7  # If today is Sunday, count until next Sunday
+    next_sunday_midnight = (now + timedelta(days=days_until_sunday)).replace(hour=23, minute=59, second=59, microsecond=999999)
+    time_remaining = next_sunday_midnight - now
+    days = time_remaining.days
+    hours, remainder = divmod(time_remaining.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{days}:{hours:02}:{minutes:02}:{seconds:02}"
+
+def completed_recommedation(index, status):
+    condition, number = add_points(index,st.session_state.current_passcode,status)
+    if condition: change_page(3)
+    else: st.write (number)
+
+def hate_recommendation(index):
+    condition = change_recommendation_preference_for_user(-1,st.session_state.current_passcode,index)
+    if condition: change_page(3)
+
+def love_recommendation(index):
+    condition =change_recommendation_preference_for_user(1,st.session_state.current_passcode,index)
+    if condition: change_page(3)
         
+def open_recommendation(index): 
+    st.session_state.open_recomendation = index
+    st.session_state.page = 7
 
 # Part D: The layouts
 
@@ -76,7 +143,7 @@ if st.session_state.page == 1:
     st.sidebar.write ('Already have an account? Sign it!')
     question_passcode = "What's your passcode?"
     passcode = st.sidebar.text_input(question_passcode, key="passcode")
-    log_in_button = st.sidebar.button('Log in', on_click=log_in_user, args=[passcode])
+    st.sidebar.button('Log in', on_click=log_in_user, args=[passcode], key="sign_in_user")
 
     # The Title
     """
@@ -98,7 +165,7 @@ if st.session_state.page == 1:
     focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
     time_available = st.number_input(question_time_available, min_value=min_limit+2, max_value=2*max_limit)
     suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_limit)
-    sign_in_button = st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions])
+    st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions], key="create_user")
 
 elif st.session_state.page == 2:
 
@@ -112,64 +179,92 @@ elif st.session_state.page == 2:
         st.sidebar.write('Days Connected:', user['Days_Summed'])
         st.sidebar.write('Streak:', user['Streak'])
         st.sidebar.write("Don't show me the same saggestion for ", user['Repeat_Preference'], ' day(s) after') 
-    else:
-        st.sidebar.write('Something went wrong, user not registered.')
+        if today:
+            st.sidebar.button('Skip', on_click=change_page, args=[3], key="skip")
+    else: st.sidebar.write('Something went wrong, user not registered.')
 
     # The Title
     if not user == None:
         st.title(f"Hello {user['Username']}") 
         """Please answer the questions below"""
-    else:
-        st.write('Something went wrong, user not registered.')
+    else: st.write('Something went wrong, user not registered.')
 
     # The Daily Question Section
     min_limit = 1
     max_limit = 10
     question_stress_level = "How would you rate your stress level?"
     stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
-    status_button = st.button('Let us get started', on_click=make_status, args=[stress_level])
+    st.button('Let us get started', on_click=make_status, args=[stress_level], key="make_status")
 
 elif st.session_state.page >= 3:
 
     # The Menu
-    if not user == None and not index == -1:
-        column1, column2, column3, column4, column5 = st.columns([1, 1, 1, 1, 1])
-        go_to_main_page = column1.button('Main Page', use_container_width=True, on_click=change_page, arg=[3])
-        see_user_profile_and_record = column2.button(user['Username'], use_container_width=True, on_click=change_page, arg=[4])
-        make_new_status = column3.button('Make New Status', use_container_width=True, on_click=change_page, arg=[2])
-        see_preferences = column4.button('Your Preferences', use_container_width=True, on_click=change_page, arg=[5])
-        log_out = column5.button('Log Out', use_container_width=True, on_click=change_page, arg=[1])
+    st.sidebar.markdown(f"<div style='text-align: center;font-size: 20px; font-weight: bold;'>Navigation Menu</div>", unsafe_allow_html=True)
+    st.sidebar.write("")
+    if not user == None and not index == -1 and user['Role'] == 'User':
+        st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3], key="main_page")
+        st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True, on_click=change_page, args=[4], key="profile_page")
+        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page, args=[2], key="status_page")
+        st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True, on_click=change_page, args=[5], key="record_page")
+        st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1], key="log_out")
+    elif not user == None and not index == -1:
+        st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3], key="main_page_admin")
+        st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True, on_click=change_page, args=[4], key="profile_page_admin")
+        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page, args=[2], key="status_page_admin")
+        st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True, on_click=change_page, args=[5], key="record_page_admin")
+        st.sidebar.button('For Admin', icon=":material/settings:", use_container_width=True, on_click=change_page, args=[6], key="admin_page_admin")
+        st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1], key="log_out_admin")
+    elif user == None: st.write('Something went wrong, user not registered.')
+    else: st.write('Something went wrong, status not found.')
 
     if st.session_state.page == 3:
-        
-        # The SideBar - User Level
-        if not user == None:
-            if get_record(st.session_state.current_passcode): 
-                st.sidebar.header(determine_level_change(st.session_state.current_passcode))
-                user = User.find_one({"Passcode": st.session_state.current_passcode})
-            st.sidebar.subheader('Level')
-            st.sidebar.header(user['Level'])
-            st.sidebar.subheader('Score')
-            st.sidebar.header(user['Score'])
-            up, down = get_limits(user)
-            if user['Score'] > up: st.sidebar.write(' Congratulations! You are above the promotion score to', user['Level'] + 1, '.')
-            elif user['score'] < down:
-                if user['Level'] > 1: st.sidebar.write('Be aware you need ', (down - user['Score']) + 1, ' points to be safe from demotion to level', user['Level'] - 1)
-                else: st.sidebar.write('Be aware you need ', (up - user['Score']) + 1, ' to move to lever 2.')
-            else: st.sidebar.write('You are safe from demotion to level', user['Level'] - 1, ' by ', (user['Score'] - down) - 1, ' points. To be promoted to level ', user['Level'] + 1, ' you need ', (up - user['Score']) + 1, ' more points.')
-            if user['Level'] > 1: st.sidebar.write('Users on level ', user['Level'], ' will advance to level ', user['Level'] + 1, ' with score more than ', up, '. Users with score lower than ', down, ' will be demoted to level ', user['Level'] - 1)
-            else: st.sidebar.write('Users on level ', user['Level'], ' will advance to level ', user['Level'] + 1, ' with score more than ', up, '.')
-            st.sidebar.write('Scores and levels get updated every Monday')
-        else:
-            st.sidebar.write('Something went wrong, user not registered.')
 
         # The Title
+        if not user == None: st.header(f"Hello {user['Username']}, we are happy to see you")
+        else: st.write('Something went wrong, user not registered.')
+
+        # The Score
         if not user == None:
-            st.title(f"Hello {user['Username']}, we are happy to see you") 
-            """We hope wa can help you today"""
-        else:
-            st.write('Something went wrong, user not registered.')
-    
+            st.subheader('Your Statistics')
+            with st.container(border=True):
+                if get_record(st.session_state.current_passcode): 
+                    st.header(determine_level_change(st.session_state.current_passcode))
+                    user = User.find_one({"Passcode": st.session_state.current_passcode})
+                column1, column2 = st.columns([0.2, 2])
+                with column1: st.markdown(f"<div style='text-align: center;font-size: 50px;font-weight: bold;'>{user['Level']}</div>", unsafe_allow_html=True)
+                with column2: 
+                    up, down = get_limits(user)
+                    fig = create_custom_slider(0, up+50, down, up, user['Score'])
+                    st.plotly_chart(fig, use_container_width=True)
+            st.markdown(f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>", unsafe_allow_html=True)
+        else: st.write('Something went wrong, user not registered.')
+
+        # The Recommendations
+        st.subheader('Our recommendations for you today')
+        condition, user_recommendations, message = get_recomendations(st.session_state.current_passcode)
+        st.write(message)
+        if condition:
+            condition, user_recommendations = make_recommendation_table(user_recommendations,st.session_state.current_passcode)
+            if condition:
+                for entry in user_recommendations:
+                    with st.container(border=True):
+                        column13, column23, column33, column53, column63 = st.columns([0.2, 2, 1, 0.5, 0.5])
+                        with column13: st.markdown(f"<div style='text-align: center;'>{entry['Pointer']}</div>", unsafe_allow_html=True)
+                        with column23:
+                            st.markdown(f"<div style='text-align: center; font-weight: bold;'>{entry['Title']}</div>", unsafe_allow_html=True)
+                            if len(entry['Description']) > 150: st.markdown("<div style='text-align: center;'>Open Recommendation to see description</div>", unsafe_allow_html=True)
+                            else: st.markdown(f"<div style='text-align: center;'>{entry['Description']}</div>", unsafe_allow_html=True)
+                        with column33:
+                            if entry['Outcome']: st.markdown(f"<div style='text-align: center;'>Complete this and gain {user['Level']*entry['Points']}!</div>", unsafe_allow_html=True)
+                            else: st.markdown(f"<div style='text-align: center;'>Recommendation completed {entry['Completed_At']}!</div>", unsafe_allow_html=True)  
+                        with column53:
+                            if entry['Preference'] is False or entry['Preference'] is None: st.button("", icon=":material/favorite:", use_container_width=True, on_click=love_recommendation, args=[entry['ID']], key=f"hate_{entry['Pointer']}")  
+                            if entry['Preference'] is True or entry['Preference'] is None: st.button("", icon=":material/heart_broken:", use_container_width=True, on_click=hate_recommendation, args=[entry['ID']], key=f"love_{entry['Pointer']}")
+                        with column63:
+                            if entry['Outcome']: st.button("", icon=":material/done_outline:", use_container_width=True, on_click=completed_recommedation, args=[entry['ID'],entry['Status_Created_At']], key=f"complete_{entry['Pointer']}")
+                            st.button("", icon=":material/open_in_full:", use_container_width=True, on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
+            else: st.write('Something went wrong, recommendations not found.')
+
     else:
 
         st.write('You are on page ', st.session_state.page)
