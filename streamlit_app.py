@@ -219,7 +219,7 @@ elif st.session_state.page >= 3:
     if st.session_state.page == 3:
 
         # The Title
-        if not user == None: st.header(f"Hello {user['Username']}, we are happy to see you")
+        if not user == None: st.markdown(f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>Hello {user['Username']}, we are happy to see you!</div>", unsafe_allow_html=True)
         else: st.write('Something went wrong, user not registered.')
 
         # The Score
@@ -230,7 +230,7 @@ elif st.session_state.page >= 3:
                     st.header(determine_level_change(st.session_state.current_passcode))
                     user = User.find_one({"Passcode": st.session_state.current_passcode})
                 column1, column2 = st.columns([0.2, 2])
-                with column1: st.markdown(f"<div style='text-align: center;font-size: 50px;font-weight: bold;'>{user['Level']}</div>", unsafe_allow_html=True)
+                with column1: st.markdown(f"<div style='text-align: center;font-size: 90px;font-weight: bold;'>{user['Level']}</div>", unsafe_allow_html=True)
                 with column2: 
                     up, down = get_limits(user)
                     fig = create_custom_slider(0, up+50, down, up, user['Score'])
