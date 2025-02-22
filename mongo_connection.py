@@ -128,8 +128,10 @@ def update_user_streak(passcode):
         streak_action = 'Streak increased'
     else:
         User.update_one({"Passcode": passcode},{"$set": {"Streak": 1}})
-        message =  "You did not check in less than 48 hours ago. Your streak was reset."
+        if index == -1: message =  "Wellcome to your first Status."
+        else: message =  "You did not check in less than 48 hours ago. Your streak was reset."
         streak_action = 'Streak reset'
+        
     Record.insert_many(
         [
             {
@@ -236,6 +238,7 @@ def get_recomendations(passcode):
     Recommendation_Per_Person.insert_many(user_recommendations)
     return True, user_recommendations, 'Feel free to try any of the below.' 
 
+# Main page function
 def make_recommendation_table(recommendations,passcode):
     Recommendation_table = []
     for entry in recommendations:
@@ -277,6 +280,7 @@ def get_limits(user):
     move_down_threshold = move_up_threshold * (1 - y / 100)
     return move_up_threshold,move_down_threshold
 
+# Main page function
 def get_record(passcode):
     today = datetime.today().date()
     week_start = today
@@ -320,6 +324,7 @@ def determine_level_change(passcode):
     )
     return message_for_user
 
+# Main page function
 def add_points(index,passcode,status):
     user = User.find_one({"Passcode": passcode})
     if not user: return False
@@ -333,6 +338,7 @@ def add_points(index,passcode,status):
     Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {"$set": {"Outcome": False, "Completed_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}})
     return True
 
+# Main page function
 def change_recommendation_preference_for_user(preference,passcode,index):
     if User.count_documents({"Passcode": passcode}) == 0: return False
     if Recommendation.count_documents({"ID": index}) == 0: return False
@@ -346,4 +352,3 @@ def change_recommendation_preference_for_user(preference,passcode,index):
     if preference == -1: Removed_Recommendation.insert_one(new_entry)
     else: Favorite_Recommendation.insert_one(new_entry)
     return True
-
