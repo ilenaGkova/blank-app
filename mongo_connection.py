@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import random
 import pymongo
 import streamlit as st
@@ -167,7 +168,7 @@ def generate_valid_index():
 
 # Main Page Side Side Function
 def get_past_recomendations(passcode,days_behind):
-    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_datetime = datetime.now()
     end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
     start_date = current_datetime - timedelta(days=days_behind)
     start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -187,7 +188,7 @@ def do_the_tags_match(passcode, potential_recommendation_index):
     today,yesterday, index = get_status(passcode)
     status = Status.find_one({"_id": index})
     for tag in tags:
-        if tag['Title_Of_Criteria'] == 'Age Variant' and tag['Category'] != user['Age']: return False
+        if tag['Title_Of_Criteria'] == 'Age Variant' and tag['Category'] != user['Age_Category']: return False
         if tag['Title_Of_Criteria'] == 'Focus Area' and tag['Category'] != user['Focus_Area']: return False
         if tag['Title_Of_Criteria'] == 'Stress Level' and tag['Category'] != status['Stress_Level']: return False
         if tag['Title_Of_Criteria'] == 'Time Available' and tag['Category'] != user['Time_Available']: return False
@@ -212,7 +213,7 @@ def get_recomendations(passcode):
         potential_recommendation_index = generate_valid_index()
         if (
             has_the_user_seen_this_recomendation_before(passcode, potential_recommendation_index) and
-            sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) < 2 and
+            sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) == 0 and
             do_the_tags_match(passcode, potential_recommendation_index) and
             Removed_Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None
         ) or fails == 3:
@@ -221,9 +222,10 @@ def get_recomendations(passcode):
                     'Passcode': passcode,
                     'ID': potential_recommendation_index,
                     'Pointer': index,
-                    'Outcome': 'Incomplete',
+                    'Outcome': True,
                     'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'Status_Created_At': status['Created_At']
+                    'Status_Created_At': status['Created_At'],
+                    'Completed_At': None
                 }
             ]
             user_recommendations.extend(new_entry)
@@ -233,6 +235,39 @@ def get_recomendations(passcode):
             fails += 1
     Recommendation_Per_Person.insert_many(user_recommendations)
     return True, user_recommendations, 'Feel free to try any of the below.' 
+
+def make_recommendation_table(recommendations,passcode):
+    Recommendation_table = []
+    for entry in recommendations:
+        this_recommendation = Recommendation.find_one({"ID": entry['ID']})
+        if not this_recommendation: return False, None
+        completed_duration = None
+        if entry['Completed_At'] is not None:
+            completed_at_dt = datetime.strptime(entry['Completed_At'], "%Y-%m-%d %H:%M:%S")  
+            time_diff = datetime.now() - completed_at_dt  
+            days = time_diff.days
+            hours, remainder = divmod(time_diff.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            completed_duration = f"{days} days, {hours} hours ago" if days > 0 else f"{hours} hours, {minutes} minutes and {seconds} seconds ago"
+        new_entry = [
+            {
+                'ID': entry['ID'],
+                'Pointer': entry['Pointer'],
+                'Outcome': entry['Outcome'],
+                'Status_Created_At': entry['Status_Created_At'],
+                'Completed_At': completed_duration, 
+                'Title': this_recommendation['Title'],
+                'Description': this_recommendation['Description'],
+                'Points': this_recommendation['Points'],
+                'Preference': (
+                    False if Removed_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
+                    else True if Favorite_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
+                    else None
+                )
+            }
+        ]
+        Recommendation_table.extend(new_entry)
+    return True, Recommendation_table
 
 # Main Page Function
 def get_limits(user):
@@ -246,11 +281,7 @@ def get_record(passcode):
     today = datetime.today().date()
     week_start = today
     if not today.weekday() == 0: week_start = today - timedelta(days=today.weekday())   
-    return Record.find_one({
-        "Passcode": passcode,
-        "Action": "Score Reset",
-        "Created_At": {"$gte": week_start.isoformat()}
-    }) is None
+    return Record.find_one({"Passcode": passcode, "Action": "Score Reset", "Created_At": {"$gte": week_start.isoformat()}}) is None
 
 # Main Page Function
 def determine_level_change(passcode):
@@ -262,16 +293,16 @@ def determine_level_change(passcode):
         User.update_one({"Passcode": passcode}, {"$inc": {"Level": 1}})
         user = User.find_one({"Passcode": passcode})
         message_for_user = f"You have moved up to level {user['Level']}."
-        message_for_system = f"User moved up to level {user['Level']}."
+        message_for_system = f"User moved up to level {user['Level']}"
     elif user["Score"] < move_down_threshold:
         if user["Level"] != 1:
             User.update_one({"Passcode": passcode}, {"$inc": {"Level": -1}})
             user = User.find_one({"Passcode": passcode})
             message_for_user = f"You have been demoted to level {user['Level']}."
-            message_for_system = f"User has been demoted to level {user['Level']}."
+            message_for_system = f"User has been demoted to level {user['Level']}"
         else:
             message_for_user = "You have been demoted but remained at level 1."
-            message_for_system = "User has been demoted but remained at level 1." 
+            message_for_system = "User was demoted but remained at level 1" 
     User.update_one({"Passcode": passcode},{"$set": {"Score": 0}})
     Record.insert_many(
         [
@@ -289,4 +320,30 @@ def determine_level_change(passcode):
     )
     return message_for_user
 
+def add_points(index,passcode,status):
+    user = User.find_one({"Passcode": passcode})
+    if not user: return False
+    recommendation = Recommendation.find_one({"ID": index})
+    if not recommendation: return False
+    recommendation_per_person_entry = Recommendation_Per_Person.find_one({"ID": index, "Passcode": passcode, "Status_Created_At": status})
+    if not recommendation_per_person_entry: return False
+    up, down = get_limits(user)
+    if user['score']+user['Level']*recommendation['Points'] <= up+50: User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level']*recommendation['Points']}})
+    else: User.update_one({"Passcode": passcode}, {"$set": {"Score": up+50}})
+    Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {"$set": {"Outcome": False, "Completed_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}})
+    return True
+
+def change_recommendation_preference_for_user(preference,passcode,index):
+    if User.count_documents({"Passcode": passcode}) == 0: return False
+    if Recommendation.count_documents({"ID": index}) == 0: return False
+    Favorite_Recommendation.delete_one({"ID": index, "Passcode": passcode})
+    Removed_Recommendation.delete_one({"ID": index, "Passcode": passcode})
+    new_entry = {
+        'Passcode': passcode,
+        'ID': index,
+        'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    if preference == -1: Removed_Recommendation.insert_one(new_entry)
+    else: Favorite_Recommendation.insert_one(new_entry)
+    return True
 
