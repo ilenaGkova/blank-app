@@ -126,13 +126,13 @@ def create_custom_slider(min_value, max_value, down, up, score):
 
 def get_time():
     now = datetime.now()
-    days_until_sunday = (6 - now.weekday()) % 7 
+    days_until_sunday = (6 - now.weekday()) % 7
     next_sunday_midnight = (now + timedelta(days=days_until_sunday)).replace(hour=23, minute=59, second=59, microsecond=999999)
     time_remaining = next_sunday_midnight - now
     days = time_remaining.days
     hours, remainder = divmod(time_remaining.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    return f"{days}:{hours:02}:{minutes:02}:{seconds:02}"
+    return f"{days_until_sunday}:{hours:02}:{minutes:02}:{seconds:02}"
 
 def completed_recommedation(index, status):
     condition = add_points(index,st.session_state.current_passcode,status)
