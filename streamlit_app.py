@@ -228,7 +228,7 @@ elif st.session_state.page >= 3:
         st.sidebar.button('For Admin', icon=":material/settings:", use_container_width=True, on_click=change_page, args=[6], key="admin_page_admin")
         st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1], key="log_out_admin")
     elif user == None: st.write('Something went wrong, user not registered.')
-    else: st.write('Something went wrong, status not found.')
+    else: st.sidebar.write('Something went wrong, status not found.')
 
     if st.session_state.page == 3:
 
@@ -277,6 +277,65 @@ elif st.session_state.page >= 3:
                             if entry['Outcome']: st.button("", icon=":material/done_outline:", use_container_width=True, on_click=completed_recommedation, args=[entry['ID'],entry['Status_Created_At']], key=f"complete_{entry['Pointer']}")
                             st.button("", icon=":material/open_in_full:", use_container_width=True, on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
             else: st.write('Something went wrong, recommendations not found.')
+
+    elif st.session_state.page == 7:
+
+        if not user == None:
+
+            # The Title
+            st.title('Welcome to our application')
+            st.write('Here’s a quick guide on how to navigate the application')
+
+            # Header Number 1
+            with st.container(border=True):
+                st.header('Signing In')
+                st.write('To sign in, enter your unique 10-digit code ', user['Passcode'], ' into the Passcode field on the login section on the initial page')
+
+            # Header Number 2
+            with st.container(border=True):
+                st.header('Daily Stress Questionnaire')
+                st.write('Every day, you’ll need to fill out a questionnaire to rate your daily stress.')
+                st.write('You only need to complete this once per day, not every time you log in.')
+
+            # Header Number 3
+            with st.container(border=True):
+                st.header('Recommendations')
+                st.write('Based on your Stress Questionnaire answers and the number of suggestions you choose, you will receive recommendations on the home page.')
+                st.write('To complete a recommendation and earn points click the button with the :material/done_outline: icon next to it')
+                st.write('To mark your favorites click the button with the :material/favorite: icon next to the recommendation you like')
+                st.write('To avoid future suggestions click the button with the :material/heart_broken: icon next to the recommendation you don’t want to see again')
+                st.write('To see a recommendation in detail click the :material/open_in_full: button next to it')
+                st.write('If you want new recommendations create a New Status by clicking ‘Make New Status’ in the navigation menu and answer the Stress Questionnaire again')
+
+            # Header Number 4
+            with st.container(border=True):
+                st.header('Scores and Levels')
+                st.write('You earn points by completing recommendations. Every Monday, your score will determine:')
+                st.write('Whether you move up to a new level.')
+                st.write('Whether you stay at your current level.')
+                st.write('Whether you are demoted to a lower level.')
+                st.write('You can track your progress and check when the next level assessment is on the home page. After each assessment your score will reset to 0.')
+                st.write('Your level affects how many points you earn per recommendation and the scores needed to advance or get demoted.')
+
+            # Header Number 5
+            with st.container(border=True):
+                st.header('Your Preferences')
+                st.write('Go to the ‘Profile and Preferences’ page in the navigation menu to: ')
+                st.write('View your profile and preferences.')
+                st.write('See the recommendations you have marked as favorites or not favorites.')
+                st.write('Adjust your preferences to filter the types of recommendations you want to see.')
+
+            # Header Number 6
+            with st.container(border=True):
+                st.header('Your Record')
+                st.write('Click the ‘See Record’ button in the navigation menu to:')
+                st.write('View your application history.')
+                st.write('See the answers you’ve submitted and all previous questionnaire responses.')
+                st.write('Filter by categories to track specific actions you’ve taken in the app.')
+
+            st.write('We hope this helps you navigate the app with ease! Let us know if you need further assistance.')
+
+        else: st.write('Something went wrong, user not found.')
 
     else:
 
