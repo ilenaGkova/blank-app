@@ -48,8 +48,8 @@ def set_username(passcode):
     elif today: change_page(3)
     else: change_page(2)
 
-def log_in_user(passcode):
-    st.sidebar.write('the passord is', passcode)
+def log_in_user():
+    passcode = st.session_state.passcode
     move_on, message = validate_user(passcode)
     if not move_on: st.sidebar.write(message)
     else:
@@ -130,13 +130,9 @@ def completed_recommedation(index, status):
     condition = add_points(index,st.session_state.current_passcode,status)
     if condition: change_page(3)
 
-def hate_recommendation(index):
-    condition = change_recommendation_preference_for_user(-1,st.session_state.current_passcode,index)
-    if condition: change_page(3)
-
-def love_recommendation(index):
-    condition =change_recommendation_preference_for_user(1,st.session_state.current_passcode,index)
-    if condition: change_page(3)
+def change_recommendation_status(preference,index):
+    condition = change_recommendation_preference_for_user(preference,st.session_state.current_passcode,index)
+    if condition: change_page(st.session_state.page)
         
 def open_recommendation(index): 
     st.session_state.open_recomendation = index
@@ -150,7 +146,7 @@ if st.session_state.page == 1:
     st.sidebar.write ('Already have an account? Sign it!')
     question_passcode = "What's your passcode?"
     passcode = st.sidebar.text_input(question_passcode, key="passcode")
-    st.sidebar.button('Log in', on_click=log_in_user, args=[passcode], key="sign_in_user")
+    st.sidebar.button('Log in', on_click=log_in_user, key="sign_in_user")
 
     # The Title
     """
@@ -265,8 +261,8 @@ elif st.session_state.page >= 3:
                             if entry['Outcome']: st.markdown(f"<div style='text-align: center;'>Complete this and gain {user['Level']*entry['Points']}!</div>", unsafe_allow_html=True)
                             else: st.markdown(f"<div style='text-align: center;'>Recommendation completed {entry['Completed_At']}!</div>", unsafe_allow_html=True)  
                         with column53:
-                            if entry['Preference'] is False or entry['Preference'] is None: st.button("", icon=":material/favorite:", use_container_width=True, on_click=love_recommendation, args=[entry['ID']], key=f"hate_{entry['Pointer']}")  
-                            if entry['Preference'] is True or entry['Preference'] is None: st.button("", icon=":material/heart_broken:", use_container_width=True, on_click=hate_recommendation, args=[entry['ID']], key=f"love_{entry['Pointer']}")
+                            if entry['Preference'] is False or entry['Preference'] is None: st.button("", icon=":material/favorite:", use_container_width=True, on_click=change_recommendation_status, args=[1, entry['ID']], key=f"hate_{entry['Pointer']}")  
+                            if entry['Preference'] is True or entry['Preference'] is None: st.button("", icon=":material/heart_broken:", use_container_width=True, on_click=change_recommendation_status, args=[-1, entry['ID']], key=f"love_{entry['Pointer']}")
                         with column63:
                             if entry['Outcome']: st.button("", icon=":material/done_outline:", use_container_width=True, on_click=completed_recommedation, args=[entry['ID'],entry['Status_Created_At']], key=f"complete_{entry['Pointer']}")
                             st.button("", icon=":material/open_in_full:", use_container_width=True, on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
