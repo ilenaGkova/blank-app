@@ -45,13 +45,13 @@ cookies = controller.getAll()
 st.session_state.previous_passcode = cookies.get("previous_user_passcode", "")
 
 user = User.find_one({"Passcode": st.session_state.current_passcode})
-today,yesterday, index = get_status(st.session_state.current_passcode)
+today,yesterday,index = get_status(st.session_state.current_passcode)
 
 def change_page(new_page): st.session_state.page = new_page
 
 def set_username(passcode):
     st.session_state.current_passcode = passcode
-    today,yesterday, index = get_status(st.session_state.current_passcode)
+    today,yesterday,index = get_status(st.session_state.current_passcode)
     if index == -1: change_page(2)
     elif today: change_page(3)
     else: change_page(2)
