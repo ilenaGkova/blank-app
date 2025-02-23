@@ -126,8 +126,7 @@ def create_custom_slider(min_value, max_value, down, up, score):
 
 def get_time():
     now = datetime.now()
-    days_until_sunday = (6 - now.weekday()) % 7  # Sunday is 6 in Python's weekday()
-    if days_until_sunday == 0: days_until_sunday = 7  # If today is Sunday, count until next Sunday
+    days_until_sunday = (6 - now.weekday()) % 7 
     next_sunday_midnight = (now + timedelta(days=days_until_sunday)).replace(hour=23, minute=59, second=59, microsecond=999999)
     time_remaining = next_sunday_midnight - now
     days = time_remaining.days
