@@ -1,5 +1,3 @@
-import plotly.graph_objects as go
-from datetime import datetime, timedelta
 import streamlit as st
 
 # Configeration Command
@@ -20,8 +18,14 @@ if "current_passcode" not in st.session_state:
 if "open_recomendation" not in st.session_state:
     st.session_state.open_recomendation = -1
 
+if 'previous_passcode' not in st.session_state:
+    st.session_state.previous_passcode = ''
+
 # Part B: The Imports
 
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+from streamlit_cookies_controller import CookieController
 from Tables import Recommendations, Tags, Users
 from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_recomendations, get_record, get_status, init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, record_question
 
@@ -35,6 +39,10 @@ Recommendation = db["Recommendation"]
 if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
 if not Tag.find_one({"ID": 1}): Tag.insert_many(Tags)
 if not Recommendation.find_one({"ID": 1}): Recommendation.insert_many(Recommendations)
+
+controller = CookieController()
+cookies = controller.getAll()
+st.session_state.previous_passcode = cookies.get("previous_user_passcode", "")
 
 user = User.find_one({"Passcode": st.session_state.current_passcode})
 today,yesterday, index = get_status(st.session_state.current_passcode)
@@ -52,6 +60,7 @@ def log_in_user(passcode):
     move_on, message = validate_user(passcode)
     if not move_on: st.sidebar.write(message)
     else:
+        controller.set("previous_user_passcode", str(passcode))
         record_question(question_passcode,passcode,passcode)
         set_username(passcode)
     
@@ -59,6 +68,7 @@ def create_user(user_username,user_passcode,age,focus_area,time_available,sugges
     move_on, message = new_user(user_username,user_passcode,age,focus_area,time_available,suggestions)
     if not move_on: st.sidebar.write(message)
     else:
+        controller.set("previous_user_passcode", str(user_passcode))
         record_question(question_username,user_username,passcode)
         record_question(question_passcode,user_passcode,passcode)
         record_question(question_age,age,passcode)
@@ -144,7 +154,7 @@ if st.session_state.page == 1:
     # The SideBar - User Signs In With Passcode
     st.sidebar.write ('Already have an account? Sign it!')
     question_passcode = "What's your passcode?"
-    passcode = st.sidebar.text_input(question_passcode, key="passcode")
+    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=st.session_state.previous_passcode)
     st.sidebar.button('Log in', on_click=log_in_user, args=[passcode], key="sign_in_user")
 
     # The Title
