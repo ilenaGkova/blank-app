@@ -1,3 +1,4 @@
 streamlit
 pymongo[srv]==4.0.0
 plotly==5.22.0
+streamlit-cookies-controller==0.2.0
