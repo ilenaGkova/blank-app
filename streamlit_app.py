@@ -48,8 +48,7 @@ def set_username(passcode):
     elif today: change_page(3)
     else: change_page(2)
 
-def log_in_user():
-    passcode = st.session_state.passcode
+def log_in_user(passcode):
     move_on, message = validate_user(passcode)
     if not move_on: st.sidebar.write(message)
     else:
@@ -146,7 +145,7 @@ if st.session_state.page == 1:
     st.sidebar.write ('Already have an account? Sign it!')
     question_passcode = "What's your passcode?"
     passcode = st.sidebar.text_input(question_passcode, key="passcode")
-    st.sidebar.button('Log in', on_click=log_in_user, key="sign_in_user")
+    st.sidebar.button('Log in', on_click=log_in_user, args=[passcode], key="sign_in_user")
 
     # The Title
     """
