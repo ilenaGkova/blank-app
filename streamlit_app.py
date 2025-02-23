@@ -49,6 +49,7 @@ def set_username(passcode):
     else: change_page(2)
 
 def log_in_user(passcode):
+    st.sidebar.write('the passord is', passcode)
     move_on, message = validate_user(passcode)
     if not move_on: st.sidebar.write(message)
     else:
