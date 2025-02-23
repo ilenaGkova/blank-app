@@ -22,6 +22,7 @@ if "open_recomendation" not in st.session_state:
 
 # Part B: The Imports
 
+from Tables import Recommendations, Tags, Users
 from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_recomendations, get_record, get_status, init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, record_question
 
 # Part C: The Functions
@@ -29,6 +30,11 @@ from mongo_connection import add_points, change_recommendation_preference_for_us
 client = init_connection()
 db = client.StressTest
 User = db["User"]
+Tag = db["Tag"]
+Recommendation = db["Recommendation"]
+if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
+if not Tag.find_one({"ID": 1}): Tag.insert_many(Tags)
+if not Recommendation.find_one({"ID": 1}): Recommendation.insert_many(Recommendations)
 
 user = User.find_one({"Passcode": st.session_state.current_passcode})
 today,yesterday, index = get_status(st.session_state.current_passcode)
@@ -37,6 +43,7 @@ def change_page(new_page): st.session_state.page = new_page
 
 def set_username(passcode):
     st.session_state.current_passcode = passcode
+    today,yesterday, index = get_status(st.session_state.current_passcode)
     if index == -1: change_page(2)
     elif today: change_page(3)
     else: change_page(2)
