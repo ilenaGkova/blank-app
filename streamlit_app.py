@@ -32,6 +32,9 @@ from mongo_connection import add_points, change_recommendation_preference_for_us
 if "username" not in st.session_state:
     st.session_state.username = generate_animal_username()
 
+if "passcode" not in st.session_state:
+    st.session_state.passcode = generate_unique_passcode()
+
 # Part C: The Functions
 
 client = init_connection()
@@ -174,9 +177,8 @@ if st.session_state.page == 1:
         question_suggestions = "How many suggestions do you want?"
         min_limit = 1
         user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
-        if user_username != st.session_state.username:
-            st.session_state.username = user_username
-        user_passcode = st.text_input(question_passcode, key="user_password", value=generate_unique_passcode(), disabled=True)
+        if user_username != st.session_state.username: st.session_state.username = user_username
+        user_passcode = st.text_input(question_passcode, key="user_password", value=st.session_state.passcode, disabled=True)
         age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
         focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
         time_available = st.number_input(question_time_available, min_value=min_limit, max_value=20)
