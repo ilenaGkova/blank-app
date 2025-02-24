@@ -36,6 +36,7 @@ def new_user(username, passcode, age,focus_area,time_available,suggestions):
     if not username.strip() or passcode == "Please reload the page" or not age.strip() or not focus_area.strip() or time_available==0 or suggestions==0:
         return False, "You need to fill in all fields provided to proceed. If Passcode not available reload the page."
     if User.find_one({"Username": username}): return False, "You need to enter a unique username"
+    if User.find_one({"Passcode": passcode}): return False, "Something went wrong, please reload the page and try again"
     User.insert_one(
         {
             'Username': username,
@@ -560,3 +561,4 @@ def create_history(passcode, priority, order, include_user, include_question, in
     elif priority == "Message": user_history.sort(key=sort_by_message, reverse=(order == -1))
     else: user_history.sort(key=sort_by_type, reverse=(order == -1))
     return True,user_history,f"Record for user {passcode} assembled."
+    
