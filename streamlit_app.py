@@ -29,6 +29,9 @@ from streamlit_cookies_controller import CookieController
 from Tables import Recommendations, Tags, Users
 from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_recomendations, get_record, get_status, init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, record_question
 
+if "username" not in st.session_state:
+    st.session_state.username = generate_animal_username()
+
 # Part C: The Functions
 
 client = init_connection()
@@ -170,7 +173,9 @@ if st.session_state.page == 1:
         question_time_available = "How much time are you willing to spend in reducing stress?"
         question_suggestions = "How many suggestions do you want?"
         min_limit = 1
-        user_username = st.text_input(question_username, key="user_username", value=generate_animal_username())
+        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
+        if user_username != st.session_state.username:
+            st.session_state.username = user_username
         user_passcode = st.text_input(question_passcode, key="user_password", value=generate_unique_passcode(), disabled=True)
         age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
         focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
