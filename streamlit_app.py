@@ -163,20 +163,20 @@ if st.session_state.page == 1:
     """
 
     # The Initial Questions Section
-    question_username = "What's your username?"
-    question_age = "Age"
-    question_focus_area = "Where would you like to focus?"
-    question_time_available = "How much time are you willing to spend in reducing stress?"
-    question_suggestions = "How many suggestions do you want?"
-    min_limit = 1
-    max_limit = 10
-    user_username = st.text_input(question_username, key="user_username", value=generate_animal_username())
-    user_passcode = st.text_input(question_passcode, key="user_password", value=generate_unique_passcode(), disabled=True)
-    age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
-    focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
-    time_available = st.number_input(question_time_available, min_value=min_limit+2, max_value=2*max_limit)
-    suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_limit)
-    st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions], key="create_user")
+    if Recommendation.count_documents({})>=1:
+        question_username = "What's your username?"
+        question_age = "Age"
+        question_focus_area = "Where would you like to focus?"
+        question_time_available = "How much time are you willing to spend in reducing stress?"
+        question_suggestions = "How many suggestions do you want?"
+        min_limit = 1
+        user_username = st.text_input(question_username, key="user_username", value=generate_animal_username())
+        user_passcode = st.text_input(question_passcode, key="user_password", value=generate_unique_passcode(), disabled=True)
+        age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
+        focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
+        time_available = st.number_input(question_time_available, min_value=min_limit, max_value=20)
+        suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=Recommendation.count_documents({}))
+        st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions], key="create_user")
 
 elif st.session_state.page == 2:
 
@@ -337,9 +337,6 @@ elif st.session_state.page >= 3:
 
         else: st.write('Something went wrong, user not found.')
 
-    else:
-
-        st.write('You are on page ', st.session_state.page)
     else:
 
         st.write('You are on page ', st.session_state.page)
