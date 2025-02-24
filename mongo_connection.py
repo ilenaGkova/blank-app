@@ -412,8 +412,8 @@ def create_entry(index, passcode):
                 'ID': index,
                 'Extend': True,
                 'Remove': (
-                    False if Removed_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
-                    else True if Favorite_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
+                    False if Removed_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode}) 
+                    else True if Favorite_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode}) 
                     else None
                 )
             }
@@ -560,57 +560,3 @@ def create_history(passcode, priority, order, include_user, include_question, in
     elif priority == "Message": user_history.sort(key=sort_by_message, reverse=(order == -1))
     else: user_history.sort(key=sort_by_type, reverse=(order == -1))
     return True,user_history,f"Record for user {passcode} assembled."
-
-# Recommendation page (for user) side function
-def add_collection(passcode,status,collection):
-    if not status: return []
-    data_table = []
-    data = collection.find({"Passcode": passcode})
-    for entry in data:
-        data_table.extend(create_entry(entry['ID'], passcode))
-    return data_table
-
-# Recommendation page (for user) side function    
-def create_entry(index, passcode):
-    this_recommendation = Recommendation.find_one({"ID": index})
-    if this_recommendation:
-       new_entry = [
-            {
-                'Title': this_recommendation['Title'], 
-                'Description': this_recommendation['Description'],
-                'ID': index,
-                'Extend': True,
-                'Remove': (
-                    False if Removed_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
-                    else True if Favorite_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
-                    else None
-                )
-            }
-        ]
-    else:
-        new_entry = [
-            {
-                'Title': "Recommendation not found", 
-                'Description': "Recommendation not found",
-                'ID': "Recommendation not found",
-                'Extend': False,
-                'Remove': False
-            }
-        ]
-    return new_entry
-    
-
-# Recommendation page (for user) function
-def create_recommendation_history(passcode, priority, order, include_favorite, include_removed, include_recommedations):
-    user = User.find_one({"Passcode": passcode})
-    if not user: return False, None, "Something went wrong, user not registered"
-    user_recommendation = []
-    temporary_table = add_collection(passcode,include_favorite,"Favorite_Recommendation")
-    if temporary_table is not None: user_recommendation.extend(temporary_table)
-    temporary_table = add_collection(passcode,include_removed,"Removed_Recommendation")
-    if temporary_table is not None: user_recommendation.extend(temporary_table)
-    temporary_table = add_collection(passcode,include_recommedations,"Recommendation_Per_Person")
-    if temporary_table is not None: user_recommendation.extend(temporary_table)
-    if priority == "Time": user_recommendation.sort(key=sort_by_time, reverse=(order == -1))
-    elif priority == "Message": user_recommendation.sort(key=sort_by_message, reverse=(order == -1))
-    else: user_recommendation.sort(key=sort_by_type, reverse=(order == -1))
