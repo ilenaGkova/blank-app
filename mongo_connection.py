@@ -1,350 +1,564 @@
-import streamlit as st
-
-# Configeration Command
-
-st.set_page_config(
-    page_title="StressTest",
-    page_icon="👋",
-)
-
-# Part A: The Initial Session Variables
-
-if "page" not in st.session_state:
-    st.session_state.page = 1
-
-if "current_passcode" not in st.session_state:
-    st.session_state.current_passcode = 1
-
-if "open_recomendation" not in st.session_state:
-    st.session_state.open_recomendation = -1
-
-if 'previous_passcode' not in st.session_state:
-    st.session_state.previous_passcode = ''
-
-# Part B: The Imports
-
-import plotly.graph_objects as go
 from datetime import datetime, timedelta
-from streamlit_cookies_controller import CookieController
-from Tables import Recommendations, Tags, Users
-from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, generate_animal_username, generate_unique_passcode, get_limits, get_recomendations, get_record, get_status, init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, record_question
+import random
+import pymongo
+import streamlit as st
+from Tables import Users, Tags, Recommendations
 
-if "username" not in st.session_state:
-    st.session_state.username = generate_animal_username()
-
-if "temporary_passcode" not in st.session_state:
-    st.session_state.temporary_passcode = generate_unique_passcode()
-
-# Part C: The Functions
+@st.cache_resource
+def init_connection():
+    return pymongo.MongoClient(st.secrets["mongo"]["uri"])
 
 client = init_connection()
 db = client.StressTest
+Status = db["Status"]
 User = db["User"]
+Question = db["Question"]
+Record = db["Record"]
+Recommendation_Per_Person = db["Recommendations_Per_Person"]
 Tag = db["Tag"]
 Recommendation = db["Recommendation"]
+Removed_Recommendation = db["Removed_Recommendation"]
+Favorite_Recommendation = db["Favorite"]
+
 if not User.find_one({"Username": "Admin"}): User.insert_many(Users)
 if not Tag.find_one({"ID": 1}): Tag.insert_many(Tags)
 if not Recommendation.find_one({"ID": 1}): Recommendation.insert_many(Recommendations)
 
-controller = CookieController()
-cookies = controller.getAll()
-st.session_state.previous_passcode = cookies.get("previous_user_passcode", "")
+# Start Page Function
+def validate_user(passcode):
+    if not passcode.strip():
+        return False, "You need to enter your passcode"
+    potential_user = User.find_one({"Passcode": passcode})
+    return (True, "You have an account") if potential_user else (False, "You do not have an account")
 
-user = User.find_one({"Passcode": st.session_state.current_passcode})
-today,yesterday,index = get_status(st.session_state.current_passcode)
-
-def change_page(new_page): st.session_state.page = new_page
-
-def set_username(passcode):
-    st.session_state.current_passcode = passcode
-    today,yesterday,index = get_status(st.session_state.current_passcode)
-    if index == -1: change_page(2)
-    elif today: change_page(3)
-    else: change_page(2)
-
-def log_in_user(passcode):
-    move_on, message = validate_user(passcode)
-    if not move_on: st.sidebar.write(message)
-    else:
-        controller.set("previous_user_passcode", str(passcode))
-        record_question(question_passcode,passcode,passcode)
-        set_username(passcode)
-    
-def create_user(user_username,user_passcode,age,focus_area,time_available,suggestions):
-    move_on, message = new_user(user_username,user_passcode,age,focus_area,time_available,suggestions)
-    if not move_on: st.sidebar.write(message)
-    else:
-        controller.set("previous_user_passcode", str(user_passcode))
-        record_question(question_username,user_username,passcode)
-        record_question(question_passcode,user_passcode,passcode)
-        record_question(question_age,age,passcode)
-        record_question(question_focus_area,focus_area,passcode)
-        record_question(question_time_available,time_available,passcode)
-        record_question(question_suggestions,suggestions,passcode)
-        set_username(user_passcode)
-
-def make_status(stress_level):
-    if not user == None:
-        move_on, message = record_status(st.session_state.current_passcode,stress_level)
-        if not move_on: st.sidebar.write(message)
-        else:
-            record_question(question_stress_level,stress_level,st.session_state.current_passcode)
-            change_page(3)
-
-def create_custom_slider(min_value, max_value, down, up, score):
-    fig = go.Figure()
-    fig.add_shape(type="line", x0=min_value, y0=0, x1=max_value, y1=0, line=dict(color="RoyalBlue", width=4))
-    fig.add_trace(go.Scatter(
-        x=[down], 
-        y=[0], 
-        mode="markers", 
-        marker=dict(size=15, color="red"), 
-        name="Demotion Point",
-        hovertemplate="Demotion Point: %{x}<extra></extra>"
-    ))
-    fig.add_trace(go.Scatter(
-        x=[up], 
-        y=[0], 
-        mode="markers", 
-        marker=dict(size=15, color="green"), 
-        name="Promotion Point",
-        hovertemplate="Promotion Point: %{x}<extra></extra>"
-    ))
-    fig.add_trace(go.Scatter(
-        x=[score], 
-        y=[0], 
-        mode="markers", 
-        marker=dict(size=15, color="RoyalBlue"), 
-        name="Your Score",
-        hovertemplate="Your Score: %{x}<extra></extra>"
-    ))
-    fig.update_layout(
-        height=150,
-        xaxis=dict(range=[min_value, max_value], title=None),
-        yaxis=dict(visible=False, range=[-1, 1]),
-        margin=dict(l=0, r=0, t=0, b=0),
-        plot_bgcolor="white",
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        hovermode="x"
+# Start Page Function
+def new_user(username, passcode, age,focus_area,time_available,suggestions):
+    if not username.strip() or passcode == "Please reload the page" or not age.strip() or not focus_area.strip() or time_available==0 or suggestions==0:
+        return False, "You need to fill in all fields provided to proceed. If Passcode not available reload the page."
+    if User.find_one({"Username": username}): return False, "You need to enter a unique username"
+    if User.find_one({"Passcode": passcode}): return False, "Something went wrong, please reload the page and try again"
+    User.insert_one(
+        {
+            'Username': username,
+            'Passcode': passcode,
+            'Repeat_Preference': 1,
+            'Age_Category': age,
+            'Focus_Area': focus_area,
+            'Suggestions': suggestions,
+            'Time_Available': time_available,
+            'Level': 1,
+            'Score': 0,
+            'Streak': 0,
+            'Days_Summed': 0,    
+            'Role': 'User',
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
     )
-    return fig
+    return True, "You have been added to our service"
 
-def get_time():
-    now = datetime.now()
-    days_until_sunday = (6 - now.weekday()) % 7
-    next_sunday_midnight = (now + timedelta(days=days_until_sunday)).replace(hour=23, minute=59, second=59, microsecond=999999)
-    time_remaining = next_sunday_midnight - now
-    days = time_remaining.days
-    hours, remainder = divmod(time_remaining.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    return f"{days_until_sunday}:{hours:02}:{minutes:02}:{seconds:02}"
+# Start Page Function
+def generate_unique_passcode(max_attempts=100):
+    attempt_count = 0
+    while attempt_count < max_attempts:
+        passcode = str(random.randint(1000000000, 9999999999))
+        if not User.find_one({"Passcode": passcode}): return passcode
+        attempt_count += 1
+    return "Please reload the page"
 
-def completed_recommedation(index, status):
-    condition = add_points(index,st.session_state.current_passcode,status)
-    if condition: change_page(3)
-
-def change_recommendation_status(preference,index):
-    condition = change_recommendation_preference_for_user(preference,st.session_state.current_passcode,index)
-    if condition: change_page(st.session_state.page)
+# Start Page Function
+def generate_animal_username(max_attempts=100):
+    attempt_count = 0
+    animals = ['Lion', 'Tiger', 'Elephant', 'Giraffe', 'Zebra', 'Panda', 'Koala', 'Kangaroo', 'Cheetah', 'Penguin']
+    adjectives = ['Fluffy', 'Mighty', 'Sneaky', 'Grumpy', 'Mysterious', 'Sleepy', 'Bold', 'Spiky', 'Shiny', 'Wild']
+    while attempt_count < max_attempts:
+        username = f"{random.choice(adjectives)}{random.choice(animals)}#{random.randint(1000, 9999)}"
+        if not User.find_one({"Username": username}): return username
+        attempt_count += 1
+    return "Please reload the page"
         
-def open_recommendation(index): 
-    st.session_state.open_recomendation = index
-    st.session_state.page = 7
+# Start/Status Page Function       
+def record_question(question,answer,passcode):
+    Question.insert_one(
+        {
+            'Passcode': passcode,
+            'Question': question,
+            'Answer': answer,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
 
-# Part D: The layouts
+# Status/Main Page Function
+def get_status(passcode):
+    latest_status = Status.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
+    if not latest_status: return False, False, -1
+    last_status_time = datetime.strptime(latest_status['Created_At'], '%Y-%m-%d %H:%M:%S')
+    now = datetime.now()
+    return (now.date() == last_status_time.date()),((now.date() - last_status_time.date()).days == 1), latest_status["_id"]
 
-if st.session_state.page == 1:
-
-    # The SideBar - User Signs In With Passcode
-    st.sidebar.write ('Already have an account? Sign it!')
-    question_passcode = "What's your passcode?"
-    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=st.session_state.previous_passcode)
-    st.sidebar.button('Log in', on_click=log_in_user, args=[passcode], key="sign_in_user")
-
-    # The Title
-    """
-    # Wellcome to Stress Test!
-    Please answer the following questions and we'll create your account
-    """
-
-    # The Initial Questions Section
-    if Recommendation.count_documents({})>=1:
-        question_username = "What's your username?"
-        question_age = "Age"
-        question_focus_area = "Where would you like to focus?"
-        question_time_available = "How much time are you willing to spend in reducing stress?"
-        question_suggestions = "How many suggestions do you want?"
-        min_limit = 1
-        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
-        if user_username != st.session_state.username: st.session_state.username = user_username
-        user_passcode = st.text_input(question_passcode, key="user_password", value=st.session_state.temporary_passcode, disabled=True)
-        age = st.radio(question_age,("18-25", "26-35", "36-55", "56-70", "70+"))
-        focus_area = st.radio(question_focus_area,("Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
-        time_available = st.number_input(question_time_available, min_value=min_limit, max_value=20)
-        suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=Recommendation.count_documents({}))
-        st.button('Let us get started', on_click=create_user, args=[user_username,user_passcode,age, focus_area, time_available, suggestions], key="create_user")
-
-elif st.session_state.page == 2:
-
-    # The SideBar - User Information
-    if not user == None:
-        st.sidebar.write(update_user_streak(user['Passcode']))
-        st.sidebar.write('Username:', user['Username'])
-        st.sidebar.write('Focus Area:', user['Focus_Area'])
-        st.sidebar.write('Number of Suggestions:', user['Suggestions'])
-        st.sidebar.write('Time Available:', user['Time_Available'])
-        st.sidebar.write('Days Connected:', user['Days_Summed'])
-        st.sidebar.write('Streak:', user['Streak'])
-        st.sidebar.write("Don't show me the same saggestion for ", user['Repeat_Preference'], ' day(s) after') 
-        if today:
-            st.sidebar.button('Skip', on_click=change_page, args=[3], key="skip")
-    else: st.sidebar.write('Something went wrong, user not registered.')
-
-    # The Title
-    if not user == None:
-        st.title(f"Hello {user['Username']}") 
-        """Please answer the questions below"""
-    else: st.write('Something went wrong, user not registered.')
-
-    # The Daily Question Section
-    min_limit = 1
-    max_limit = 10
-    question_stress_level = "How would you rate your stress level?"
-    stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
-    st.button('Let us get started', on_click=make_status, args=[stress_level], key="make_status")
-
-elif st.session_state.page >= 3:
-
-    # The Menu
-    st.sidebar.markdown(f"<div style='text-align: center;font-size: 20px; font-weight: bold;'>Navigation Menu</div>", unsafe_allow_html=True)
-    st.sidebar.write("")
-    if not user == None and not index == -1 and user['Role'] == 'User':
-        st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3], key="main_page")
-        st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True, on_click=change_page, args=[4], key="profile_page")
-        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page, args=[2], key="status_page")
-        st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True, on_click=change_page, args=[5], key="record_page")
-        st.sidebar.button("See Tutorial", icon=":material/auto_stories:", use_container_width=True, on_click=change_page, args=[7], key="tutorial_page")
-        st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1], key="log_out")
-    elif not user == None and not index == -1:
-        st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3], key="main_page_admin")
-        st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True, on_click=change_page, args=[4], key="profile_page_admin")
-        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page, args=[2], key="status_page_admin")
-        st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True, on_click=change_page, args=[5], key="record_page_admin")
-        st.sidebar.button("See Tutorial", icon=":material/auto_stories:", use_container_width=True, on_click=change_page, args=[7], key="tutorial_page_admin")
-        st.sidebar.button('For Admin', icon=":material/settings:", use_container_width=True, on_click=change_page, args=[6], key="admin_page_admin")
-        st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1], key="log_out_admin")
-    elif user == None: st.write('Something went wrong, user not registered.')
-    else: st.sidebar.write('Something went wrong, status not found.')
-
-    if st.session_state.page == 3:
-
-        # The Title
-        if not user == None: st.markdown(f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>Hello {user['Username']}, we are happy to see you!</div>", unsafe_allow_html=True)
-        else: st.write('Something went wrong, user not registered.')
-
-        # The Score
-        if not user == None:
-            st.subheader('Your Level / Score')
-            with st.container(border=True):
-                if get_record(st.session_state.current_passcode): 
-                    st.header(determine_level_change(st.session_state.current_passcode))
-                    user = User.find_one({"Passcode": st.session_state.current_passcode})
-                column1, column2 = st.columns([0.2, 2])
-                with column1: st.markdown(f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Level']}</div>", unsafe_allow_html=True)
-                with column2: 
-                    up, down = get_limits(user)
-                    fig = create_custom_slider(0, up+50, down, up, user['Score'])
-                    st.plotly_chart(fig, use_container_width=True)
-            st.markdown(f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>", unsafe_allow_html=True)
-        else: st.write('Something went wrong, user not registered.')
-
-        # The Recommendations
-        st.subheader('Our recommendations for you today')
-        condition, user_recommendations, message = get_recomendations(st.session_state.current_passcode)
-        st.write(message)
-        if condition:
-            condition, user_recommendations = make_recommendation_table(user_recommendations,st.session_state.current_passcode)
-            if condition:
-                for entry in user_recommendations:
-                    with st.container(border=True):
-                        column13, column23, column33, column53, column63 = st.columns([0.2, 2, 1, 0.5, 0.5])
-                        with column13: st.markdown(f"<div style='text-align: center;'>{entry['Pointer']}</div>", unsafe_allow_html=True)
-                        with column23:
-                            st.markdown(f"<div style='text-align: center; font-weight: bold;'>{entry['Title']}</div>", unsafe_allow_html=True)
-                            if len(entry['Description']) > 150: st.markdown("<div style='text-align: center;'>Open Recommendation to see description</div>", unsafe_allow_html=True)
-                            else: st.markdown(f"<div style='text-align: center;'>{entry['Description']}</div>", unsafe_allow_html=True)
-                        with column33:
-                            if entry['Outcome']: st.markdown(f"<div style='text-align: center;'>Complete this and gain {user['Level']*entry['Points']}!</div>", unsafe_allow_html=True)
-                            else: st.markdown(f"<div style='text-align: center;'>Recommendation completed {entry['Completed_At']}!</div>", unsafe_allow_html=True)  
-                        with column53:
-                            if entry['Preference'] is False or entry['Preference'] is None: st.button("", icon=":material/favorite:", use_container_width=True, on_click=change_recommendation_status, args=[1, entry['ID']], key=f"hate_{entry['Pointer']}")  
-                            if entry['Preference'] is True or entry['Preference'] is None: st.button("", icon=":material/heart_broken:", use_container_width=True, on_click=change_recommendation_status, args=[-1, entry['ID']], key=f"love_{entry['Pointer']}")
-                        with column63:
-                            if entry['Outcome']: st.button("", icon=":material/done_outline:", use_container_width=True, on_click=completed_recommedation, args=[entry['ID'],entry['Status_Created_At']], key=f"complete_{entry['Pointer']}")
-                            st.button("", icon=":material/open_in_full:", use_container_width=True, on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
-            else: st.write('Something went wrong, recommendations not found.')
-
-    elif st.session_state.page == 7:
-
-        if not user == None:
-
-            # The Title
-            st.title('Welcome to our application')
-            st.write('Here’s a quick guide on how to navigate the application')
-
-            # Header Number 1
-            with st.container(border=True):
-                st.header('Signing In')
-                st.write('To sign in, enter your unique 10-digit code ', user['Passcode'], ' into the Passcode field on the login section on the initial page')
-
-            # Header Number 2
-            with st.container(border=True):
-                st.header('Daily Stress Questionnaire')
-                st.write('Every day, you’ll need to fill out a questionnaire to rate your daily stress.')
-                st.write('You only need to complete this once per day, not every time you log in.')
-
-            # Header Number 3
-            with st.container(border=True):
-                st.header('Recommendations')
-                st.write('Based on your Stress Questionnaire answers and the number of suggestions you choose, you will receive recommendations on the home page.')
-                st.write('To complete a recommendation and earn points click the button with the :material/done_outline: icon next to it')
-                st.write('To mark your favorites click the button with the :material/favorite: icon next to the recommendation you like')
-                st.write('To avoid future suggestions click the button with the :material/heart_broken: icon next to the recommendation you don’t want to see again')
-                st.write('To see a recommendation in detail click the :material/open_in_full: button next to it')
-                st.write('If you want new recommendations create a New Status by clicking ‘Make New Status’ in the navigation menu and answer the Stress Questionnaire again')
-
-            # Header Number 4
-            with st.container(border=True):
-                st.header('Scores and Levels')
-                st.write('You earn points by completing recommendations. Every Monday, your score will determine:')
-                st.write('Whether you move up to a new level.')
-                st.write('Whether you stay at your current level.')
-                st.write('Whether you are demoted to a lower level.')
-                st.write('You can track your progress and check when the next level assessment is on the home page. After each assessment your score will reset to 0.')
-                st.write('Your level affects how many points you earn per recommendation and the scores needed to advance or get demoted.')
-
-            # Header Number 5
-            with st.container(border=True):
-                st.header('Your Preferences')
-                st.write('Go to the ‘Profile and Preferences’ page in the navigation menu to: ')
-                st.write('View your profile and preferences.')
-                st.write('See the recommendations you have marked as favorites or not favorites.')
-                st.write('Adjust your preferences to filter the types of recommendations you want to see.')
-
-            # Header Number 6
-            with st.container(border=True):
-                st.header('Your Record')
-                st.write('Click the ‘See Record’ button in the navigation menu to:')
-                st.write('View your application history.')
-                st.write('See the answers you’ve submitted and all previous questionnaire responses.')
-                st.write('Filter by categories to track specific actions you’ve taken in the app.')
-
-            st.write('We hope this helps you navigate the app with ease! Let us know if you need further assistance.')
-
-        else: st.write('Something went wrong, user not found.')
-
+# Status Page Function
+def record_status(passcode,stress_level):
+    if stress_level==0:
+        return False, "You need to fill in all fields provided to proceed"
     else:
+        if not User.find_one({"Passcode": passcode}): return False,"Something went wrong, user not registered."
+        Status.insert_one( 
+            {
+                'Passcode': passcode,
+                'Stress_Level': stress_level,
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        )
+        return True, "Status recorded"
+        
+# Status Page
+def update_user_streak(passcode):
+    last_record = Record.find_one({"Passcode": passcode, "Action": "Days connected increased"}, sort=[("Created_At", -1)])
+    if last_record:
+        last_time = datetime.strptime(last_record["Created_At"], "%Y-%m-%d %H:%M:%S")
+        now = datetime.now()
+        if last_time.date() == now.date():
+            return "You have already signed in today, your streak will not change."
+    if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered."  
+    User.update_one({"Passcode": passcode}, {"$inc": {"Days_Summed": 1}})
+    today, yesterday, index = get_status(passcode) 
+    message = None
+    streak_action = None
+    if yesterday:
+        User.update_one({"Passcode": passcode}, {"$inc": {"Streak": 1}})
+        message =  "Your streak was increased."
+        streak_action = 'Streak increased'
+    else:
+        User.update_one({"Passcode": passcode},{"$set": {"Streak": 1}})
+        if index == -1: message =  "Wellcome to your first Status."
+        else: message =  "You did not check in less than 48 hours ago. Your streak was reset."
+        streak_action = 'Streak reset'
+    Record.insert_many(
+        [
+            {
+                'Passcode': passcode,
+                'Action': streak_action,
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            },
+            {
+                'Passcode': passcode,
+                'Action': 'Days connected increased',
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+    )
+    return message
+    
+# Main page side side function
+def calculate_fail_count():
+    number_of_recomedations_in_total = Recommendation.count_documents({})  
+    last_entry_added = Recommendation.find_one({}, sort=[('ID', -1)])
+    max_ID = last_entry_added['ID'] 
+    total_possible_IDs = max_ID 
+    number_of_recommendation_after_removing_deleted_entries = total_possible_IDs - number_of_recomedations_in_total
+    return int(total_possible_IDs / (number_of_recomedations_in_total - number_of_recommendation_after_removing_deleted_entries))
 
-        st.write('You are on page ', st.session_state.page)
+# Main page side function
+def generate_valid_index():
+    recommendation_fail = 0
+    potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))
+    while Recommendation.find_one({"ID": potential_recommendation_index}) is None and recommendation_fail <= calculate_fail_count():
+        recommendation_fail += 1
+        potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))
+    if recommendation_fail > calculate_fail_count():
+        potential_recommendation_index = Recommendation.find_one({}, sort=[('ID', -1)])['ID']
+    return potential_recommendation_index
+
+# Main Page Side Side Function
+def get_past_recomendations(passcode,days_behind):
+    current_datetime = datetime.now()
+    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
+    start_date = current_datetime - timedelta(days=days_behind)
+    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    user_past_recommendations = Recommendation_Per_Person.find({'Passcode': passcode, 'Created_At': {'$gte': start_of_range, '$lte': end_of_today}})
+    return list(user_past_recommendations)
+
+# Main Page Side function
+def has_the_user_seen_this_recomendation_before(passcode,potential_recommendation_index):
+    user = User.find_one({"Passcode": passcode})
+    user_past_recommendations = get_past_recomendations(passcode, user['Repeat_Preference'])
+    return not any(rec['ID'] == potential_recommendation_index for rec in user_past_recommendations)
+
+# Main page side function
+def do_the_tags_match(passcode, potential_recommendation_index):
+    tags = list(Tag.find({"ID": potential_recommendation_index}))
+    user = User.find_one({"Passcode": passcode})
+    today,yesterday, index = get_status(passcode)
+    status = Status.find_one({"_id": index})
+    for tag in tags:
+        if tag['Title_Of_Criteria'] == 'Age Variant' and tag['Category'] != user['Age_Category']: return False
+        if tag['Title_Of_Criteria'] == 'Focus Area' and tag['Category'] != user['Focus_Area']: return False
+        if tag['Title_Of_Criteria'] == 'Stress Level' and tag['Category'] != status['Stress_Level']: return False
+        if tag['Title_Of_Criteria'] == 'Time Available' and tag['Category'] != user['Time_Available']: return False
+    return True
+
+# Main Page Function
+def get_recomendations(passcode):
+    if not User.find_one({"Passcode": passcode}): return False, None, "Something went wrong, user not registered"
+    if Recommendation.count_documents({}) == 0: return False, None, 'There are no recommendations available for you.'
+    user = User.find_one({"Passcode": passcode})
+    if not user: return False, None, 'Something went wrong, user not registered'
+    today,yesterday, index = get_status(passcode)
+    if not today: return False, None, 'Something went wrong, status was not found'
+    status = Status.find_one({"_id": index})
+    latest_recommendation = Recommendation_Per_Person.find_one({"Passcode": passcode}, sort=[("Created_At", -1)])
+    if latest_recommendation and status['Created_At'] == latest_recommendation['Status_Created_At']:
+        return True, list(Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At']}, sort=[("Pointer", 1)])), 'Feel free to try any of the below.' 
+    user_recommendations = []
+    suggestions = user['Suggestions']
+    index = 1
+    fails = 0
+    while index <= suggestions:
+        potential_recommendation_index = generate_valid_index()
+        if (
+            has_the_user_seen_this_recomendation_before(passcode, potential_recommendation_index) and
+            sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) == 0 and
+            do_the_tags_match(passcode, potential_recommendation_index) and
+            Removed_Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None
+        ) or fails == 3:
+            new_entry = [
+                {
+                    'Passcode': passcode,
+                    'ID': potential_recommendation_index,
+                    'Pointer': index,
+                    'Outcome': True,
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'Status_Created_At': status['Created_At'],
+                    'Completed_At': None
+                }
+            ]
+            user_recommendations.extend(new_entry)
+            index += 1
+            fails = 0
+        else:
+            fails += 1
+    Recommendation_Per_Person.insert_many(user_recommendations)
+    return True, user_recommendations, 'Feel free to try any of the below.' 
+
+# Main page function
+def make_recommendation_table(recommendations,passcode):
+    if not User.find_one({"Passcode": passcode}): return False, None
+    Recommendation_table = []
+    for entry in recommendations:
+        this_recommendation = Recommendation.find_one({"ID": entry['ID']})
+        if not this_recommendation: return False, None
+        completed_duration = None
+        if entry['Completed_At'] is not None:
+            completed_at_dt = datetime.strptime(entry['Completed_At'], "%Y-%m-%d %H:%M:%S")  
+            time_diff = datetime.now() - completed_at_dt  
+            days = time_diff.days
+            hours, remainder = divmod(time_diff.seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            completed_duration = f"{days} days, {hours} hours ago" if days > 0 else f"{hours} hours, {minutes} minutes and {seconds} seconds ago"
+        new_entry = [
+            {
+                'ID': entry['ID'],
+                'Pointer': entry['Pointer'],
+                'Outcome': entry['Outcome'],
+                'Status_Created_At': entry['Status_Created_At'],
+                'Completed_At': completed_duration, 
+                'Title': this_recommendation['Title'],
+                'Description': this_recommendation['Description'],
+                'Points': this_recommendation['Points'],
+                'Preference': (
+                    False if Removed_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
+                    else True if Favorite_Recommendation.find_one({"ID": entry['ID'], "Passcode": passcode}) 
+                    else None
+                )
+            }
+        ]
+        Recommendation_table.extend(new_entry)
+    return True, Recommendation_table
+
+# Main Page Function
+def get_limits(user):
+    x = 100 * user["Level"]
+    y = 50 - 5 * user["Level"]
+    move_up_threshold = x * user["Level"]
+    move_down_threshold = move_up_threshold * (1 - y / 100)
+    return move_up_threshold,move_down_threshold
+
+# Main page function
+def get_record(passcode):
+    if not User.find_one({"Passcode": passcode}): return False
+    today = datetime.today().date()
+    week_start = today
+    if not today.weekday() == 0: week_start = today - timedelta(days=today.weekday())   
+    return Record.find_one({"Passcode": passcode, "Action": "Score Reset", "Created_At": {"$gte": week_start.isoformat()}}) is None and Status.count_documents({"Passcode": passcode}) > 1
+
+# Main Page Function
+def determine_level_change(passcode):
+    if not User.find_one({"Passcode": passcode}): return "Something went wrong, user not registered"
+    user = User.find_one({"Passcode": passcode})
+    move_up_threshold, move_down_threshold = get_limits(user)
+    message_for_user = f"You have remained at level {user['Level']}."
+    message_for_system = f"User remained at level {user['Level']}."
+    if user["Score"] > move_up_threshold:
+        User.update_one({"Passcode": passcode}, {"$inc": {"Level": 1}})
+        user = User.find_one({"Passcode": passcode})
+        message_for_user = f"You {passcode} have moved up to level {user['Level']}."
+        message_for_system = f"User {passcode} moved up to level {user['Level']}"
+    elif user["Score"] < move_down_threshold:
+        if user["Level"] != 1:
+            User.update_one({"Passcode": passcode}, {"$inc": {"Level": -1}})
+            user = User.find_one({"Passcode": passcode})
+            message_for_user = f"You {passcode} have been demoted to level {user['Level']}."
+            message_for_system = f"User {passcode} has been demoted to level {user['Level']}"
+        else:
+            message_for_user = "You have been demoted but remained at level 1."
+            message_for_system = "User was demoted but remained at level 1" 
+    User.update_one({"Passcode": passcode},{"$set": {"Score": 0}})
+    Record.insert_many(
+        [
+            {
+                'Passcode': passcode,
+                'Action': message_for_system,
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            },
+            {
+                'Passcode': passcode,
+                'Action': 'Score Reset',
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+    )
+    return message_for_user
+
+# Main page function
+def add_points(index,passcode,status):
+    user = User.find_one({"Passcode": passcode})
+    if not user: return False
+    recommendation = Recommendation.find_one({"ID": index})
+    if not recommendation: return False
+    recommendation_per_person_entry = Recommendation_Per_Person.find_one({"ID": index, "Passcode": passcode, "Status_Created_At": status})
+    if not recommendation_per_person_entry: return False
+    up, down = get_limits(user)
+    if user['Score']+user['Level']*recommendation['Points'] <= up+50: User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level']*recommendation['Points']}})
+    else: User.update_one({"Passcode": passcode}, {"$set": {"Score": up+50}})
+    new_user = User.find_one({"Passcode": passcode})
+    Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {"$set": {"Outcome": False, "Completed_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}})
+    Record.insert_many(
+        [
+            {
+                'Passcode': passcode,
+                'Action': f"User {passcode} increaced their score by {new_user['Score'] - user['Score']} points",
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            },
+            {
+                'Passcode': passcode,
+                'Action': f"User {passcode} completed recommendation {index}",
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+        ]
+    )
+    return True
+
+# Main page function
+def change_recommendation_preference_for_user(preference,passcode,index):
+    if User.count_documents({"Passcode": passcode}) == 0: return False
+    if Recommendation.count_documents({"ID": index}) == 0: return False
+    Favorite_Recommendation.delete_one({"ID": index, "Passcode": passcode})
+    Removed_Recommendation.delete_one({"ID": index, "Passcode": passcode})
+    new_entry = {
+        'Passcode': passcode,
+        'ID': index,
+        'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    if preference == -1: Removed_Recommendation.insert_one(new_entry)
+    else: Favorite_Recommendation.insert_one(new_entry)
+    return True
+
+# User profile page (for user) function
+def update_user(passcode,username,repeat,age,focus_area,suggestions,time_available):
+    if not User.find_one({"Passcode": passcode}): return False, "Something went wrong, user not registered"
+    if User.find_one({"Username": username}): return False, "You need to enter a unique username"
+    User.update_one({"Passcode": passcode}, {"$set": {
+        "Username": username,
+        "Repeat_Preference": repeat,
+        "Age_Category": age,
+        "Focus_Area": focus_area,
+        "Suggestions": suggestions,
+        "Time_Available": time_available
+    }})
+    Record.insert_one(
+        {
+            'Passcode': passcode,
+            'Action': f"User {passcode} updated their profile",
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
+    return True, "User Profile Updated"
+
+# Recommendation page (for user) side function
+def add_collection(passcode,status,collection):
+    if not status: return []
+    data_table = []
+    data = collection.find({"Passcode": passcode})
+    for entry in data:
+        data_table.extend(create_entry(entry['ID'], passcode))
+    return data_table
+
+# Recommendation page (for user) side function    
+def create_entry(index, passcode):
+    this_recommendation = Recommendation.find_one({"ID": index})
+    if this_recommendation:
+       new_entry = [
+            {
+                'Title': this_recommendation['Title'], 
+                'Description': this_recommendation['Description'],
+                'ID': index,
+                'Extend': True,
+                'Remove': (
+                    False if Removed_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode}) 
+                    else True if Favorite_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode}) 
+                    else None
+                )
+            }
+        ]
+    else:
+        new_entry = [
+            {
+                'Title': "Recommendation not found", 
+                'Description': "Recommendation not found",
+                'ID': "Recommendation not found",
+                'Extend': False,
+                'Remove': False
+            }
+        ]
+    return new_entry
+    
+
+# Recommendation page (for user) function
+def create_recommendation_history(passcode, priority, order, include_favorite, include_removed, include_recommedations):
+    user = User.find_one({"Passcode": passcode})
+    if not user: return False, None, "Something went wrong, user not registered"
+    user_recommendation = []
+    temporary_table = add_collection(passcode,include_favorite,"Favorite_Recommendation")
+    if temporary_table is not None: user_recommendation.extend(temporary_table)
+    temporary_table = add_collection(passcode,include_removed,"Removed_Recommendation")
+    if temporary_table is not None: user_recommendation.extend(temporary_table)
+    temporary_table = add_collection(passcode,include_recommedations,"Recommendation_Per_Person")
+    if temporary_table is not None: user_recommendation.extend(temporary_table)
+    if priority == "Time": user_recommendation.sort(key=sort_by_time, reverse=(order == -1))
+    elif priority == "Message": user_recommendation.sort(key=sort_by_message, reverse=(order == -1))
+    else: user_recommendation.sort(key=sort_by_type, reverse=(order == -1))
+    
+
+# Recommedation page (for admin) function
+def make_recommendation(ID,passcode,title,description,link,points):
+    if not User.find_one({"Passcode": passcode}): return False, "Something went wrong, user not registered"
+    if Recommendation.find_one({"ID": ID}): return False, "Please try again, it look like the ID generated has already been added."
+    Recommendation.insert_one( 
+        {
+            'ID': ID,
+            'Passcode': passcode,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'Title': title,
+            'Description':description,
+            'Link': link,
+            'Points': points
+        }
+    )
+    return True, "Recommedation added"
+
+# Recommedation page (for admin) function
+def add_tag(ID,passcode,title,category):
+    if not User.find_one({"Passcode": passcode}): return False, "Something went wrong, user not registered"
+    if not Recommendation.find_one({"ID": ID}): return False, "Something went wrong, recommendation not found"
+    Tag.insert_one(
+        {
+            'ID': ID,
+            'Passocode': passcode,
+            'Title_Of_Criteria': title,
+            'Category': category,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    return True, "Recommedation added"
+
+# Database page (for admin) function
+def delete_entry(passcode,key, key2, created,delete_user,delete_question,delete_record,
+                 delete_status,delete_recommendation,delete_Tag,delete_favorite,
+                 delete_removed,delete_recommendation_per_person):
+    if not User.find_one({"Passcode": passcode}): return False, {}, "Something went wrong, user not registered" 
+    result_log = {}
+
+    # Database page (for admin) side function
+    def perform_delete(collection, query, delete_type):
+        delete_result = collection.delete_one(query) if query else collection.delete_many({"Passcode": passcode})
+        count = delete_result.deleted_count
+        if count > 0: result_log[delete_type] = f"Deleted {count} record(s) for {collection}"
+        else: result_log[delete_type] = f"No matching record found in {collection} delete"
+    
+    if delete_user: perform_delete(User, {"Passcode": passcode}, "User")
+    if delete_question: perform_delete(Question, {"Passcode": passcode, "Question": key, "Created_At": created} if key else None, "Question")
+    if delete_record: perform_delete(Record, {"Passcode": passcode, "Action": key, "Created_At": created} if key else None, "Record")
+    if delete_status: perform_delete(Status, {"Passcode": key, "Created_At": created} if key else None, "Status")
+    if delete_recommendation: perform_delete(Recommendation, {"ID": key, "Created_At": created} if key else None, "Recommendation")
+    if delete_Tag:perform_delete(Tag, {"Passcode": passcode, "ID": key, "Category": key2, "Created_At": created} if key else None, "Tag")
+    if delete_favorite: perform_delete(Favorite_Recommendation, {"Passcode": passcode, "ID": key, "Created_At": created} if key else None, "Favorite")
+    if delete_removed: perform_delete(Removed_Recommendation, {"Passcode": passcode, "ID": key, "Created_At": created} if key else None, "Removed")
+    if delete_recommendation_per_person: perform_delete(Recommendation_Per_Person, {"Passcode": passcode, "Pointer": key, "Created_At": created} if key else None, "Recommendation_Per_Person")
+    return True, result_log, "Delete Completed, see more detailed description in error log"
+
+# Record / Profile page side function
+def sort_by_time(entry): return (entry["Created_At"], entry["Message"])
+
+# Record / Profile page side function
+def sort_by_message(entry): return (entry["Message"], entry["Created_At"])
+    
+# Record / Profile page side function
+def sort_by_type(entry): return (entry["Type"], entry["Created_At"], entry["Message"])
+
+# Record page function
+def create_history(passcode, priority, order, include_user, include_question, include_record, 
+                   include_status, include_recommendation, include_Tag, 
+                   include_favorite, include_removed, include_recommendation_per_person):
+    user = User.find_one({"Passcode": passcode})
+    if not user: return False, None, "Something went wrong, user not registered"
+    user_history = []
+    message_templates = {
+        "User": "User {Passcode} registered.",
+        "Question": "User {Passcode} was asked '{Question}' and answered {Answer}.",
+        "Record": "{Action}",
+        "Status": "User {Passcode} answered Daily Stress Questionnaire.",
+        "Recommendation": "User {Passcode} added recommendation '{Title}' with ID {ID}.",
+        "Tag": "User {Passcode} added Tag '{Title_Of_Criteria}:{Category}' to recommendation {ID}.",
+        "Favorite": "User {Passcode} marked recommendation with ID {ID} as favorite.",
+        "Removed": "User {Passcode} marked recommendation with ID {ID}.",
+        "Recommendation_Per_Person": "Recommendation with ID {ID} was assigned to User {Passcode} with pointer {Pointer}."
+    }
+
+    # Record page side function
+    def add_history_entries(collection_name, collection, key, key2=None):
+        entries = collection.find({"Passcode": passcode})
+        for entry in entries:
+            new_entry = [
+                {
+                    'Type': collection_name, 
+                    'Key': entry.get(key, "N/A"),
+                    'Key2': entry.get(key2, None),
+                    'Message': message_templates[collection_name].format(**entry),
+                    'Created_At': entry['Created_At']
+                }
+            ]
+            user_history.extend(new_entry)
+
+    if include_user: add_history_entries("User", User, "Passcode")
+    if include_question: add_history_entries("Question", Question, "Question")
+    if include_record: add_history_entries("Record", Record, "Action")
+    if include_status: add_history_entries("Status", Status, "Passcode")
+    if include_recommendation: add_history_entries("Recommendation", Recommendation, "ID")
+    if include_Tag: add_history_entries("Tag", Tag, "ID", "Category")
+    if include_favorite: add_history_entries("Favorite_Recommendation", Favorite_Recommendation, "ID")
+    if include_removed: add_history_entries("Removed_Recommendation", Removed_Recommendation, "ID")
+    if include_recommendation_per_person: add_history_entries("Recommendation_Per_Person", Recommendation_Per_Person, "Pointer")
+    if priority == "Time": user_history.sort(key=sort_by_time, reverse=(order == -1))
+    elif priority == "Message": user_history.sort(key=sort_by_message, reverse=(order == -1))
+    else: user_history.sort(key=sort_by_type, reverse=(order == -1))
+    return True,user_history,f"Record for user {passcode} assembled."
     
