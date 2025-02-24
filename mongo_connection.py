@@ -287,7 +287,7 @@ def get_record(passcode):
     today = datetime.today().date()
     week_start = today
     if not today.weekday() == 0: week_start = today - timedelta(days=today.weekday())   
-    return Record.find_one({"Passcode": passcode, "Action": "Score Reset", "Created_At": {"$gte": week_start.isoformat()}}) is None or Status.count_documents({"Passcode": passcode}) > 1
+    return Record.find_one({"Passcode": passcode, "Action": "Score Reset", "Created_At": {"$gte": week_start.isoformat()}}) is None and Status.count_documents({"Passcode": passcode}) > 1
 
 # Main Page Function
 def determine_level_change(passcode):
