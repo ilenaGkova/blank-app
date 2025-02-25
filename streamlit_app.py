@@ -476,6 +476,8 @@ elif 3 <= st.session_state.page <= 9:
                         st.write('You have ', len(user_history), ' results')
                     for entry in user_history:
                         with st.container(border=True):
+                            condition1 = entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation"
+                            condition2 = entry['Type'] == "Recommendation_Per_Person"
                             if user['Role'] == 'User':
                                 column19, column29, column49, column59 = st.columns([2, 2, 4, 1])
                                 with column19:
@@ -485,10 +487,14 @@ elif 3 <= st.session_state.page <= 9:
                                 with column49:
                                     st.write(entry['Message'])
                                 with column58:
-                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag":
+                                    if condition1:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
-                                                  key=f"open_recommendation{pointer}")
+                                                  key=f"open_recommendation_Z_{pointer}")
+                                    elif condition2:
+                                        st.button("", icon=":material/open_in_full:", use_container_width=True,
+                                                  on_click=open_recommendation, args=[entry['Key2']],
+                                                  key=f"open_recommendation_C_{pointer}")
                             else:
                                 column18, column28, column38, column48, column58 = st.columns([2, 2, 2, 4, 1])
                                 with column18:
@@ -500,10 +506,14 @@ elif 3 <= st.session_state.page <= 9:
                                 with column48:
                                     st.write(entry['Message'])
                                 with column58:
-                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation"
+                                    if condition1:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
-                                                  key=f"open_recommendation{pointer}")
+                                                  key=f"open_recommendation_X_{pointer}")
+                                    elif condition2:
+                                        st.button("", icon=":material/open_in_full:", use_container_width=True,
+                                                  on_click=open_recommendation, args=[entry['Key2']],
+                                                  key=f"open_recommendation_Y_{pointer}")
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=delete_entry,
                                               args=[entry['Passcode'], entry['Key'], entry['Key2'], entry['Created_At'],
@@ -512,10 +522,8 @@ elif 3 <= st.session_state.page <= 9:
                         pointer += 1
                 else:
                     st.write(message)
-
             else:
                 st.write("You haven't selected a category")
-
         else:
             st.write('Something went wrong, user not found.')
 
@@ -623,6 +631,7 @@ elif 3 <= st.session_state.page <= 9:
                     'To mark your favorites click the button with the :material/favorite: icon next to the recommendation you like')
                 st.write(
                     'To avoid future suggestions click the button with the :material/heart_broken: icon next to the recommendation you don’t want to see again')
+                st.write('To remove any of the :material/favorite: or :material/heart_broken: registration go to the ‘Profile and Preferences’ page.')
                 st.write('To see a recommendation in detail click the :material/open_in_full: button next to it')
                 st.write(
                     'If you want new recommendations create a New Status by clicking ‘Make New Status’ in the navigation menu and answer the Stress Questionnaire again')
@@ -656,15 +665,12 @@ elif 3 <= st.session_state.page <= 9:
                 st.write('Filter by categories to track specific actions you’ve taken in the app.')
 
             st.write('We hope this helps you navigate the app with ease! Let us know if you need further assistance.')
-
+        
         else:
             st.write('Something went wrong, user not found.')
-
     else:
-
         st.write('You are on page ', st.session_state.page)
 else:
-
     st.write('You are on page ', st.session_state.page)
 
 
