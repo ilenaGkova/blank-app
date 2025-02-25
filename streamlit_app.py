@@ -30,7 +30,7 @@ from Tables import Recommendations, Tags, Users
 from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, \
     generate_animal_username, generate_unique_passcode, get_limits, get_recommendations, get_record, get_status, \
     init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
-    record_question
+    record_question, create_history, delete_entry
 
 if "username" not in st.session_state:
     st.session_state.username = generate_animal_username()
@@ -178,7 +178,7 @@ def change_recommendation_status(preference, index_for_change_recommendation_sta
 
 def open_recommendation(index_for_open_recommendation):
     st.session_state.open_recommendation = index_for_open_recommendation
-    change_page(8)
+    change_page(6)
 
 
 # Part D: The layouts
@@ -250,7 +250,7 @@ elif st.session_state.page == 2:
     stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=max_limit)
     st.button('Let us get started', on_click=make_status, args=[stress_level], key="make_status")
 
-elif 3 <= st.session_state.page <= 8:
+elif 3 <= st.session_state.page <= 9:
 
     # The Menu
     st.sidebar.markdown(f"<div style='text-align: center;font-size: 20px; font-weight: bold;'>Navigation Menu</div>",
@@ -280,8 +280,11 @@ elif 3 <= st.session_state.page <= 8:
                           on_click=change_page, args=[5], key="record_page_admin")
         st.sidebar.button("See Tutorial", icon=":material/auto_stories:", use_container_width=True,
                           on_click=change_page, args=[7], key="tutorial_page_admin")
-        st.sidebar.button('For Admin', icon=":material/settings:", use_container_width=True, on_click=change_page,
-                          args=[6], key="admin_page_admin")
+        st.sidebar.button('Manage database', icon=":material/settings:", use_container_width=True, on_click=change_page,
+                          args=[8], key="admin__manage_page_admin")
+        st.sidebar.button('Add Recommendation', icon=":material/add_circle:", use_container_width=True,
+                          on_click=change_page,
+                          args=[9], key="admin_add_page_admin")
         st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1],
                           key="log_out_admin")
     elif user is None:
@@ -325,7 +328,9 @@ elif 3 <= st.session_state.page <= 8:
         st.subheader('Our recommendations for you today')
         condition, user_recommendations, message = get_recommendations(st.session_state.current_passcode)
         st.write(message)
+
         if condition:
+
             condition, user_recommendations = make_recommendation_table(user_recommendations,
                                                                         st.session_state.current_passcode)
             if condition:
@@ -373,6 +378,219 @@ elif 3 <= st.session_state.page <= 8:
                                       on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
             else:
                 st.write('Something went wrong, recommendations not found.')
+
+    elif st.session_state.page == 4:
+
+        if user is not None:
+
+            # The Title
+            st.title('Your Profile')
+
+            # Step 1
+            st.header('Step 1: Tell us what you what to see')
+
+        else:
+            st.write('Something went wrong, user not found.')
+
+    elif st.session_state.page == 5:
+
+        if user is not None:
+
+            # The Title
+            st.title('Your Record')
+
+            # Step 1
+            st.header('Step 1: Tell us what you what to see')
+
+            with st.container(border=True):
+
+                column16, column26, column36 = st.columns([2, 2, 2])
+
+                with column16:
+                    user_status = st.checkbox("See when your profile was generated")
+                with column26:
+                    question_status = st.checkbox("See what questions you have answered")
+                with column36:
+                    record_status = st.checkbox("See what actions the application has done on your behalf")
+
+                column46, column56, column66 = st.columns([2, 2, 2])
+
+                with column46:
+                    status_status = st.checkbox("See when you answered the Stress Daily Stress Questionnaire")
+                with column56:
+                    recommendation_status = st.checkbox("See what recommendations you have entered")
+                with column66:
+                    tag_status = st.checkbox("See what Tags you have added to recommendations")
+
+                column76, column86, column96 = st.columns([2, 2, 2])
+
+                with column76:
+                    favorite_status = st.checkbox("See your favorite recommendations")
+                with column86:
+                    removed_status = st.checkbox("See what recommendations you rejected")
+                with column96:
+                    person_status = st.checkbox("See what recommendations have been given to you")
+
+            # Step 2
+            st.header('Step 2: Pick a sorting method - optional')
+
+            column17, column27 = st.columns([3, 3])
+
+            with column17:
+                with st.container(border=True):
+                    priority = st.radio(
+                        "Sort By",
+                        ("Time", "Substance"),
+                        index=None
+                    )
+
+            with column27:
+                with st.container(border=True):
+                    order_question = st.radio(
+                        "Show from",
+                        ("A to Z", "Z to A"),
+                        index=None
+                    )
+                    order = -1
+                    if order_question == "A to Z":
+                        order = 1
+
+            user_passcode_search = st.text_input("Search for user", key="user_username_for_search",
+                                                 value=st.session_state.current_passcode,
+                                                 disabled=(user['Role'] == 'User'))
+
+            # See the result
+            st.header('See your record')
+
+            if user_status or question_status or record_status or status_status or recommendation_status or tag_status or favorite_status or removed_status or person_status:
+                condition, user_history, message = create_history(user_passcode_search, priority, order,
+                                                                  user_status, question_status, record_status,
+                                                                  status_status, recommendation_status, tag_status,
+                                                                  favorite_status, removed_status, person_status)
+                pointer = 1
+                if condition:
+                    st.write(message)
+                    if len(user_history) == 1:
+                        st.write('You have ', len(user_history), ' result')
+                    else:
+                        st.write('You have ', len(user_history), ' results')
+                    for entry in user_history:
+                        with st.container(border=True):
+                            if user['Role'] == 'User':
+                                column19, column29, column49, column59 = st.columns([2, 2, 4, 1])
+                                with column19:
+                                    st.write(pointer)
+                                with column29:
+                                    st.write(entry['Created_At'])
+                                with column49:
+                                    st.write(entry['Message'])
+                                with column58:
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag":
+                                        st.button("", icon=":material/open_in_full:", use_container_width=True,
+                                                  on_click=open_recommendation, args=[entry['Key']],
+                                                  key=f"open_recommendation{pointer}")
+                            else:
+                                column18, column28, column38, column48, column58 = st.columns([2, 2, 2, 4, 1])
+                                with column18:
+                                    st.write(pointer)
+                                with column28:
+                                    st.write(entry['Created_At'])
+                                with column38:
+                                    st.write(entry['Type'])
+                                with column48:
+                                    st.write(entry['Message'])
+                                with column58:
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag":
+                                        st.button("", icon=":material/open_in_full:", use_container_width=True,
+                                                  on_click=open_recommendation, args=[entry['Key']],
+                                                  key=f"open_recommendation{pointer}")
+                                    st.button("", icon=":material/delete:", use_container_width=True,
+                                              on_click=delete_entry,
+                                              args=[entry['Passcode'], entry['Key'], entry['Key2'], entry['Created_At'],
+                                                    entry['Type'], st.session_state.current_passcode],
+                                              key=f"delete_{pointer}")
+                        pointer += 1
+                else:
+                    st.write(message)
+
+            else:
+                st.write("You haven't selected a category")
+
+        else:
+            st.write('Something went wrong, user not found.')
+
+    elif st.session_state.page == 6:
+
+        if recommendation is not None and user is not None:
+
+            # The Title
+            with st.container(border=True):
+                st.markdown(
+                    f"<div style='text-align: center;font-size: 40px;font-weight: bold;'>{recommendation['Title']}</div>",
+                    unsafe_allow_html=True)
+
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+
+            # The Side Information
+            column14, column24, column34, column44 = st.columns([1, 2, 2, 3])
+            with st.container(border=True):
+                with column14:
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>{recommendation['ID']}</div>",
+                        unsafe_allow_html=True)
+                with column24:
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>Created By</div>",
+                        unsafe_allow_html=True)
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>{User.find_one({"Passcode": recommendation['Passcode']})['Username']}</div>",
+                        unsafe_allow_html=True)
+                with column34:
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>Created At</div>",
+                        unsafe_allow_html=True)
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>{recommendation['Created_At']}</div>",
+                        unsafe_allow_html=True)
+                with column44:
+                    st.markdown(
+                        f"<div style='text-align: center;font-size: 15px;'>Minimum Points awarded: {recommendation['Points']}</div>",
+                        unsafe_allow_html=True)
+
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+
+            # The Recommendation
+            Tag.count_documents({"ID": recommendation['ID']})
+            if Tag.count_documents({"ID": recommendation['ID']}) == 0:
+                with st.container(border=True):
+                    st.write(recommendation['Description'])
+                    if recommendation['Link'] is not None:
+                        st.write('See more information on ', recommendation['Link'])
+            else:
+                column15, column25 = st.columns([5, 2])
+                with column15:
+                    with st.container(border=True):
+                        st.write(recommendation['Description'])
+                        if recommendation['Link'] is not None:
+                            st.write('See more information on ', recommendation['Link'])
+                    with column25:
+                        tags = Tag.find({"ID": recommendation['ID']})
+                        for entry in tags:
+                            st.write(
+                                f"{entry['Title_Of_Criteria']}: {entry['Category']} as assigned by {User.find_one({"Passcode": entry['Passcode']})['Username']}")
+
+        elif recommendation:
+            st.write('Something went wrong, user not found.')
+        elif user:
+            st.write('Something went wrong, recommendation not found.')
+        else:
+            st.write('Something went wrong, user and recommendation not found.')
 
     elif st.session_state.page == 7:
 
@@ -442,81 +660,11 @@ elif 3 <= st.session_state.page <= 8:
         else:
             st.write('Something went wrong, user not found.')
 
-    elif st.session_state.page == 8:
-
-        if recommendation and user:
-
-            # The Title
-            with st.container(border=True):
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 40px;font-weight: bold;'>{recommendation['Title']}</div>",
-                    unsafe_allow_html=True)
-
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-
-            column14, column24, column34, column44 = st.columns([1, 2, 2, 3])
-            with st.container(border=True):
-                with column14:
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>{recommendation['ID']}</div>",
-                        unsafe_allow_html=True)
-                with column24:
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>Created By</div>",
-                        unsafe_allow_html=True)
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>{User.find_one({"Passcode": recommendation['Passcode']})['Username']}</div>",
-                        unsafe_allow_html=True)
-                with column34:
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>Created At</div>",
-                        unsafe_allow_html=True)
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>{recommendation['Created_At']}</div>",
-                        unsafe_allow_html=True)
-                with column44:
-                    st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>Minimum Points awarded: {recommendation['Points']}</div>",
-                        unsafe_allow_html=True)
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
-
-            # The Recommendation
-            Tag.count_documents({"ID": recommendation['ID']})
-            if Tag.count_documents({"ID": recommendation['ID']}) == 0:
-                with st.container(border=True):
-                    st.write(recommendation['Description'])
-                    if recommendation['Link'] is not None:
-                        st.write('See more information on ', recommendation['Link'])
-            else:
-                column15, column25 = st.columns([5, 2])
-                with column15:
-                    with st.container(border=True):
-                        st.write(recommendation['Description'])
-                        if recommendation['Link'] is not None:
-                            st.write('See more information on ', recommendation['Link'])
-                    with column25:
-                        tags = Tag.find({"ID": recommendation['ID']})
-                        for entry in tags:
-                            st.write(entry['Title_Of_Criteria'], ': ', entry['Category'], ' Assigned by ',
-                                     {User.find_one({"Passcode": entry['Passcode']})['Username']})
-
-        elif recommendation:
-            st.write('Something went wrong, user not found.')
-        elif user:
-            st.write('Something went wrong, recommendation not found.')
-        else:
-            st.write('Something went wrong, user and recommendation not found.')
     else:
 
         st.write('You are on page ', st.session_state.page)
-
 else:
 
     st.write('You are on page ', st.session_state.page)
+
 
