@@ -500,7 +500,7 @@ elif 3 <= st.session_state.page <= 9:
                                 with column48:
                                     st.write(entry['Message'])
                                 with column58:
-                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag":
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation"
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
                                                   key=f"open_recommendation{pointer}")
