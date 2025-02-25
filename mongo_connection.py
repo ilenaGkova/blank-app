@@ -633,7 +633,7 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
     elif collection_name == "Removed_Recommendation":
         query = {"Passcode": passcode, "ID": key, "Created_At": created}
     elif collection_name == "Recommendation_Per_Person":
-        query = {"Passcode": passcode, "Pointer": key, "Created_At": created}
+        query = {"Passcode": passcode, "Pointer": key, "ID": key2, "Created_At": created}
     else:
         return False, "Invalid collection name"
     collection = globals().get(collection_name)  # Get the actual collection object
@@ -643,7 +643,7 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
     deleted_count = delete_result.deleted_count
     Record.insert_one(
         {
-            'Passcode': passcode,
+            'Passcode': user_passcode,
             'Action': f"User {user_passcode} requested to delete record {query} from {collection_name}",
             'Type': "J",
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -652,7 +652,7 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
     if deleted_count > 0:
         Record.insert_one(
             {
-                'Passcode': passcode,
+                'Passcode': user_passcode,
                 'Action': f"Deleted 1 record for {query} from {collection_name} as requested by user {user_passcode}",
                 'Type': "K",
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -661,7 +661,7 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
         return True, f"Deleted 1 record for {query} from {collection_name}"
     Record.insert_one(
         {
-            'Passcode': passcode,
+            'Passcode': user_passcode,
             'Action': f"No matching record {query} found in {collection_name} as requested by user {user_passcode}",
             'Type': "K",
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -723,7 +723,7 @@ def create_history(passcode, priority, order, include_user, include_question, in
     if include_removed: 
         add_history_entries("Removed_Recommendation", Removed_Recommendation, "ID")
     if include_recommendation_per_person: 
-        add_history_entries("Recommendation_Per_Person", Recommendation_Per_Person, "Pointer")
+        add_history_entries("Recommendation_Per_Person", Recommendation_Per_Person, "Pointer", "ID")
     if priority == "Time":
         user_history.sort(key=sort_by_time, reverse=(order == -1))
     elif priority == "Substance":
@@ -731,3 +731,4 @@ def create_history(passcode, priority, order, include_user, include_question, in
     else:
         user_history.sort(key=sort_by_type, reverse=(order == -1))
     return True, user_history, f"Record for user {passcode} assembled."
+
