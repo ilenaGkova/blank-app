@@ -813,8 +813,8 @@ elif 3 <= st.session_state.page <= 9:
                         st.write("Tags related to this recommendation:")
                         tags = list(Tag.find({"ID": recommendation['ID']}))
                         for entry in tags:
-                            st.write(
-                                f"{entry['Title_Of_Criteria']}: {entry['Category']} as assigned by {User.find_one({"Passcode": entry['Passcode']})['Username']}")
+                            data = f"{entry['Title_Of_Criteria']}: {entry['Category']} as assigned by {User.find_one({"Passcode": entry['Passcode']})['Username']}"
+                            st.write(data)
 
         elif recommendation:
             st.write('Something went wrong, user not found.')
@@ -961,6 +961,7 @@ elif 3 <= st.session_state.page <= 9:
         st.write('You are on page ', st.session_state.page)
 else:
     st.write('You are on page ', st.session_state.page)
+
 
 
 
