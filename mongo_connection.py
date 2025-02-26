@@ -119,7 +119,7 @@ def generate_animal_username(max_attempts=100):
 # Start/Status Page Function       
 def record_question(question, answer, passcode, function=None):
     if function is not None:
-        if not answer.strip() or not question.strip() or function:
+        if not answer.strip() or not question.strip() or function is False:
             return False, "Question failed to be recorded"
     Question.insert_one(
         {
