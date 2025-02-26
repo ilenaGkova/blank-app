@@ -774,8 +774,9 @@ elif 3 <= st.session_state.page <= 9:
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>Created By</div>",
                         unsafe_allow_html=True)
+                    data = User.find_one({"Passcode": recommendation['Passcode']})['Username']
                     st.markdown(
-                        f"<div style='text-align: center;font-size: 15px;'>{User.find_one({"Passcode": recommendation['Passcode']})['Username']}</div>",
+                        f"<div style='text-align: center;font-size: 15px;'>{data}</div>",
                         unsafe_allow_html=True)
                 with column34:
                     st.markdown(
