@@ -256,9 +256,9 @@ def do_the_tags_match(passcode, potential_recommendation_index):
             return False
         if tag['Title_Of_Criteria'] == 'Focus Area' and tag['Category'] != user['Focus_Area']:
             return False
-        if tag['Title_Of_Criteria'] == 'Stress Level' and tag['Category'] != status['Stress_Level']:
+        if tag['Title_Of_Criteria'] == 'Stress Level' and tag['Category'] < status['Stress_Level']:
             return False
-        if tag['Title_Of_Criteria'] == 'Time Available' and tag['Category'] != user['Time_Available']:
+        if tag['Title_Of_Criteria'] == 'Time Available' and tag['Category'] < user['Time_Available']:
             return False
     return True
 
@@ -419,14 +419,14 @@ def determine_level_change(passcode):
 def add_points(index, passcode, status):
     user = User.find_one({"Passcode": passcode})
     if not user:
-        return False
+        return False, "Something went wrong, user not found"
     recommendation = Recommendation.find_one({"ID": index})
     if not recommendation:
-        return False
+        return False, "Something went wrong, Recommendation not found"
     recommendation_per_person_entry = Recommendation_Per_Person.find_one(
         {"ID": index, "Passcode": passcode, "Status_Created_At": status})
     if not recommendation_per_person_entry:
-        return False
+        return False, "Something went wrong, Recommendation not found in given recommendations"
     up, down = get_limits(user)
     if user['Score'] + user['Level'] * recommendation['Points'] <= up + 50:
         User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level'] * recommendation['Points']}})
@@ -451,19 +451,19 @@ def add_points(index, passcode, status):
             }
         ]
     )
-    return True
+    return True, f"User {passcode} increased their score by {user_after_addition['Score'] - user['Score']} points"
 
 
 # Main page function
 def change_recommendation_preference_for_user(preference, passcode, index, function=None):
     if User.count_documents({"Passcode": passcode}) == 0:
-        return False
+        return False, "Something went wrong, user not found"
     if Recommendation.count_documents({"ID": index}) == 0:
-        return False
+        return False, "Something went wrong, Recommendation not found"
     Favorite_Recommendation.delete_one({"ID": index, "Passcode": passcode})
     Removed_Recommendation.delete_one({"ID": index, "Passcode": passcode})
     if function is True:
-        return True
+        return True, "Task Completed"
     new_entry = {
         'Passcode': passcode,
         'ID': index,
@@ -473,7 +473,7 @@ def change_recommendation_preference_for_user(preference, passcode, index, funct
         Removed_Recommendation.insert_one(new_entry)
     else:
         Favorite_Recommendation.insert_one(new_entry)
-    return True
+    return True, "Task Completed"
 
 
 # User profile page (for user) function
@@ -580,12 +580,13 @@ def create_recommendation_history(passcode, order, include_favorite, include_rem
 
 
 # Recommendation page (for admin) function
-def make_recommendation(ID, passcode, title, description, link, points):
+def add_recommendation(ID, passcode, title, description, link, points):
+    ID = int(ID)
     if not User.find_one({"Passcode": passcode}):
         return False, "Something went wrong, user not registered"
     if Recommendation.find_one({"ID": ID}):
         return False, "Please try again, it look like the ID generated has already been added."
-    if not title.strip() or not description.strip() or points == 0:
+    if not title.strip() or not description.strip() or points < 10 or points > 150:
         return False, "You need to fill in all mandatory fields"
     Recommendation.insert_one(
         {
@@ -607,16 +608,18 @@ def add_tag(ID, passcode, title, category):
         return False, "Something went wrong, user not registered"
     if not Recommendation.find_one({"ID": ID}):
         return False, "Something went wrong, recommendation not found"
+    if Tag.find_one({"ID": ID, "Title_Of_Criteria": title, "Category": category}):
+        return False, "Tag already exists"
     Tag.insert_one(
         {
-            'ID': ID,
+            'ID': int(ID),
             'Passcode': passcode,
             'Title_Of_Criteria': title,
             'Category': category,
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
     )
-    return True, "Recommendation added"
+    return True, "Tag added"
 
 
 # Database page (for admin) function
@@ -753,3 +756,4 @@ def create_history(passcode, priority, order, include_user, include_question, in
     else:
         user_history.sort(key=sort_by_type, reverse=(order == -1))
     return True, user_history, f"Record for user {passcode} assembled."
+
