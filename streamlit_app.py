@@ -531,7 +531,7 @@ else:
                           key="main_page")
         st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True,
                           on_click=change_page, args=[4], key="profile_page")
-        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page,
+        st.sidebar.button("Still stressed? Try again", icon=":material/add:", use_container_width=True, on_click=change_page,
                           args=[2], key="status_page")
         st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True,
                           on_click=change_page, args=[5], key="record_page")
@@ -549,7 +549,7 @@ else:
                           key="main_page_admin")
         st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True,
                           on_click=change_page, args=[4], key="profile_page_admin")
-        st.sidebar.button("Make New Status", icon=":material/add:", use_container_width=True, on_click=change_page,
+        st.sidebar.button("Still stressed? Try again", icon=":material/add:", use_container_width=True, on_click=change_page,
                           args=[2], key="status_page_admin")
         st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True,
                           on_click=change_page, args=[5], key="record_page_admin")
@@ -1276,7 +1276,8 @@ else:
                                   on_click=delete_entry,
                                   args=[st.session_state.current_passcode, entry['Question'], None, entry['Created_At'],
                                         "Question", st.session_state.current_passcode],
-                                  key="add_confession_button")
+                                  key=f"delete_confession_button_{pointer}")
+                pointer += 1
         else:
             st.write('Something went wrong, user not registered.')
 
