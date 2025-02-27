@@ -1027,7 +1027,7 @@ else:
                                     st.write(entry['Created_At'])
                                 with column49:
                                     st.write(entry['Message'])
-                                with column48:
+                                with column59:
                                     if condition1:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
