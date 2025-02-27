@@ -801,11 +801,11 @@ else:
                 with column137:
                     update_time_available = st.number_input(question_time_available, min_value=min_limit,
                                                             max_value=max_limit,
-                                                            value=user['Time_Available'])
+                                                            value=user['Suggestions'])
                 with column138:
                     update_suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                                          max_value=Recommendation.count_documents({}),
-                                                         value=user['Suggestions'])
+                                                         value=user['Time_Available'])
                 with column139:
                     update_repeat = st.number_input(
                         f"You will not see tha same suggestion in {user['Repeat_Preference']} days",
