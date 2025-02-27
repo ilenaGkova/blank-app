@@ -409,7 +409,7 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
     # The SideBar - User Signs In With Passcode
 
-    st.sidebar.write('Already have an account? Sign it!')
+    st.sidebar.write('Already have an account? Sign in!')
     passcode = st.sidebar.text_input(question_passcode, key="passcode", value=st.session_state.previous_passcode)
     st.sidebar.button('Log in', on_click=log_in_user, args=[passcode, question_passcode], key="sign_in_user")
 
@@ -417,7 +417,7 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
     """
     # Wellcome to Stressless Living!
-    Please answer the following questions and we'll create your account
+    New here? Please answer the following questions and we'll create your account. If you have an account sign in on the left.
     """
 
     # The Initial Questions Section
