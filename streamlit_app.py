@@ -491,7 +491,7 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
 
         # The Daily Question Section
 
-        question_stress_level = "How would you rate your stress level?"  # Step 1: Answer question(s) to rate stress levels
+        question_stress_level = "How would you rate your stress level between 1 and 10?"  # Step 1: Answer question(s) to rate stress levels
 
         stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=stress_max_limit)
 
