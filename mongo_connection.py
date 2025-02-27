@@ -238,11 +238,13 @@ def get_past_recommendations(passcode, days_behind):
     return list(user_past_recommendations)
 
 
-# Main Page Side function
 def has_the_user_seen_this_recommendation_before(passcode, potential_recommendation_index):
     user = User.find_one({"Passcode": passcode})
     user_past_recommendations = get_past_recommendations(passcode, user['Repeat_Preference'])
-    return not any(rec['ID'] == potential_recommendation_index for rec in user_past_recommendations)
+    return not Recommendation_Per_Person.find_one(
+        {'Passcode': passcode, 'ID': potential_recommendation_index,
+         'Created_At': {'$gte': datetime.now() - timedelta(days=user['Repeat_Preference'])}}
+    )
 
 
 # Main page side function
