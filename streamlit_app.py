@@ -808,7 +808,7 @@ else:
                                                          value=user['Suggestions'])
                 with column139:
                     update_repeat = st.number_input(
-                        f"You will not see tha same suggestion in {user['Repeat_Preference']} days",
+                        f"You will not see the same suggestion in {choose below} days",
                         min_value=min_limit, max_value=max_limit,
                         value=user['Repeat_Preference'])
                 with column133:
