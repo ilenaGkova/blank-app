@@ -781,7 +781,7 @@ else:
                 with column131:
                     update_username = st.text_input(question_username, key="update_username", value=user['Username'])
                 with column132:
-                    update_passcode = st.text_input(question_username, key="update_passcode", value=user['Passcode'])
+                    update_passcode = st.text_input(question_passcode, key="update_passcode", value=user['Passcode'])
 
                 column134, column135, column136 = st.columns([2, 2, 2])
 
