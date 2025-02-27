@@ -801,7 +801,7 @@ else:
                 with column137:
                     update_time_available = st.number_input(question_time_available, min_value=min_limit,
                                                             max_value=max_limit,
-                                                            value=user['Suggestions'])
+                                                            value=user['Time_Available'])
                 with column138:
                     update_suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                                          max_value=Recommendation.count_documents({}),
