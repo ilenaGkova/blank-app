@@ -379,7 +379,7 @@ def add_tag_here(recommendation_id_here, passcode_here, title_here, category,
 
 # Step 1: Show the error if needed
 
-if not st.session_state.error_status:
+if st.session_state.error_status is not None and not st.session_state.error_status:
     with st.container(border=True):
         st.header(st.session_state.error)
 
@@ -808,7 +808,7 @@ else:
                                                          value=user['Suggestions'])
                 with column139:
                     update_repeat = st.number_input(
-                        f"You will not see the same suggestion in (choose below) days",
+                        f"You will not see the same task in (choose below) days",
                         min_value=min_limit, max_value=max_limit,
                         value=user['Repeat_Preference'])
                 with column133:
@@ -819,7 +819,7 @@ else:
                                     update_time_available, update_suggestions, update_repeat,
                                     question_username,
                                     question_age, question_focus_area, question_time_available, question_suggestions,
-                                    f"You will not see tha same suggestion in {user['Repeat_Preference']} days"],
+                                    f"You will not see the same task in (choose below) days"],
                               key="update_user_button")
 
             # The Section Title
