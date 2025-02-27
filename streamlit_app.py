@@ -36,7 +36,7 @@ if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
 
 if 'error_status' not in st.session_state:
-    st.session_state.error_status = False  # Will indicate whether there is an error to show
+    st.session_state.error_status = None  # Will indicate whether there is an error to show
 
 if "username" not in st.session_state:
     st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
@@ -826,18 +826,18 @@ else:
             st.title('Your Preferences')
 
             # Step 1
-            st.header('Step 1: Tell us what you what to see')
+            st.header('Step 1: Tell us what you want to see')
 
             with st.container(border=True):
 
                 column101, column102, column103 = st.columns([2, 2, 2])
 
                 with column101:
-                    favorite_status_1 = st.checkbox("See your favorite recommendations")
+                    favorite_status_1 = st.checkbox("See your favorite tasks")
                 with column102:
-                    removed_status_1 = st.checkbox("See what recommendations you rejected")
+                    removed_status_1 = st.checkbox("See what tasks you rejected")
                 with column103:
-                    person_status_1 = st.checkbox("See what recommendations have been given to you")
+                    person_status_1 = st.checkbox("See what tasks have been given to you")
 
             # Step 2
             st.header('Step 2: Pick a sorting method - optional')
@@ -939,7 +939,7 @@ else:
             st.title('Your Record')
 
             # Step 1
-            st.header('Step 1: Tell us what you what to see')
+            st.header('Step 1: Tell us what you want to see')
 
             with st.container(border=True):
 
