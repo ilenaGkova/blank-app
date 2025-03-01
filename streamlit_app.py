@@ -16,29 +16,36 @@ from mongo_connection import add_points, change_recommendation_preference_for_us
     generate_animal_username, generate_unique_passcode, get_limits, get_recommendations, get_record, get_status, \
     init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
     record_question, create_history, delete_entry, create_recommendation_history, update_user, add_recommendation, \
-    add_tag  # Import from files
+    add_tag, generate_recommendation  # Import from files
 
 # Part A: The Initial Session Variables
 
 if "page" not in st.session_state:
+
     st.session_state.page = 1  # Will set the layout the application will open
 
 if "current_passcode" not in st.session_state:
+
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
 if "open_recommendation" not in st.session_state:
+
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 if 'previous_passcode' not in st.session_state:
+
     st.session_state.previous_passcode = ''  # Will register the last passcode used so the used doesn't have to remember it
 
 if 'error' not in st.session_state:
+
     st.session_state.error = ''  # Will store error logs for functions called
 
 if 'error_status' not in st.session_state:
+
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
 if "username" not in st.session_state:
+
     st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
 
 # Part B: The Global But Not Session Variables
@@ -54,23 +61,28 @@ Recommendation = db[
 Question = db["Question"]  # Will get the collection Question to get a user's confessions when needed
 Status = db["Status"]  # Will get the collection Status to see to count entries made by the user and see if they are new
 
+# The majority of the function alterations are done in the mongo file.
+# The above database collections are initialized here and used exclusively for find and count_document actions in the mongo database
+
 # Step 2: Initialise collections with data if needed
 
 if not User.find_one({"Username": "Admin"}):  # Will initialise collection User with default data
+
     User.insert_many(Users)
 
 if not Tag.find_one({"ID": 1}):  # Will initialise collection Tag with default data
+
     Tag.insert_many(Tags)
 
 if not Recommendation.find_one({"ID": 1}):  # Will initialise collection Recommendation with default data
+
     Recommendation.insert_many(Recommendations)
 
 # Step 3: User cookies to get a previous password
 
 controller = CookieController()
 cookies = controller.getAll()
-st.session_state.previous_passcode = cookies.get("previous_user_passcode",
-                                                 "")  # Save the previous passcode on the session variable
+st.session_state.previous_passcode = cookies.get("previous_user_passcode", "")  # Save the previous passcode on the session variable
 
 # Step 4: Get the conditions needed to open pages and to make sure the user doesn't skip necessary pages
 
@@ -83,15 +95,17 @@ recommendation = Recommendation.find_one(
 
 # Step 5: Initialise variables used in multable pages
 
-question_username = "What's your username?"
-question_age = "Age"
-question_focus_area = "Where would you like to focus?"
-question_time_available = "How many minutes are you willing to spend in reducing stress?"
-question_suggestions = "How many tasks do you want to try?"
-question_passcode = "What's your passcode?"
+min_time_limit = 3
 min_limit = 1
 max_limit = 20
 stress_max_limit = 10
+max_recommendation_limit = int(Recommendation.count_documents({})/4)
+question_username = "What's your username?"
+question_age = "Age"
+question_focus_area = "Where would you like to focus?"
+question_time_available = f"How many minutes are you willing to spend in reducing stress ({min_time_limit} - {max_limit})?"
+question_suggestions = f"How many tasks do you want to try daily ({min_limit} - {max_recommendation_limit})?"
+question_passcode = "What's your passcode?"
 
 
 # Part C: The Functions
@@ -99,7 +113,7 @@ stress_max_limit = 10
 def change_page(new_page):  # This function will change the page
 
     st.session_state.page = new_page  # By changing the page number we change the layout
-    st.session_state.error_status = True  # Will reset the status of the error message so it doesn't follow the user
+    st.session_state.error_status = True  # Will reset the status of the error message, so it doesn't follow the user
 
 
 # Layouts and numbers assigned
@@ -262,6 +276,15 @@ def get_time():  # Called with the home page to get the count-down towards the n
     return f"{days_until_sunday}:{hours:02}:{minutes:02}:{seconds:02}"  # Will return time remaining repeated
 
 
+def add_recommendation_to_user():  # Called when the user wants to see another recommendation
+
+    st.session_state.error_status, st.session_state.error = generate_recommendation(st.session_state.current_passcode)  # Will update the session error variables and maybe increase the user's score if appropriate
+
+    if st.session_state.error_status:  # Warning: The status variable is in reverse
+
+        change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
+
+
 def completed_recommendation(index_for_completed_recommendation,
                              status):  # Called when the user completes a recommendation
 
@@ -334,7 +357,8 @@ def generate_recommendation_id():  # Called what an admin wants to make a new re
         generated_id = 1
 
     # Step 2: Increase by 1 until the new id doesn't exist
-    while Recommendation.find_one({"ID": generated_id}):
+    while Recommendation.find_one({"ID": generated_id}) or Tag.find_one({"ID": generated_id}):
+
         generated_id += 1
 
     return generated_id
@@ -380,7 +404,9 @@ def add_tag_here(recommendation_id_here, passcode_here, title_here, category,
 # Step 1: Show the error if needed
 
 if st.session_state.error_status is not None and not st.session_state.error_status:
+
     with st.container(border=True):
+
         st.header(st.session_state.error)
 
 # Step 2: Show the rest of the page
@@ -397,13 +423,35 @@ if st.session_state.error_status is not None and not st.session_state.error_stat
 # 9 is the page where an admin can add a recommendation or tag
 
 # Layout logistics
+
 # There is a conditional statement. Depending on the number of the st.session_state.page value different assets will be generated.
 # Each asset however needs their own quick name to be identified.
+
 # Except page 1 every page needs a valid user to be signed in. Pages 1 and 2 are the only pages that don't require a status to be made by the user and page 6 needs a valid recommendation number.
 # The above conditions are initialised in Part B Step 4 every time the page loads.
+
 # From now on any button needs a distinct key, it will be found as the key="XXX" in the button parameters, input fields are the same
 # Buttons have other parameters like on_click= XXXXX is the function called when the button is clicked or args = [XXXXX, YYYYY] are the parameters of the function
+
 # Text can be show either by a streamlit option, st.write/header/title... or use html in st.markdown. Both are utilised here.
+
+# Users enter information is text fields, number fields, checkboxes and radio buttons.
+# Text fields need to get information when the user presses enter, number fields need limits, checkboxes will return True or False and radio buttons will have a preselected choice unless specified.
+# Each type of text input prompt will tell the user what to do to save their answer, thought it might be small in letters.
+
+# Any command st. is a streamlit layout asset. Any command that starts with 'with XXXXX' will put the assets under it in the asset.
+# Here that is used to put things in columns and putting things in a square.
+
+# Database collection function
+# When a user wants to delete and entry in any collection the Record Collection makes a new entry
+# Record Collection keeps other things recorded as well and assigns a letter in an action
+# Question Collection records every prompt the user enters as a question
+# A tag with the same Recommendation ID, Title and Category will not be entered twice
+# Look at the mongo file for more information
+
+# Warning
+# The database and the variable names refer to recommendations.
+# The texts shown to the user use the word task.
 
 if st.session_state.page == 1:  # 1 is the page where the user makes a new account or signs in with their passcode
 
@@ -422,8 +470,7 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
     # The Initial Questions Section
 
-    if Recommendation.count_documents(
-            {}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
+    if Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
 
         # Step 1: User enters a username - randomly generated at first
 
@@ -446,11 +493,9 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
         # Step 4: User enters their free time amount and the amount of suggestion they wish to see
 
-        time_available = st.number_input(question_time_available, min_value=min_limit, max_value=max_limit)
+        time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
 
-        suggestions = st.number_input(question_suggestions, min_value=min_limit,
-                                      max_value=Recommendation.count_documents(
-                                          {}))  # Set maximum at the amount of suggestions available
+        suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
 
         # Step 5: User clicks button to create an account
 
@@ -487,11 +532,11 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
         # The Title
 
         st.title(f"Hello {user['Username']}")
-        """Please answer the questions below"""
+        """Please answer the Daily Stress Questioner"""
 
         # The Daily Question Section
 
-        question_stress_level = "How would you rate your stress level between 1 and 10?"  # Step 1: Answer question(s) to rate stress levels
+        question_stress_level = f"How would you rate your stress level between {min_limit} and {stress_max_limit}?"  # Step 1: Answer question(s) to rate stress levels
 
         stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=stress_max_limit)
 
@@ -531,7 +576,8 @@ else:
                           key="main_page")
         st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True,
                           on_click=change_page, args=[4], key="profile_page")
-        st.sidebar.button("Still stressed? Try again", icon=":material/add:", use_container_width=True, on_click=change_page,
+        st.sidebar.button("Daily Stress Questionnaire", icon=":material/add:", use_container_width=True,
+                          on_click=change_page,
                           args=[2], key="status_page")
         st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True,
                           on_click=change_page, args=[5], key="record_page")
@@ -549,7 +595,8 @@ else:
                           key="main_page_admin")
         st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True,
                           on_click=change_page, args=[4], key="profile_page_admin")
-        st.sidebar.button("Still stressed? Try again", icon=":material/add:", use_container_width=True, on_click=change_page,
+        st.sidebar.button("Daily Stress Questionnaire", icon=":material/add:", use_container_width=True,
+                          on_click=change_page,
                           args=[2], key="status_page_admin")
         st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True,
                           on_click=change_page, args=[5], key="record_page_admin")
@@ -624,14 +671,14 @@ else:
 
                 if get_record(st.session_state.current_passcode):  # Levels and scores are altered 1 a week
                     st.header(determine_level_change(st.session_state.current_passcode))  # Will do the alteration
-                    user = User.find_one({"Passcode": st.session_state.current_passcode})  # Will update the user after the alteration
+                    user = User.find_one(
+                        {"Passcode": st.session_state.current_passcode})  # Will update the user after the alteration
 
                 # Step 2: Show level and score
 
-                show_level, show_score = st.columns([1, 5]) # Show the information side by side
+                show_level, show_score = st.columns([1, 5])  # Show the information side by side
 
                 with show_level:
-
                     st.markdown(
                         f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Level']}</div>",
                         unsafe_allow_html=True)
@@ -654,66 +701,113 @@ else:
                     f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>",
                     unsafe_allow_html=True)
 
-            if Status.count_documents({"Passcode": st.session_state.current_passcode}) == 1: # For new user, add a message to direct them to the tutorial
-                st.header(
-                    "New here? Check out our tutorial to better navigate this application! You will locate it in our navigation menu on your left.")
+            # For new user, add a message to direct them to the tutorial and give them the rundown of managing the recommendations they are given
 
-            # Section 3: User Recommendations
+            if Status.count_documents({"Passcode": st.session_state.current_passcode}) == 1:
 
-            st.subheader('Our recommendations for you today')
+                with st.container(border=True):
 
-            condition, user_recommendations, message = get_recommendations(st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
+                    st.header('New here? Here is how you can navigate our task table!')
 
-            st.write(message)  # Write the result of the function above, see mongo file for more
+                    st.write('Remember the number ', user['Passcode'],
+                             ' to sign in again after you close the application')
 
-            if condition:
+                    st.write(
+                        'Based on your Stress Questionnaire answers and the number of suggestions you choose we generated a task list for you. It will be right under this message.')
 
-                condition, user_recommendations = make_recommendation_table(user_recommendations,
-                                                                            st.session_state.current_passcode)  # Step 2: Structure the recommendation table in a way that is helpful
+                    st.write(
+                        'Click :material/done_outline: to complete a task')
 
-                if condition:
+                    st.write(
+                        'Click :material/favorite: to mark your favorites')
+
+                    st.write(
+                        'Click :material/heart_broken: to avoid future tasks')
+
+                    st.write(
+                        'Click :material/delete: to remove any of the :material/favorite: or :material/heart_broken: registration of a task')
+
+                    st.write('Click the :material/open_in_full: to see a recommendation in detail')
+
+                    st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
+
+                    st.write(
+                        'If you want new tasks all together? To the Daily Stress Questionnaire again by clicking on the ‘Daily Stress Questionnaire’. You will locate it in our navigation menu on your left.')
+
+                    st.write(
+                        "Check out our tutorial to better navigate the rest of the application! You will locate it in our navigation menu on your left.")
+
+                    # Section 3: User Recommendations
+
+            # Section 3: The daily recommendations
+
+            st.subheader('Our task list for you today')
+
+            user_recommendation_generated_list_build, user_recommendation_generated_list, user_recommendation_generated_list_message = get_recommendations(
+                st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
+
+            st.write(
+                user_recommendation_generated_list_message)  # Write the result of the function above, see mongo file for more
+
+            if user_recommendation_generated_list_build:  # This will tell us if the list was made or not
+
+                user_recommendation_generated_list_with_recommendations_built, user_recommendation_generated_list_with_recommendations = make_recommendation_table(
+                    user_recommendation_generated_list,
+                    st.session_state.current_passcode)  # Step 2: Structure the recommendation table in a way that is helpful
+
+                if user_recommendation_generated_list_with_recommendations_built:
 
                     # Step 3: Assuming nothing went wrong we can show the table
 
-                    for entry in user_recommendations:
+                    pointer_for_user_recommendation_generated_list_with_recommendations = 1  # Serves as unique identifier for the buttons
 
-                        with (st.container(border=True)):
+                    for entry_for_user_recommendation_generated_list_with_recommendations in user_recommendation_generated_list_with_recommendations:
 
-                            column_for_pointer, column_for_title_or_description, column_for_outcome, column_for_category_in_home_page, column_for_extension_button = st.columns([0.2, 2, 1, 0.5, 0.5])
+                        with (st.container(border=True)):  # Puts a border around each entry to seperate
+
+                            # Each column is named after the content it shows
+
+                            column_for_pointer, column_for_title_or_description, column_for_outcome, column_for_category_in_home_page, column_for_extension_button = st.columns(
+                                [0.2, 2, 1, 0.5, 0.5])
 
                             with column_for_pointer:
 
-                                st.markdown(f"<div style='text-align: center;'>{entry['Pointer']}</div>",
-                                            unsafe_allow_html=True)
+                                st.markdown(
+                                    f"<div style='text-align: center;'>{pointer_for_user_recommendation_generated_list_with_recommendations}</div>",
+                                    unsafe_allow_html=True)
 
                             with column_for_title_or_description:
 
-                                st.markdown(f"<div style='text-align: center; font-weight: bold;'>{entry['Title']}</div>",
-                                            unsafe_allow_html=True)
+                                st.markdown(
+                                    f"<div style='text-align: center; font-weight: bold;'>{entry_for_user_recommendation_generated_list_with_recommendations['Title']}</div>",
+                                    unsafe_allow_html=True)
 
-                                if len(entry['Description']) > 150:  # If description is big enough it won't show. It can be shown by extending the recommendation to full screen
+                                if len(entry_for_user_recommendation_generated_list_with_recommendations[
+                                           'Description']) > 150:  # If description is big enough it won't show. It can be shown by extending the recommendation to full screen
 
                                     st.markdown(
-                                        "<div style='text-align: center;'>Open Recommendation to see description</div>",
+                                        "<div style='text-align: center;'>Open Task to see description</div>",
                                         unsafe_allow_html=True)
                                 else:
 
-                                    st.markdown(f"<div style='text-align: center;'>{entry['Description']}</div>",
-                                                unsafe_allow_html=True)
+                                    st.markdown(
+                                        f"<div style='text-align: center;'>{entry_for_user_recommendation_generated_list_with_recommendations['Description']}</div>",
+                                        unsafe_allow_html=True)
+
                             with column_for_outcome:
 
                                 # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
 
-                                if entry['Outcome']:
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
 
                                     st.markdown(
-                                        f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry['Points']}!</div>",
+                                        f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
                                         unsafe_allow_html=True)
 
                                 else:
 
                                     st.markdown(
-                                        f"<div style='text-align: center;'>Recommendation completed {entry['Completed_At']}!</div>",
+                                        f"<div style='text-align: center;'>Recommendation completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
                                         unsafe_allow_html=True)
 
                             with column_for_category_in_home_page:
@@ -722,469 +816,743 @@ else:
                                 # Depending on that the user will see a different combination of buttons
                                 # A recommendation can't be both in the favorite and removed section. To be in one it will be removed from the other.
 
-                                if entry['Preference'] is False:
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is False:
 
                                     st.button("", icon=":material/favorite:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[1, entry['ID']],
-                                              key=f"love_{entry['Pointer']}")
+                                              on_click=change_recommendation_status, args=[1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
-                                              args=[1, st.session_state.current_passcode, entry['ID'], True],
-                                              key=f"remove_recommendation_XZa_{entry['Pointer']}")
+                                              args=[1, st.session_state.current_passcode,
+                                                    entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'ID'], True],
+                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
-                                if entry['Preference'] is True:
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is True:
 
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
-                                              args=[1, st.session_state.current_passcode, entry['ID'], True],
-                                              key=f"remove_recommendation_XZX_{entry['Pointer']}")
+                                              args=[1, st.session_state.current_passcode,
+                                                    entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'ID'], True],
+                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
 
                                     st.button("", icon=":material/heart_broken:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[-1, entry['ID']],
-                                              key=f"hate_{entry['Pointer']}")
+                                              on_click=change_recommendation_status, args=[-1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
 
-                                if entry['Preference'] is None:
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is None:
 
                                     st.button("", icon=":material/favorite:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[1, entry['ID']],
-                                              key=f"love_{entry['Pointer']}_X")
+                                              on_click=change_recommendation_status, args=[1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
 
                                     st.button("", icon=":material/heart_broken:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[-1, entry['ID']],
-                                              key=f"hate_{entry['Pointer']}_X")
+                                              on_click=change_recommendation_status, args=[-1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
 
                             with column_for_extension_button:
 
-                                if entry['Outcome']: #
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
 
                                     st.button("", icon=":material/done_outline:", use_container_width=True,
                                               on_click=completed_recommendation,
-                                              args=[entry['ID'], entry['Status_Created_At']],
-                                              key=f"complete_{entry['Pointer']}")
+                                              args=[entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'ID'],
+                                                    entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'Status_Created_At']],
+                                              key=f"complete_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                                 st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                          on_click=open_recommendation, args=[entry['ID']], key=f"open_{entry['Pointer']}")
+                                          on_click=open_recommendation, args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                                          key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
-    elif st.session_state.page == 4:
+                        pointer_for_user_recommendation_generated_list_with_recommendations += 1
+
+                    # Users are ask initially for up to 1/4 of the number of recommendations in the Recommendation collection
+                    # After the get their initial recommendations they can request 1/10 more of the number of recommendations in the Recommendation collection
+
+                    if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit+int(Recommendation.count_documents({}) * 0.1):
+
+                        st.button("Add A Task", icon=":material/add_task:", use_container_width=True,
+                                  on_click=add_recommendation_to_user,
+                                  args=[],
+                                  key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation
+
+    elif st.session_state.page == 4:  # 4 is the profile and preferences page where the user can update their profile and manage their preferences
 
         if user is not None and index != -1:
 
-            # The Section Title
+            # Section 1: The User Profile and Update Profile Function
+
+            # The Title
+
             st.title('Your Profile')
 
             # The Profile Information
+
             with st.container(border=True):
 
-                column131, column132, column133 = st.columns([2, 2, 2])
+                # This section will show the user their information and change it by putting in their new information and click a button
+                # The text labels are shared from page 1
 
-                with column131:
+                column_for_username, column_for_passcode = st.columns([3, 3])  # Each column is named after the attribute if the user it shows
+
+                column_for_age, column_for_focus_area = st.columns([3, 3])  # Each column is named after the attribute if the user it shows
+
+                column_for_time_available, column_for_number_of_suggestions, column_for_repeat = st.columns([2, 2, 2])  # Each column is named after the attribute if the user it shows
+
+                with column_for_username:
+
                     update_username = st.text_input(question_username, key="update_username", value=user['Username'])
-                with column132:
-                    update_passcode = st.text_input(question_passcode, key="update_passcode", value=user['Passcode'])
 
-                column134, column135, column136 = st.columns([2, 2, 2])
+                with column_for_passcode:
 
-                with column134:
+                    update_passcode = st.text_input("Your Passcode - Not available for Alteration",
+                                                    key="update_passcode", value=user['Passcode'], disabled=True)
+
+                with column_for_age:
+
                     update_age = st.radio(question_age, ("18-25", "26-35", "36-55", "56-70", "70+"))
-                with column135:
+
+                    st.write('Current Age Category: ', user[
+                        'Age_Category'])  # For radio button entries I can't preselect the user data, so I am adding them below
+
+                with column_for_focus_area:
+
                     update_focus_area = st.radio(question_focus_area, (
                         "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management",
                         "Personal Identity",
                         "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
-                with column136:
-                    st.write('Current Age Category: ', user['Age_Category'])
-                    st.write('Current Focus Area: ', user['Focus_Area'])
 
-                column137, column138, column139 = st.columns([2, 2, 2])
+                    st.write('Current Focus Area: ', user[
+                        'Focus_Area'])  # For radio button entries I can't preselect the user data, so I am adding them below
 
-                with column137:
-                    update_time_available = st.number_input(question_time_available, min_value=min_limit,
+                with column_for_time_available:
+
+                    update_time_available = st.number_input(question_time_available, min_value=min_time_limit,
                                                             max_value=max_limit,
-                                                            value=user['Time_Available'])
-                with column138:
+                                                            value=user[
+                                                                'Time_Available'])  # Limits for each number input are shared from page 1
+
+                with column_for_number_of_suggestions:
+
                     update_suggestions = st.number_input(question_suggestions, min_value=min_limit,
-                                                         max_value=Recommendation.count_documents({}),
-                                                         value=user['Suggestions'])
-                with column139:
+                                                         max_value=max_recommendation_limit,
+                                                         value=user[
+                                                             'Suggestions'])  # Max limit is the number of suggestions found in the database
+
+                with column_for_repeat:
+
                     update_repeat = st.number_input(
                         f"You will not see the same task in (choose below) days",
-                        min_value=min_limit, max_value=max_limit,
-                        value=user['Repeat_Preference'])
-                with column133:
-                    st.write("")
-                    st.button("Save Alterations", icon=":material/save_as:", use_container_width=True,
-                              on_click=update_user_here,
-                              args=[update_username, update_passcode, update_age, update_focus_area,
-                                    update_time_available, update_suggestions, update_repeat,
-                                    question_username,
-                                    question_age, question_focus_area, question_time_available, question_suggestions,
-                                    f"You will not see the same task in (choose below) days"],
-                              key="update_user_button")
+                        min_value=min_limit, max_value=7,
+                        value=user['Repeat_Preference'])  # Limits for each number input are shared from page 1
 
-            # The Section Title
+                st.write("")  # Add a blank line for space
+
+                st.write(
+                    "Warning: by clicking the button below will update every field of your profile, make sure you are altering only the fields you wish to alter")  # Add a disclaimer for the user
+
+                st.button("Save Alterations", icon=":material/save_as:", use_container_width=True,
+                          on_click=update_user_here,
+                          args=[update_username, update_passcode, update_age, update_focus_area,
+                                update_time_available, update_suggestions, update_repeat,
+                                question_username,
+                                question_age, question_focus_area, question_time_available, question_suggestions,
+                                f"You will not see the same task in (choose below) days"],
+                          key="update_user_button")  # When user clicks here the information they have entered will update every field of theo user profile
+
+            # Section 2: User Preferences for Tasks
+
+            # The Title
+
             st.title('Your Preferences')
 
-            # Step 1
-            st.header('Step 1: Tell us what you want to see')
+            # Step 1: Select categories
+
+            st.header('Step 1: Select the Categories - Mandatory')  # Explain what the user needs to do
 
             with st.container(border=True):
 
-                column101, column102, column103 = st.columns([2, 2, 2])
+                # Each column is named after the category it shows
+                # Each column will have a checkbox. Checkboxes return either True or False
 
-                with column101:
-                    favorite_status_1 = st.checkbox("See your favorite tasks")
-                with column102:
-                    removed_status_1 = st.checkbox("See what tasks you rejected")
-                with column103:
-                    person_status_1 = st.checkbox("See what tasks have been given to you")
+                column_for_favorite_in_user_preferences, column_for_rejected_in_user_preferences, column_for_recommendations_given_in_user_preferences = st.columns(
+                    [2, 2, 2])
 
-            # Step 2
-            st.header('Step 2: Pick a sorting method - optional')
+                with column_for_favorite_in_user_preferences:
 
-            column105, column106 = st.columns([3, 3])
+                    favorite_status_for_user_preferences = st.checkbox("See your favorite tasks")  # Adds Favorite Collection
 
-            with column105:
+                with column_for_rejected_in_user_preferences:
+
+                    removed_status_for_user_preferences = st.checkbox("See what tasks you rejected")  # Adds Removed_Recommendation Collection
+
+                with column_for_recommendations_given_in_user_preferences:
+
+                    person_status_for_user_preferences = st.checkbox("See what tasks have been given to you")  # Adds Recommendation_Per_Person Collection
+
+            # Step 2: Select Sorting Method
+
+            st.header('Step 2: Pick a sorting method - optional')  # Explain what the user needs to do
+
+            # Columns are named after the content they show. Here it is a radio question.
+
+            column_for_order_of_results_in_user_preferences, column_for_recommendation_status = st.columns([3, 3])
+
+            with column_for_order_of_results_in_user_preferences:
+
                 with st.container(border=True):
-                    order_question_1 = st.radio(
+                    order_question_for_user_preferences = st.radio(
                         "Show from",
                         ("A to Z", "Z to A"),
                         index=None
-                    )
-                    order_1 = -1
-                    if order_question_1 == "A to Z":
-                        order_1 = 1
+                    )  # Unlike other radio buttons this won't have a preselected answer
 
-            with column106:
+                    order_for_user_preferences = -1
+
+                    if order_question_for_user_preferences == "A to Z":
+                        order_for_user_preferences = 1
+
+            with column_for_recommendation_status:
+
                 with st.container(border=True):
-                    completed_question = st.radio(
+
+                    recommendation_status_for_user_preferences = st.radio(
                         "Include only",
                         ("Completed Recommendations", "Incomplete Recommendations"),
                         index=None
-                    )
-                    completed = None
-                    if completed_question == "Completed Recommendations":
-                        completed = False
-                    elif completed_question == "Incomplete Recommendations":
-                        completed = True
+                    )  # Unlike other radio buttons this won't have a preselected answer
 
-            # See the result
+                    final_recommendation_status_for_user_preferences = None  # With no option selected all recommendations are shown
+
+                    if recommendation_status_for_user_preferences == "Completed Recommendations":
+
+                        final_recommendation_status_for_user_preferences = False  # Mirrors how the recommendation_per_person stores recommendation outcomes
+
+                    elif recommendation_status_for_user_preferences == "Incomplete Recommendations":
+
+                        final_recommendation_status_for_user_preferences = True  # Mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
+
+            # Step 3: Show Result
+
             st.header('See your record')
 
-            if favorite_status_1 or removed_status_1 or person_status_1:
+            if favorite_status_for_user_preferences or removed_status_for_user_preferences or person_status_for_user_preferences:
 
-                condition, user_recommendation_history, message = create_recommendation_history(
-                    st.session_state.current_passcode, order_1, favorite_status_1, removed_status_1,
-                    person_status_1, completed)
+                # Built record if user has selected a category
+                # The function will receive seperate boolean values and the additional preference to order (integer) and recommendation status (boolean)
 
-                pointer_1 = 1
+                list_of_recommendations_based_on_filter_given_by_user_built, list_of_recommendations_based_on_filter_given_by_user, list_of_recommendations_based_on_filter_given_by_user_message = create_recommendation_history(
+                    st.session_state.current_passcode, order_for_user_preferences, favorite_status_for_user_preferences,
+                    removed_status_for_user_preferences,
+                    person_status_for_user_preferences, final_recommendation_status_for_user_preferences)
 
-                if condition:
-                    st.write(message)
-                    if len(user_recommendation_history) == 1:
-                        st.write('You have ', len(user_recommendation_history), ' result')
+                st.write(
+                    list_of_recommendations_based_on_filter_given_by_user_message)  # Show the message given by the function
+
+                list_of_recommendations_based_on_filter_given_by_user_pointer = 1  # The pointer will be a unique identifier for the buttons generated and for the user
+
+                if list_of_recommendations_based_on_filter_given_by_user_built:  # Write the result of the function above, see mongo file for more
+
+                    if len(list_of_recommendations_based_on_filter_given_by_user) == 1:  # Show the number of results with the appropriate message
+
+                        st.write('You have ', len(list_of_recommendations_based_on_filter_given_by_user), ' result')
+
                     else:
-                        st.write('You have ', len(user_recommendation_history), ' results')
-                    for entry in user_recommendation_history:
-                        with st.container(border=True):
-                            column121, column122, column123, column124, column125 = st.columns([1, 1, 1, 4, 1])
-                            with st.container(border=True):
-                                with column121:
-                                    st.write(pointer_1)
-                                with column122:
-                                    if entry['Type'] == "Favorite_Recommendation":
-                                        st.header(':material/favorite:')
-                                    elif entry['Type'] == "Removed_Recommendation":
-                                        st.header(':material/heart_broken:')
-                                    elif entry['Outcome']:
-                                        st.header(':material/badge:')
+
+                        st.write('You have ', len(list_of_recommendations_based_on_filter_given_by_user), ' results')
+
+                    for entry_for_list_of_recommendations_based_on_filter_given_by_user in list_of_recommendations_based_on_filter_given_by_user:
+
+                        with st.container(border=True):  # Puts a border around each entry to seperate
+
+                            # Columns are named after the content they show
+
+                            column_for_pointer_in_list_of_recommendations_based_on_filter_given_by_user, column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user, column_for_timestamp_for_list_of_recommendations_based_on_filter_given_by_user, column_for_title_and_description_for_list_of_recommendations_based_on_filter_given_by_user, column_for_buttons_for_list_of_recommendations_based_on_filter_given_by_user = st.columns(
+                                [1, 1, 1, 4, 1])
+
+                            with st.container(border=True):  # Puts a border around each entry to seperate
+
+                                with column_for_pointer_in_list_of_recommendations_based_on_filter_given_by_user:
+
+                                    st.write(
+                                        list_of_recommendations_based_on_filter_given_by_user_pointer)  # Show pointer to seperate entries
+
+                                with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
+
+                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Favorite_Recommendation":
+
+                                        st.header(':material/favorite:')  # Category Favorites and Favorite Collection
+
+                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Removed_Recommendation":
+
+                                        st.header(
+                                            ':material/heart_broken:')  # Category Removed and Removed_Recommendation Collection
+
+                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Outcome']:  # The below are in the Recommendation_per_person Collection
+
+                                        st.header(
+                                            ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
+
                                     else:
-                                        st.header(':material/badge: :material/done_outline:')
-                                with column123:
-                                    st.write(entry['Created_At'])
-                                with column124:
+
+                                        st.header(
+                                            ':material/badge: :material/done_outline:')  # Category given, complete recommendations
+
+                                with column_for_timestamp_for_list_of_recommendations_based_on_filter_given_by_user:
+
+                                    st.write(entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                                 'Created_At'])  # Warning : for different collection this is when the recommendation was added, not created
+
+                                with column_for_title_and_description_for_list_of_recommendations_based_on_filter_given_by_user:
+
                                     st.markdown(
-                                        f"<div style='text-align: center; font-weight: bold;'>{entry['Title']}</div>",
+                                        f"<div style='text-align: center; font-weight: bold;'>{entry_for_list_of_recommendations_based_on_filter_given_by_user['Title']}</div>",
                                         unsafe_allow_html=True)
-                                    if len(entry['Description']) > 150:
+
+                                    if len(entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                               'Description']) > 150:  # If description is big enough it won't show. It can be shown by extending the recommendation to full screen
+
                                         st.markdown(
-                                            "<div style='text-align: center;'>Open Recommendation to see description</div>",
+                                            "<div style='text-align: center;'>Open Task to see description</div>",
                                             unsafe_allow_html=True)
+
                                     else:
-                                        st.markdown(f"<div style='text-align: center;'>{entry['Description']}</div>",
-                                                    unsafe_allow_html=True)
-                                with column125:
-                                    if entry['Extend']:
+
+                                        st.markdown(
+                                            f"<div style='text-align: center;'>{entry_for_list_of_recommendations_based_on_filter_given_by_user['Description']}</div>",
+                                            unsafe_allow_html=True)
+
+                                with column_for_buttons_for_list_of_recommendations_based_on_filter_given_by_user:
+
+                                    # In case a recommendation has been deleted or not found it will still show but there are 2 additional attributes added to make sure they are not opened or deleted
+
+                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                                  on_click=open_recommendation, args=[entry['ID']],
-                                                  key=f"open_recommendation_XY_{pointer_1}")
-                                    if entry['Remove']:
+                                                  on_click=open_recommendation, args=[entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                                  key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
+
+                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
                                         st.button("", icon=":material/delete:", use_container_width=True,
                                                   on_click=change_recommendation_preference_for_user,
-                                                  args=[1, st.session_state.current_passcode, entry['ID'], True],
-                                                  key=f"remove_recommendation_X_{pointer_1}")
-                        pointer_1 += 1
-                else:
-                    st.write(message)
-            else:
-                st.write("You haven't selected a category")
-        else:
-            st.write('Something went wrong, user not found.')
+                                                  args=[1, st.session_state.current_passcode,
+                                                        entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                                            'ID'], True],
+                                                  key=f"remove_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
-    elif st.session_state.page == 5:
+                        list_of_recommendations_based_on_filter_given_by_user_pointer += 1
+
+            else:
+
+                st.write("You haven't selected a category")  # It won't create a record with no categories
+
+    elif st.session_state.page == 5:  # 5 is the Record page where the user can see their application history
 
         if user is not None and index != -1:
 
             # The Title
+
             st.title('Your Record')
 
-            # Step 1
-            st.header('Step 1: Tell us what you want to see')
+            # Step 1: Select categories
+
+            st.header('Step 1: Select the Categories - Mandatory')  # Explain what the user needs to do
 
             with st.container(border=True):
 
-                column16, column26, column36 = st.columns([2, 2, 2])
+                # Each column is named after the category it shows
+                # Each category is a collection in the mongo server.
+                # Each column is named after the category it shows
+                # Each column will have a checkbox. Checkboxes return either True or False
 
-                with column16:
-                    user_status = st.checkbox("See when your profile was generated")
-                with column26:
-                    question_status = st.checkbox("See what questions you have answered")
-                with column36:
-                    record_status = st.checkbox("See what actions the application has done on your behalf")
+                column_for_user_category, column_for_question_category, column_for_record_category = st.columns(
+                    [2, 2, 2])
+                column_for_status_category, column_for_recommendation_category, column_for_tag_category = st.columns(
+                    [2, 2, 2])
+                column_for_favorite_category, column_for_removed_category, column_for_per_person_category = st.columns(
+                    [2, 2, 2])
 
-                column46, column56, column66 = st.columns([2, 2, 2])
+                with column_for_user_category:
 
-                with column46:
-                    status_status = st.checkbox("See when you answered the Stress Daily Stress Questionnaire")
-                with column56:
-                    recommendation_status = st.checkbox("See what recommendations you have entered")
-                with column66:
-                    tag_status = st.checkbox("See what Tags you have added to recommendations")
+                    user_status = st.checkbox("See when your profile was generated")  # Include User Collection
 
-                column76, column86, column96 = st.columns([2, 2, 2])
+                with column_for_question_category:
 
-                with column76:
-                    favorite_status = st.checkbox("See your favorite recommendations")
-                with column86:
-                    removed_status = st.checkbox("See what recommendations you rejected")
-                with column96:
-                    person_status = st.checkbox("See what recommendations have been given to you")
+                    question_status = st.checkbox("See what questions you have answered")  # Include Question Collection
 
-            # Step 2
-            st.header('Step 2: Pick a sorting method - optional')
+                with column_for_record_category:
 
-            column17, column27 = st.columns([3, 3])
+                    record_status = st.checkbox("See what actions the application has done on your behalf")  # Include Record Collection
 
-            with column17:
+                with column_for_status_category:
+
+                    status_status = st.checkbox("See when you answered the Stress Daily Stress Questionnaire")  # Include Status Collection
+
+                with column_for_recommendation_category:
+
+                    if user['Role'] != 'User':
+
+                        recommendation_status = st.checkbox("See what tasks you have entered")  # Include Recommendation Collection
+
+                with column_for_tag_category:
+
+                    if user['Role'] != 'User':
+
+                        tag_status = st.checkbox("See what Tags you have added to Tasks")  # Include Tag Collection
+
+                with column_for_favorite_category:
+
+                    favorite_status = st.checkbox("See your favorite tasks")  # Include Favorite Collection
+
+                with column_for_removed_category:
+
+                    removed_status = st.checkbox("See what tasks you rejected")  # Include Removed_Recommendation Collection
+
+                with column_for_per_person_category:
+
+                    person_status = st.checkbox("See what tasks have been given to you")  # Include Recommendation_Per_Person Collection
+
+            # Step 2: Selecting a Shorting Method
+
+            st.header('Step 2: Pick a sorting method - optional')  # Explain what the user needs to do
+
+            column_for_priority_for_user_record, column_for_order_for_user_record = st.columns(
+                [3, 3])  # Each column is named after the content they show.
+
+            with column_for_priority_for_user_record:  # This will choose whether the results will be sorted by time created or the text of the record entries
+
                 with st.container(border=True):
                     priority = st.radio(
                         "Sort By",
                         ("Time", "Substance"),
                         index=None
-                    )
+                    )  # Unlike other radio buttons this won't have a preselected answer
 
-            with column27:
+            with column_for_order_for_user_record:
+
                 with st.container(border=True):
                     order_question = st.radio(
                         "Show from",
                         ("A to Z", "Z to A"),
                         index=None
-                    )
+                    )  # Unlike other radio buttons this won't have a preselected answer
+
                     order = -1
+
                     if order_question == "A to Z":
                         order = 1
+
+            # User can enter any user passcode to search if given the Admin role
 
             user_passcode_search = st.text_input("Search for user", key="user_username_for_search",
                                                  value=st.session_state.current_passcode,
                                                  disabled=(user['Role'] == 'User'))
 
-            # See the result
-            st.header('See your record')
+            st.header('See your record')  # See the result
 
             if user_status or question_status or record_status or status_status or recommendation_status or tag_status or favorite_status or removed_status or person_status:
 
-                condition, user_history, message = create_history(user_passcode_search, priority, order,
-                                                                  user_status, question_status, record_status,
-                                                                  status_status, recommendation_status, tag_status,
-                                                                  favorite_status, removed_status, person_status)
-                pointer = 1
-                if condition:
-                    st.write(message)
-                    if len(user_history) == 1:
-                        st.write('You have ', len(user_history), ' result')
+                # Send the user's choices and make the record
+                # The function takes a boolean value for each collection, a priority value (Time/Substance) and order (1/-1)
+
+                user_history_list_built, user_history_list, user_history_list_message = create_history(
+                    user_passcode_search, priority, order,
+                    user_status, question_status,
+                    record_status,
+                    status_status, recommendation_status,
+                    tag_status,
+                    favorite_status, removed_status,
+                    person_status,
+                    st.session_state.current_passcode)
+
+                st.write(user_history_list_message)  # Show the message given by the function
+
+                user_history_list_pointer = 1  # The pointer will be a unique identifier for the buttons generated and for the user
+
+                if user_history_list_built:  # Write the result of the function above, see mongo file for more
+
+                    if len(user_history_list) == 1:  # Show the number of results with the appropriate message
+
+                        st.write('You have ', len(user_history_list), ' result')
+
                     else:
-                        st.write('You have ', len(user_history), ' results')
-                    for entry in user_history:
-                        with st.container(border=True):
-                            condition1 = entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry[
-                                'Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation"
-                            condition2 = entry['Type'] == "Recommendation_Per_Person"
-                            if user['Role'] == 'User':
-                                column19, column29, column49, column59 = st.columns([2, 2, 4, 1])
-                                with column19:
-                                    st.write(pointer)
-                                with column29:
-                                    st.write(entry['Created_At'])
-                                with column49:
-                                    st.write(entry['Message'])
-                                with column59:
-                                    if condition1:
+
+                        st.write('You have ', len(user_history_list), ' results')
+
+                    for entry in user_history_list:
+
+                        with st.container(border=True):  # Puts a border around each entry to seperate
+
+                            if user['Role'] == 'User':  # This page has dual usage for and user or an admin. As a result we have 2 different tables
+
+                                column_for_pointer_for_user_history_list_user_menu, column_for_timestamp_for_user_history_list_user_menu, column_for_message_for_user_history_list_user_menu, column_for_buttons_for_user_history_list_user_menu = st.columns([2, 2, 4, 1])  # Columns are named after the content they show
+
+                                with column_for_pointer_for_user_history_list_user_menu:
+
+                                    st.write(user_history_list_pointer)  # Show pointer to seperate entries
+
+                                with column_for_timestamp_for_user_history_list_user_menu:
+
+                                    st.write(entry['Created_At'])  # Warning : For different collection this is when the entry to the collection was added, not created
+
+                                with column_for_message_for_user_history_list_user_menu:
+
+                                    st.write(entry['Message'])  # Each Collection gets a different message
+
+                                with column_for_buttons_for_user_history_list_user_menu:
+
+                                    # Each entry comes with 1 or 2 secret keys that combined with the collection name will find the entry
+                                    # For a recommendation related collection either have Key 1 or 2 as the ID of the recommendation which we can use to open the recommendation in full
+                                    # We see if it's one of the appropriate collections and send the right key to the open recommendation
+
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
+
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
-                                                  key=f"open_recommendation_Z_{pointer}")
-                                    elif condition2:
+                                                  key=f"open_recommendation_user_history_list_{user_history_list_pointer}_user")
+
+                                    elif entry['Type'] == "Recommendation_Per_Person":
+
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key2']],
-                                                  key=f"open_recommendation_C_{pointer}")
+                                                  key=f"open_recommendation_user_history_list_{user_history_list_pointer}_user")
+
                             else:
-                                column18, column28, column38, column48, column58 = st.columns([2, 2, 2, 4, 1])
-                                with column18:
-                                    st.write(pointer)
-                                with column28:
-                                    st.write(entry['Created_At'])
-                                with column38:
-                                    st.write(entry['Type'])
-                                with column48:
-                                    st.write(entry['Message'])
-                                with column58:
-                                    if condition1:
+
+                                column_for_pointer_for_user_history_list_admin_menu, column_for_timestamp_for_user_history_list_admin_menu, column_for_type_for_user_history_list_admin_menu, column_for_message_for_admin_history_list_user_menu, column_for_buttons_for_user_history_list_admin_menu = st.columns([2, 2, 2, 4, 1])  # Columns are named after the content they show
+
+                                with column_for_pointer_for_user_history_list_admin_menu:
+
+                                    st.write(user_history_list_pointer)  # Show pointer to seperate entries
+
+                                with column_for_timestamp_for_user_history_list_admin_menu:
+
+                                    st.write(entry['Created_At'])  # Warning : For different collection this is when the entry to the collection was added, not created
+
+                                with column_for_type_for_user_history_list_admin_menu:  # This is admin specific information
+
+                                    st.write(entry['Type'])  # Will show the collection the entry is from
+
+                                with column_for_message_for_admin_history_list_user_menu:
+
+                                    st.write(entry['Message'])  # Each Collection gets a different message
+
+                                with column_for_buttons_for_user_history_list_admin_menu:
+
+                                    # Each entry comes with 1 or 2 secret keys that combined with the collection name will find the entry
+                                    # For a recommendation related collection either have Key 1 or 2 as the ID of the recommendation which we can use to open the recommendation in full
+                                    # We see if it's one of the appropriate collections and send the right key to the open recommendation
+                                    # The Keys are used so the admin can delete peaces of the record, by sending the collection name and the keys to a delete function
+                                    # That function is explain in the mongo file
+
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
+
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
-                                                  key=f"open_recommendation_X_{pointer}")
-                                    elif condition2:
+                                                  key=f"open_recommendation_user_history_list_{user_history_list_pointer}_admin")
+
+                                    elif entry['Type'] == "Recommendation_Per_Person":
+
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key2']],
-                                                  key=f"open_recommendation_Y_{pointer}")
+                                                  key=f"open_recommendation_from_user_history_list_{user_history_list_pointer}_admin")
+
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=delete_entry,
                                               args=[entry['Passcode'], entry['Key'], entry['Key2'], entry['Created_At'],
                                                     entry['Type'], st.session_state.current_passcode],
-                                              key=f"delete_{pointer}")
-                        pointer += 1
-                else:
-                    st.write(message)
-            else:
-                st.write("You haven't selected a category")
-        else:
-            st.write('Something went wrong, user not found.')
+                                              key=f"delete_{user_history_list_pointer}")
 
-    elif st.session_state.page == 6:
+                        user_history_list_pointer += 1
+
+            else:
+
+                st.write("You haven't selected a category")  # It won't create a record with no categories
+
+    elif st.session_state.page == 6:  # 6 is the page where the user can see a recommendation in full
 
         if recommendation is not None and user is not None and index != -1:
 
             # The Title
+
             with st.container(border=True):
+
                 st.markdown(
                     f"<div style='text-align: center;font-size: 40px;font-weight: bold;'>{recommendation['Title']}</div>",
                     unsafe_allow_html=True)
 
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
 
-            # The Side Information
-            column14, column24, column34, column44 = st.columns([1, 2, 2, 3])
+            # Section 1: Recommendation Information
+
+            column_for_recommendation_ID, column_for_creator_of_recommendation, column_for_timestamp_for_recommendation, column_for_points_of_recommendation = st.columns([1, 2, 2, 3])  # Columns are named after the contents they show
+
             with st.container(border=True):
-                with column14:
+
+                with column_for_recommendation_ID:
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>{recommendation['ID']}</div>",
-                        unsafe_allow_html=True)
-                with column24:
+                        unsafe_allow_html=True)  # Recommendation ID, the quick identifier for each recommendation
+
+                with column_for_creator_of_recommendation:  # Shows the username of the admin that entered the recommendation
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>Created By</div>",
                         unsafe_allow_html=True)
-                    data = User.find_one({"Passcode": recommendation['Passcode']})['Username']
+
+                    # Warning: The creator is stored by passcode, but the passcode is how users sign in the application
+                    # Showing it here would give everyone the ability to take on the admins identity
+
+                    data = User.find_one({"Passcode": recommendation['Passcode']})['Username']  # So we are showing the username instead
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>{data}</div>",
                         unsafe_allow_html=True)
-                with column34:
+
+                with column_for_timestamp_for_recommendation:  # Show when the recommendation was added
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>Created At</div>",
                         unsafe_allow_html=True)
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>{recommendation['Created_At']}</div>",
                         unsafe_allow_html=True)
-                with column44:
+
+                with column_for_points_of_recommendation:
+
                     st.markdown(
                         f"<div style='text-align: center;font-size: 15px;'>Minimum Points awarded: {recommendation['Points']}</div>",
-                        unsafe_allow_html=True)
+                        unsafe_allow_html=True)  # Warning: Users earn points depending on the level they are, the points show are the minimum for level 1
 
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
+            st.write("")  # Add a blank line for space
 
-            # The Recommendation
-            Tag.count_documents({"ID": recommendation['ID']})
-            if Tag.count_documents({"ID": recommendation['ID']}) == 0:
-                with st.container(border=True):
-                    st.write(recommendation['Description'])
+            # Section 2: The Recommendation
+
+            # Here we will show the description of the recommendation and the tags related
+            # Tags are restrictive attributes that limit what kind of users will see this recommendation
+            # Tags can be placed on time_available, stress_level, focus_area and age of a user
+            # Too many tags means the recommendation may never be appropriate
+
+            if Tag.count_documents({"ID": recommendation['ID']}) == 0:  # If there are 0 tags we can just show the description
+
+                with st.container(border=True):  # Add a square around the information
+
+                    st.write(recommendation['Description'])  # Show the description
+
                     if recommendation['Link'] is not None:
-                        st.write('See more information on ', recommendation['Link'])
+
+                        st.write('See more information on ', recommendation['Link'])  # Show a link if one exists
+
             else:
-                column15, column25 = st.columns([5, 2])
-                with column15:
-                    with st.container(border=True):
-                        st.write(recommendation['Description'])
+
+                column_for_description_of_recommendation, column_for_tags_of_recommendation = st.columns([5, 2])  # Seperate the line into 2 columns and name them after the content they hold
+
+                with column_for_description_of_recommendation:
+
+                    with st.container(border=True):  # Add a square around the information
+
+                        st.write(recommendation['Description'])  # Show the description
+
                         if recommendation['Link'] is not None:
-                            st.write('See more information on ', recommendation['Link'])
-                    with column25:
+
+                            st.write('See more information on ', recommendation['Link'])  # Show a link if one exists
+
+                    with column_for_tags_of_recommendation:
+
+                        # Here we will show all tags related since they exist now
+                        # We will include the category they are in and their value and well as the username of the person who added them
+
                         st.write("Tags related to this recommendation:")
-                        tags = list(Tag.find({"ID": recommendation['ID']}))
-                        for entry in tags:
-                            st.write(entry['Title_Of_Criteria'], ': ', entry['Category'], 'as assigned by, ',
-                                     User.find_one({"Passcode": entry['Passcode']})['Username'])
 
-        elif recommendation:
-            st.write('Something went wrong, user not found.')
-        elif user:
-            st.write('Something went wrong, recommendation not found.')
-        else:
-            st.write('Something went wrong, user and recommendation not found.')
+                        tags = list(Tag.find({"ID": recommendation['ID']}))  # Get list of tags related
 
-    elif st.session_state.page == 7:
+                        for entry_in_tags in tags:
+
+                            # Warning: The creator is stored by passcode, but the passcode is how users sign in the application
+                            # Showing it here would give everyone the ability to take on the admins identity
+
+                            st.write(entry_in_tags['Title_Of_Criteria'], ': ', entry_in_tags['Category'], 'as assigned by, ',
+                                     User.find_one({"Passcode": entry_in_tags['Passcode']})['Username'])  # To avoid data leakage we will show the creator by username
+
+        elif recommendation is None:
+
+            st.session_state.error_status = False
+            st.session_state.error = f"Something went wrong, Recommendation with ID number {st.session_state.open_recommendation} not found."
+
+    elif st.session_state.page == 7:  # 7 is the tutorial page where the user can see how the application works
 
         if user is not None and index != -1:
 
+            # Below is the tutorial, broken in small chapters.
+            # The titles of the chapters are the st.header assets
+            # Section starts with the 'with st.container(border=True):' command
+
             # The Title
+
             st.title('Welcome to our application')
+
             st.write('Here’s a quick guide on how to navigate the application.')
 
-            # Header Number 1
-            with st.container(border=True):
+            # The sections
+
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Signing In')
+
                 st.write('To sign in, enter your unique 10-digit code ', user['Passcode'],
                          ' into the Passcode field on the login section on the initial page.')
 
-            # Header Number 2
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Daily Stress Questionnaire')
+
                 st.write('Every day, you’ll need to fill out a questionnaire to rate your daily stress.')
                 st.write('You only need to complete this once per day, not every time you log in.')
 
-            # Header Number 3
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Recommendations')
+
                 st.write(
-                    'Based on your Stress Questionnaire answers and the number of suggestions you choose, you will receive recommendations on the Home page.')
+                    'Based on your Stress Questionnaire answers and the number of suggestions you choose, you will receive tasks on the Home page.')
                 st.write(
-                    'To complete a recommendation and earn points click the button with the :material/done_outline: icon next to it.')
+                    'To complete a task and earn points click the button with the :material/done_outline: icon next to it.')
                 st.write(
-                    'To mark your favorites click the button with the :material/favorite: icon next to the recommendation you like.')
+                    'To mark your favorites click the button with the :material/favorite: icon next to the task you like.')
                 st.write(
-                    'To avoid future suggestions click the button with the :material/heart_broken: icon next to the recommendation you don’t want to see again.')
+                    'To avoid future suggestions click the button with the :material/heart_broken: icon next to the task you don’t want to see again.')
                 st.write(
                     'To remove any of the :material/favorite: or :material/heart_broken: registration click the button with the :material/delete: icon.')
                 st.write(
                     'That option is available at the Home page or the ‘Profile and Preferences’ page at the navigation menu.')
-                st.write('To see a recommendation in detail click the :material/open_in_full: button next to it.')
+                st.write('To see a task in detail click the :material/open_in_full: button next to it.')
+                st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
                 st.write(
-                    'If you want new recommendations create a New Status by clicking ‘Make New Status’ in the navigation menu and answer the Stress Questionnaire again.')
+                    'If you want new tasks all together? To the Daily Stress Questionnaire again by clicking on the ‘Daily Stress Questionnaire’. You will locate it in our navigation menu on your left.')
 
-            # Header Number 4
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Scores and Levels')
+
                 st.write('You earn points by completing recommendations. Every Monday, your score will determine:')
                 st.write('Whether you move up to a new level.')
                 st.write('Whether you stay at your current level.')
@@ -1194,235 +1562,367 @@ else:
                 st.write(
                     'Your level affects how many points you earn per recommendation and the scores needed to advance or get demoted.')
 
-            # Header Number 5
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Your Preferences')
+
                 st.write(
                     'Go to the ‘Profile and Preferences’ page in the navigation menu to view your profile and preferences.')
-                st.write('See the recommendations you have marked as favorites or not favorites.')
+                st.write('See the tasks you have marked as favorites or not favorites.')
                 st.write(
-                    'Adjust your preferences and follow the instructions on the page to filter the types of recommendations you want to see.')
-                st.write('To navigate the results by keeping track of the samples next to the results:')
-                st.write('Look for the :material/badge: icon to find a recommendation given to you.')
-                st.write('Look for the :material/done_outline: icon to find a completed recommendation.')
-                st.write('Look for the :material/heart_broken: icon to find a removed recommendation.')
-                st.write('Look for the :material/favorite: icon to find a favorite recommendation.')
+                    'Adjust your tasks and follow the instructions on the page to filter the types of tasks you want to see.')
+                st.write('To navigate the results by keeping track of the icons next to the results:')
+                st.write('Look for the :material/badge: icon to find a task given to you.')
+                st.write('Look for the :material/done_outline: icon to find a completed task.')
+                st.write('Look for the :material/heart_broken: icon to find a removed task.')
+                st.write('Look for the :material/favorite: icon to find a favorite task.')
                 st.write(
                     'Look for the :material/delete: icon to remove a recommendation from the :material/heart_broken: or :material/favorite: category.')
                 st.write('Click on the :material/open_in_full: icon to open the recommendation in full.')
 
-            # Header Number 6
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Your Record')
+
                 st.write('Click the ‘See Record’ button in the navigation menu to view your application history.')
                 st.write(
                     'Filter by categories and follow the instructions on the page to track specific actions you’ve taken in the app.')
 
-            # Header Number 7
-            with st.container(border=True):
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Confessions')
+
                 st.write(
                     "Feel like journaling? Click in the 'Make a confession' page in the navigation menu and make a confession.")
                 st.write(
                     'You will also be able to manage your confessions on that page. To delete a confession click on the button with the :material/delete: icon.')
 
+            # Closing the Tutorial
+
             st.write('We hope this helps you navigate the app with ease! Let us know if you need further assistance.')
 
-        else:
-            st.write('Something went wrong, user not found.')
-
-    elif st.session_state.page == 8:
+    elif st.session_state.page == 8:  # 8 is the page where the user can make a confession and manage their confessions
 
         if user is not None and index != -1:
 
             # The Title
+
+            # We save title in a variable to record the confession as a question
+            # To record a question we need a question, an answer and a passcode
+            # We also search when by the question in the question collection to show the user their previous confessions
+            # We don't show any other kind of questions in this page
+
             con_question = 'Want to take something off your chest? Make a confession!'
+
             st.title(con_question)
 
-            # The New Confession Section
-            with st.container(border=True):
-                st.header(f"Tell us what's on your mind {user['Username']}!")
-                answer = st.text_area("", height=300)
+            # Section 1: The New Confession
+
+            with st.container(border=True):  # Put a square around this to seperate from anything else
+
+                st.header(f"Tell us what's on your mind {user['Username']}!")  # Tell the user what to do
+
+                answer = st.text_area("", height=300)  # Warning: Alike other input text filed this type need control+enter to save the new information
+
+                # This application is not very private.
+                # We add a disclaimer to warn the user to keep their information private
+                # Putting it in text makes it easy to ignore, so it's a checkbox instead
+
                 disclaimer = st.checkbox(
                     "I have not entered any identifying or sensitive information such as full names or banking information.")
+
+                # Usually record question takes 3 variables: passcode, question and answer
+                # Only this time we also sent the disclaimer as a forth
+                # See the mongo file for more information
+
                 st.button("Enter confession", icon=":material/draw:", use_container_width=True,
                           on_click=record_question,
                           args=[con_question, answer, st.session_state.current_passcode, disclaimer],
-                          key="add_confession_button_1")
+                          key="add_confession_button_in_page")
 
-            # The Table
+            # Section 2: The Older Confessions
+
+            # The Title
+
             st.header("Your previous confessions:")
-            data = list(Question.find({"Passcode": st.session_state.current_passcode, "Question": con_question}))
+
+            data = list(Question.find({"Passcode": st.session_state.current_passcode, "Question": con_question}))  # Search for only this question in the question collection
+
+            # Depending on the number of confessions, we show different messages before listing them
 
             if len(data) == 0:
+
                 st.write("You haven't entered any confessions yet")
+
             elif len(data) == 1:
+
                 st.write("You have made 1 confession")
+
             else:
+
                 st.write(f"You have made {len(data)} confessions")
 
-            pointer = 1
+            pointer_for_confessions = 1  # Pointer works as unique identifier of the button and separates the confessions for the user
+
             for entry in data:
-                with st.container(border=True):
-                    column151, column152, column153, column154 = st.columns([1, 2, 4, 0.5])
-                    with column151:
-                        st.write(pointer)
-                    with column152:
-                        st.write(entry['Created_At'])
-                    with column153:
-                        st.write(entry['Answer'])
-                    with column154:
+
+                with st.container(border=True):  # Box each entry to seperate them
+
+                    column_for_pointer_for_confession, column_for_timestamp_for_confession, column_for_confession, column_for_delete_confession_button = st.columns([1, 2, 4, 0.5])  # Columns are named after the content they show
+
+                    with column_for_pointer_for_confession:
+
+                        st.write(pointer_for_confessions)  # Show pointer so seperate confessions
+
+                    with column_for_timestamp_for_confession:
+
+                        st.write(entry['Created_At'])  # When the confession was made
+
+                    with column_for_confession:
+
+                        st.write(entry['Answer'])  # Show the confession
+
+                    with column_for_delete_confession_button:
+
+                        # We use a generalised function that takes a collection name, some key information and deletes an entry from the collection
+                        # For the Question Collection we need the question, the user, and the time created to delete the entry
+
                         st.button('', icon=":material/delete:", use_container_width=True,
                                   on_click=delete_entry,
                                   args=[st.session_state.current_passcode, entry['Question'], None, entry['Created_At'],
                                         "Question", st.session_state.current_passcode],
-                                  key=f"delete_confession_button_{pointer}")
-                pointer += 1
-        else:
-            st.write('Something went wrong, user not registered.')
+                                  key=f"delete_confession_button_{pointer_for_confessions}")
 
-    elif st.session_state.page == 9:
+                pointer_for_confessions += 1
+
+    elif st.session_state.page == 9:  # 9 is the page where an admin can add a recommendation or tag
 
         if user is not None and index != -1 and user['Role'] != 'User':
 
             # The Title
+
             st.title('Add Recommendations and Tags')
 
-            # The recommendation section
+            # Section 1: Add a Recommendation
+
+            # The Title
+
             st.header('Add a recommendation')
+
+            # Step 1: Initialising the prompts, so we can record the questions later
 
             question_about_passcode = "User Passcode"
             question_about_recommendation_id = "Recommendation ID"
-            question_about_points = "Points"
+            question_about_points = "Points (10-150)"
             question_about_title = "Title"
             question_about_description = "Description"
             question_about_link = "Link - optional"
 
-            # The recommendation input
-            with st.container(border=True):
+            # Step 2: Write the recommendation
 
-                column161, column162, column163 = st.columns([2, 2, 2])
-                with column161:
-                    your_passcode = st.text_input(question_about_passcode, key="your_passcode",
-                                                  value=st.session_state.current_passcode, disabled=True)
-                with column162:
+            with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+                # Part 1: General Information
+
+                column_for_new_recommendation_passcode, column_for_new_recommendation_ID, column_for_point_for_new_recommendation = st.columns([2, 2, 2])  # Columns are named after the Recommendation information they show
+
+                with column_for_new_recommendation_passcode:  # This is auto field by the current user's passcode and can't change
+
+                    your_passcode_for_recommendation = st.text_input(question_about_passcode, key="your_passcode_for_recommendation",
+                                                                     value=st.session_state.current_passcode, disabled=True)
+
+                with column_for_new_recommendation_ID:
+
+                    # This is auto field by finding and ID that is not in the recommendation collection and can't change
+                    # Warning: While this is a text input the text in converted into a number before being entered with the recommendation
+
                     this_generated_id = st.text_input(question_about_recommendation_id, key="recommendation_id",
-                                                      value=generate_recommendation_id(), disabled=True)
-                with column163:
+                                                      value=generate_recommendation_id(), disabled=True)  # This ID is generated on the spot
+
+                with column_for_point_for_new_recommendation:
+
+                    # The minimum points a recommendation can get is 10 points
+                    # The maximum points is 150 which is the cap points for a user in level 1
+
                     points = st.number_input(question_about_points, min_value=10, max_value=150)
 
-                title = st.text_input(question_about_title, key="title")
-                description = st.text_area(question_about_description, height=300, key="description")
+                # Part 2: The recommendation
 
-                column164, column165 = st.columns([4, 3])
-                with column164:
-                    link_input = st.text_input(question_about_link, key="link")
-                with column165:
+                title = st.text_input(question_about_title, key="title")  # Recommendation title
+
+                description = st.text_area(question_about_description, height=300, key="description")  # Warning: Alike other input text filed this type need control+enter to save the new information
+
+                # Part 3: The Recommendation Link
+
+                column_for_url_link, column_for_url_link_disclaimer = st.columns([4, 3])  # Columns are named after the Recommendation information they show
+
+                with column_for_url_link:
+
+                    link_input = st.text_input(question_about_link, key="link")  # This is a link the user will be able to go and see more information
+
+                with column_for_url_link_disclaimer:
+
                     link_condition = st.checkbox(
-                        "Include link - User takes full responsibility that the link has been verified and is secure")
+                        "Include link - User takes full responsibility that the link has been verified and is secure")  # This disclaimer makes the user think to check the link before entering it
+
                 link = None
-                if link_condition:
+
+                if link_condition:  # You only get the link included if you have checked the checkbox
+
                     link = link_input
+
+                # Step 3: Add the recommendation
+                # To add the recommendation the user needs to click this button
+                # The function it calls is a local one that will add the recommendation and record the questions
 
                 st.button('Add Recommendation', icon=":material/fact_check:", use_container_width=True,
                           on_click=add_recommendation_here,
-                          args=[your_passcode, this_generated_id, points, title, description, link,
+                          args=[your_passcode_for_recommendation, this_generated_id, points, title, description, link,
                                 question_about_recommendation_id, question_about_points, question_about_title,
                                 question_about_description, question_about_link],
                           key="add_recommendation_entry_button")
 
-            # The tag section
+            # Section 2: Add a Tag
+
+            # Tags are restrictive attributes that limit what kind of users will see this recommendation
+            # Tags can be placed on time_available, stress_level, focus_area and age of a user
+            # Warning: Too many tags means the recommendation may never be appropriate
 
             if Recommendation.count_documents({}) >= 1:
 
+                # The Title
+
                 st.header('Add a tag')
 
-                your_passcode_1 = st.text_input(question_about_passcode, key="your_passcode_X",
-                                                value=st.session_state.current_passcode, disabled=True)
+                # The Tag Start Information
 
-                # Stress level
-                with st.container(border=True):
+                # This is vital information for any Tag, the passcode of the user adding it and the recommendation to goes to
 
-                    column171, column172, column173, column174 = st.columns([2, 2, 2, 0.5])
+                column_for_tag_passcode, column_for_id_tag = st.columns([3, 3])  # Columns named after the content they show
 
-                    with column171:
-                        st.write("Add a stress level tag")
-                    with column172:
-                        recommendation_id = st.number_input(question_about_recommendation_id, min_value=1, key="cat_1")
-                    with column173:
-                        stress_level = st.number_input("Stress Level", min_value=min_limit,
-                                                       max_value=Recommendation.count_documents({}))
-                    with column174:
-                        st.button('', icon=":material/check:", use_container_width=True,
-                                  on_click=add_tag_here,
-                                  args=[recommendation_id, your_passcode_1, "Stress Level", stress_level,
-                                        question_about_recommendation_id],
-                                  key="add_stress_level_tag_button")
+                with column_for_tag_passcode:  # This is set as the current user's passcode, and it can't be changed
 
-                # Time Available
-                with st.container(border=True):
-                    column181, column182, column183, column184 = st.columns([2, 2, 2, 0.5])
+                    your_passcode_for_tag = st.text_input(question_about_passcode, key="your_passcode_for_tag",
+                                                          value=st.session_state.current_passcode, disabled=True)
 
-                    with column181:
-                        st.write("Add a time available tag")
-                    with column182:
-                        recommendation_id_1 = st.number_input(question_about_recommendation_id, min_value=1, key="cat_2")
-                    with column183:
-                        time_available = st.number_input("Time Available", min_value=min_limit,
-                                                         max_value=max_limit)
-                    with column184:
-                        st.button('', icon=":material/check:", use_container_width=True,
-                                  on_click=add_tag_here,
-                                  args=[recommendation_id_1, your_passcode_1, "Time Available", time_available,
-                                        question_about_recommendation_id],
-                                  key="add_time_available_tag_button")
+                with column_for_id_tag:  # This is the ID of the recommendation we want to add the Tag to
 
-                # Focus Area
-                with st.container(border=True):
-                    column1121, column1122, column1123, column1124 = st.columns([2, 2, 2, 0.5])
+                    id_for_tag = st.number_input(question_about_recommendation_id, min_value=1)
 
-                    with column1121:
-                        st.write("Add a focus area tag")
-                    with column1122:
-                        recommendation_id_3 = st.number_input(question_about_recommendation_id, min_value=1, key="cat_3")
-                    with column1123:
+                # There are 4 kinds of tags placed: Stress Level, Time Available, Age Category and Focus Area
+
+                # SubSection A: Stress Level Tag
+
+                with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+                    column_for_stress_level_tag_title, column_for_stress_level_tag_value, column_for_stress_level_tag_done = st.columns([2, 4, 0.5])  # Columns named after the content they show
+
+                    with column_for_stress_level_tag_title:  # Write the kind of tag the user is entering
+
+                        st.write("Add a Stress Level Tag")
+
+                    with column_for_stress_level_tag_value:  # User selects the Tag Value
+
+                        stress_level = st.number_input("Stress Level", min_value=min_limit, max_value=stress_max_limit)  # Limits match the limits of the answer in the Daily Stress Questioner
+
+                    with column_for_stress_level_tag_done:
+
+                        if Recommendation.find_one({"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
+
+                            st.button('', icon=":material/check:", use_container_width=True,
+                                      on_click=add_tag_here,
+                                      args=[id_for_tag, your_passcode_for_tag, "Stress Level", stress_level, question_about_recommendation_id],
+                                      key="add_stress_level_tag_button")  # This function is local to record the questions and add the Tag
+
+                # Subsection B: Time Available Tag
+
+                with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+                    column_for_time_available_tag_title, column_for_time_available_tag_value, column_for_time_available_tag_done = st.columns([2, 4, 0.5])  # Columns named after the content they show
+
+                    with column_for_time_available_tag_title:  # Write the kind of tag the user is entering
+
+                        st.write("Add a Time Available Tag")
+
+                    with column_for_time_available_tag_value:  # User selects the Tag Value
+
+                        time_available = st.number_input("Time Available", min_value=min_limit, max_value=max_limit)  # Limits match the user's margin for answer
+
+                    with column_for_time_available_tag_done:
+
+                        if Recommendation.find_one({"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
+
+                            st.button('', icon=":material/check:", use_container_width=True,
+                                      on_click=add_tag_here,
+                                      args=[id_for_tag, your_passcode_for_tag, "Time Available", time_available, question_about_recommendation_id],
+                                      key="add_time_available_tag_button")  # This function is local to record the questions and add the Tag
+
+                # Subsection C: Focus Area
+
+                with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+                    column_for_focus_area_tag_title, column_for_focus_area_tag_value, column_for_focus_area_tag_done = st.columns([2, 4, 0.5])  # Columns named after the content they show
+
+                    with column_for_focus_area_tag_title:  # Write the kind of tag the user is entering
+
+                        st.write("Add a Focus Area Tag")
+
+                    with column_for_focus_area_tag_value:  # User selects the Tag Value
+
                         focus_area = st.radio("Focus Area", (
                             "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management",
                             "Personal Identity",
-                            "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
-                    with column1124:
-                        st.button('', icon=":material/check:", use_container_width=True,
-                                  on_click=add_tag_here,
-                                  args=[recommendation_id_3, your_passcode_1, "Focus Area", focus_area,
-                                        question_about_recommendation_id],
-                                  key="add_focus_area_tag_button")
+                            "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))  # Options match the ones given to user
 
-                # Age Variant
-                with st.container(border=True):
-                    column191, column192, column193, column194 = st.columns([2, 2, 2, 0.5])
+                    with column_for_focus_area_tag_done:
 
-                    with column191:
-                        st.write("Add a age variant tag")
-                    with column192:
-                        recommendation_id_2 = st.number_input(question_about_recommendation_id, min_value=1, key="cat_4")
-                    with column193:
-                        age_variant = st.radio("Age Variant", ("18-25", "26-35", "36-55", "56-70", "70+"))
-                    with column194:
-                        st.button('', icon=":material/check:", use_container_width=True,
-                                  on_click=add_tag_here,
-                                  args=[recommendation_id_2, your_passcode_1, "Age Variant", age_variant,
-                                        question_about_recommendation_id],
-                                  key="add_age_variant_tag_button")
+                        if Recommendation.find_one({"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
+
+                            st.button('', icon=":material/check:", use_container_width=True,
+                                      on_click=add_tag_here,
+                                      args=[id_for_tag, your_passcode_for_tag, "Focus Area", focus_area, question_about_recommendation_id],
+                                      key="add_focus_area_tag_button")  # This function is local to record the questions and add the Tag
+
+                # Subsection D: Age Variant
+                
+                with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+                    column_for_age_tag_title, column_for_age_tag_value, column_for_age_tag_done = st.columns([2, 4, 0.5])  # Columns named after the content they show
+
+                    with column_for_age_tag_title:  # Write the kind of tag the user is entering
+
+                        st.write("Add a Age Variant Tag")
+
+                    with column_for_age_tag_value:  # User selects the Tag Value
+
+                        age_variant = st.radio("Age Variant", ("18-25", "26-35", "36-55", "56-70", "70+"))  # Options match the ones given to user
+
+                    with column_for_age_tag_done:
+
+                        if Recommendation.find_one({"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
+
+                            st.button('', icon=":material/check:", use_container_width=True,
+                                      on_click=add_tag_here,
+                                      args=[id_for_tag, your_passcode_for_tag, "Age Variant", age_variant, question_about_recommendation_id],
+                                      key="add_age_variant_tag_button")  # This function is local to record the questions and add the Tag
 
             else:
-                st.write('There are no recommendation in the data base')
+
+                # You can't add tags to a recommendation-less database
+
+                st.session_state.error_status = False
+                st.session_state.error = 'There are no recommendations in the data base'
 
         elif user is not None and index != -1:
-            st.write('You do not have access to this page')
-        else:
-            st.write('Something went wrong, user not found.')
+
+            st.session_state.error_status = False
+            st.session_state.error = 'You do not have access to this page'
 
     else:
+
+        # If for any reason a number more than 9 is called we show message with the number
+        # This should never realistically happen
+
         st.write('You are on page ', st.session_state.page)
 
 
