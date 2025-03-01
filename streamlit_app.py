@@ -457,52 +457,57 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
     # The SideBar - User Signs In With Passcode
 
-    st.sidebar.write('Already have an account? Sign in!')
+    st.sidebar.header('Already have an account? Sign in!')
+
     passcode = st.sidebar.text_input(question_passcode, key="passcode", value=st.session_state.previous_passcode)
-    st.sidebar.button('Log in', on_click=log_in_user, args=[passcode, question_passcode], key="sign_in_user")
+
+    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode], key="sign_in_user")
 
     # The Title
 
-    """
-    # Wellcome to Stressless Living!
-    New here? Please answer the following questions and we'll create your account. If you have an account sign in on the left.
-    """
+    st.title('Wellcome to Stressless Living!')
+
+    st.header('If you have an account sign in on the left - find the :material/arrow_forward_ios: icon to find the sign in form.')
+
+    st.write("New here? Please answer the following questions and we'll create your account.")
 
     # The Initial Questions Section
 
     if Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
 
-        # Step 1: User enters a username - randomly generated at first
+        with st.container(border=True):  # Add a square around the section to seperate
 
-        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
+            # Step 1: User enters a username - randomly generated at first
 
-        if user_username != st.session_state.username:
-            st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
+            user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
 
-        # Step 2: Generate a password randomly with 10 digits
+            if user_username != st.session_state.username:
+                st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
 
-        user_passcode = generate_unique_passcode()
+            # Step 2: Generate a password randomly with 10 digits
 
-        # Step 3: User enters an Age category and focus area to personalise the experience
+            user_passcode = generate_unique_passcode()
 
-        age = st.radio(question_age, ("18-25", "26-35", "36-55", "56-70", "70+"))
+            # Step 3: User enters an Age category and focus area to personalise the experience
 
-        focus_area = st.radio(question_focus_area, (
-            "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity",
-            "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
+            age = st.radio(question_age, ("18-25", "26-35", "36-55", "56-70", "70+"))
 
-        # Step 4: User enters their free time amount and the amount of suggestion they wish to see
+            focus_area = st.radio(question_focus_area, (
+                "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity",
+                "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
 
-        time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
+            # Step 4: User enters their free time amount and the amount of suggestion they wish to see
 
-        suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
+            time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
 
-        # Step 5: User clicks button to create an account
+            suggestions = st.number_input(question_suggestions, min_value=min_limit, max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
 
-        st.button('Let us get started', on_click=create_user,
-                  args=[user_username, user_passcode, age, focus_area, time_available, suggestions, question_username,
-                        question_age, question_focus_area, question_time_available, question_suggestions,
-                        question_passcode], key="create_user")
+            # Step 5: User clicks button to create an account
+
+            st.button('Let us get started', use_container_width=True, on_click=create_user,
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, question_username,
+                            question_age, question_focus_area, question_time_available, question_suggestions,
+                            question_passcode], key="create_user")
 
 elif st.session_state.page == 2:  # 2 is the page where the user can answer questions about stress levels
 
@@ -527,7 +532,7 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
 
         if today:  # Sometimes users do multable statuses a day, if one has been done the user doesn't need to make another unless they want to
 
-            st.sidebar.button('Skip', on_click=change_page, args=[3], key="skip")
+            st.sidebar.button('Skip', on_click=change_page, args=[3], use_container_width=True, key="skip")
 
         # The Title
 
@@ -540,8 +545,7 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
 
         stress_level = st.number_input(question_stress_level, min_value=min_limit, max_value=stress_max_limit)
 
-        st.button('Let us get started', on_click=make_status, args=[stress_level],
-                  key="make_status")  # Step 2: Click button to submit answers
+        st.button('Let us get started', use_container_width=True, on_click=make_status, args=[stress_level], key="make_status")  # Step 2: Click button to submit answers
 
     else:
 
@@ -637,7 +641,7 @@ else:
 
             # Section 1: Streak and Days Connected
 
-            with st.container(border=True):
+            with st.container(border=True):  # Add a square around the section to seperate
 
                 show_streak, show_days_connected = st.columns([2, 2])  # Show the information side by side
 
@@ -709,35 +713,18 @@ else:
 
                     st.header('New here? Here is how you can navigate our task table!')
 
-                    st.write('Remember the number ', user['Passcode'],
-                             ' to sign in again after you close the application')
+                    st.write('Remember the number ', user['Passcode'], ' to sign in again after you close the application')
 
-                    st.write(
-                        'Based on your Stress Questionnaire answers and the number of suggestions you choose we generated a task list for you. It will be right under this message.')
-
-                    st.write(
-                        'Click :material/done_outline: to complete a task')
-
-                    st.write(
-                        'Click :material/favorite: to mark your favorites')
-
-                    st.write(
-                        'Click :material/heart_broken: to avoid future tasks')
-
-                    st.write(
-                        'Click :material/delete: to remove any of the :material/favorite: or :material/heart_broken: registration of a task')
-
+                    st.write('Click :material/done_outline: to complete a task')
+                    st.write('Click :material/favorite: to mark your favorites')
+                    st.write('Click :material/heart_broken: to avoid future tasks')
+                    st.write('Click :material/delete: to remove any of the :material/favorite: or :material/heart_broken: registration of a task')
                     st.write('Click the :material/open_in_full: to see a recommendation in detail')
 
                     st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
 
                     st.write(
-                        'If you want new tasks all together? To the Daily Stress Questionnaire again by clicking on the ‘Daily Stress Questionnaire’. You will locate it in our navigation menu on your left.')
-
-                    st.write(
                         "Check out our tutorial to better navigate the rest of the application! You will locate it in our navigation menu on your left.")
-
-                    # Section 3: User Recommendations
 
             # Section 3: The daily recommendations
 
@@ -767,8 +754,8 @@ else:
 
                             # Each column is named after the content it shows
 
-                            column_for_pointer, column_for_title_or_description, column_for_outcome, column_for_category_in_home_page, column_for_extension_button = st.columns(
-                                [0.2, 2, 1, 0.5, 0.5])
+                            column_for_pointer, column_for_title_or_description, column_for_extension_button, column_for_category_in_home_page,  = st.columns(
+                                [0.2, 3, 0.5, 0.5])
 
                             with column_for_pointer:
 
@@ -794,8 +781,6 @@ else:
                                         f"<div style='text-align: center;'>{entry_for_user_recommendation_generated_list_with_recommendations['Description']}</div>",
                                         unsafe_allow_html=True)
 
-                            with column_for_outcome:
-
                                 # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
@@ -807,7 +792,7 @@ else:
                                 else:
 
                                     st.markdown(
-                                        f"<div style='text-align: center;'>Recommendation completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
+                                        f"<div style='text-align: center;'>Task completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
                                         unsafe_allow_html=True)
 
                             with column_for_category_in_home_page:
@@ -1924,6 +1909,7 @@ else:
         # This should never realistically happen
 
         st.write('You are on page ', st.session_state.page)
+
 
 
 
