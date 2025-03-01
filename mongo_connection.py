@@ -16,7 +16,7 @@ Status = db["Status"]
 User = db["User"]
 Question = db["Question"]
 Record = db["Record"]
-Recommendation_Per_Person = db["Recommendations_Per_Person"]
+Recommendation_Per_Person = db["Recommendation_Per_Person"]
 Tag = db["Tag"]
 Recommendation = db["Recommendation"]
 Removed_Recommendation = db["Removed_Recommendation"]
@@ -95,10 +95,20 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions):
 # Start Page Function
 def generate_unique_passcode(max_attempts=100):
     attempt_count = 0
+    all_collections = [
+        "Status", "User", "Question", "Record", "Recommendations_Per_Person",
+        "Tag", "Recommendation", "Removed_Recommendation", "Favorite_Recommendation"
+    ]
     while attempt_count < max_attempts:
         passcode = str(random.randint(1000000000, 9999999999))
-        if not User.find_one({"Passcode": passcode}):
-            return passcode
+        passcode_exists = False
+        for collection_name in all_collections:
+            collection = db[collection_name]  # Get the collection
+            if collection.find_one({"Passcode": passcode}):
+                passcode_exists = True
+                break
+            if not passcode_exists:
+                return passcode
         attempt_count += 1
     return "Please reload the page"
 
@@ -227,20 +237,9 @@ def generate_valid_index():
     return potential_recommendation_index
 
 
-# Main Page Side Side Function
-def get_past_recommendations(passcode, days_behind):
-    current_datetime = datetime.now()
-    end_of_today = current_datetime.replace(hour=23, minute=59, second=59, microsecond=999999)
-    start_date = current_datetime - timedelta(days=days_behind)
-    start_of_range = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    user_past_recommendations = Recommendation_Per_Person.find(
-        {'Passcode': passcode, 'Created_At': {'$gte': start_of_range, '$lte': end_of_today}})
-    return list(user_past_recommendations)
-
-
+# Main Page Side function
 def has_the_user_seen_this_recommendation_before(passcode, potential_recommendation_index):
     user = User.find_one({"Passcode": passcode})
-    user_past_recommendations = get_past_recommendations(passcode, user['Repeat_Preference'])
     return not Recommendation_Per_Person.find_one(
         {'Passcode': passcode, 'ID': potential_recommendation_index,
          'Created_At': {'$gte': datetime.now() - timedelta(days=user['Repeat_Preference'])}}
@@ -258,9 +257,9 @@ def do_the_tags_match(passcode, potential_recommendation_index):
             return False
         if tag['Title_Of_Criteria'] == 'Focus Area' and tag['Category'] != user['Focus_Area']:
             return False
-        if tag['Title_Of_Criteria'] == 'Stress Level' and tag['Category'] < status['Stress_Level']:
+        if tag['Title_Of_Criteria'] == 'Stress Level' and int(tag['Category']) < status['Stress_Level']:
             return False
-        if tag['Title_Of_Criteria'] == 'Time Available' and tag['Category'] < user['Time_Available']:
+        if tag['Title_Of_Criteria'] == 'Time Available' and int(tag['Category']) < user['Time_Available']:
             return False
     return True
 
@@ -272,8 +271,6 @@ def get_recommendations(passcode):
     if Recommendation.count_documents({}) == 0:
         return False, None, 'There are no recommendations available for you.'
     user = User.find_one({"Passcode": passcode})
-    if not user:
-        return False, None, 'Something went wrong, user not registered'
     today, yesterday, index = get_status(passcode)
     if not today:
         return False, None, 'Something went wrong, status was not found'
@@ -287,6 +284,7 @@ def get_recommendations(passcode):
     suggestions = user['Suggestions']
     index = 1
     fails = 0
+    max_tries = calculate_fail_count()
     while index <= suggestions:
         potential_recommendation_index = generate_valid_index()
         if (
@@ -294,16 +292,17 @@ def get_recommendations(passcode):
                 sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) == 0 and
                 do_the_tags_match(passcode, potential_recommendation_index) and
                 Removed_Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None
-        ) or fails == 3:
+        ) or fails > max_tries:
             new_entry = [
                 {
                     'Passcode': passcode,
                     'ID': potential_recommendation_index,
                     'Pointer': index,
                     'Outcome': True,
-                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'Fail_Count': f"{fails} / {max_tries}",
+                    'Completed_At': None,
                     'Status_Created_At': status['Created_At'],
-                    'Completed_At': None
+                    'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 }
             ]
             user_recommendations.extend(new_entry)
@@ -313,6 +312,58 @@ def get_recommendations(passcode):
             fails += 1
     Recommendation_Per_Person.insert_many(user_recommendations)
     return True, user_recommendations, 'Feel free to try any of the below.'
+
+
+def generate_recommendation(passcode):
+    if not User.find_one({"Passcode": passcode}):
+        return False, "Something went wrong, user not registered"
+    if Recommendation.count_documents({}) == 0:
+        return False, "There are no recommendations available for you."
+    today, yesterday, index = get_status(passcode)
+    if not today:
+        return False, "Something went wrong, status was not found"
+    status = Status.find_one({"_id": index})
+    if Recommendation_Per_Person.count_documents({"Passcode": passcode, "Status_Created_At": status['Created_At']}) >= int(Recommendation.count_documents({})/4)+int(Recommendation.count_documents({}) * 0.1):
+        return False, "You have received most available recommendations. No more for now!"
+    user_recommendations = list(
+        Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At']},
+                                       sort=[("Pointer", 1)]))
+    max_tries = calculate_fail_count()
+    fails = 0
+    potential_recommendation_index = generate_valid_index()
+    while fails <= max_tries:
+        if (
+                has_the_user_seen_this_recommendation_before(passcode, potential_recommendation_index) and
+                sum(1 for rec in user_recommendations if rec['ID'] == potential_recommendation_index) == 0 and
+                do_the_tags_match(passcode, potential_recommendation_index) and
+                Removed_Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": passcode}) is None):
+            new_entry = {
+                'Passcode': passcode,
+                'ID': potential_recommendation_index,
+                'Pointer': len(user_recommendations)+1,
+                'Outcome': True,
+                'Fail_Count': f"{fails} / {max_tries}",
+                'Completed_At': None,
+                'Status_Created_At': status['Created_At'],
+                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            Recommendation_Per_Person.insert_one(new_entry)
+            return True, "Recommendation added"
+        else:
+            fails += 1
+            potential_recommendation_index = generate_valid_index()
+    new_entry ={
+        'Passcode': passcode,
+        'ID': generate_valid_index(),
+        'Pointer': len(user_recommendations)+1,
+        'Outcome': True,
+        'Fail_Count': f"{fails} / {max_tries}",
+        'Completed_At': None,
+        'Status_Created_At': status['Created_At'],
+        'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    Recommendation_Per_Person.insert_one(new_entry)
+    return True, 'Recommendation added'
 
 
 # Main page function
@@ -480,9 +531,10 @@ def change_recommendation_preference_for_user(preference, passcode, index, funct
 
 # User profile page (for user) function
 def update_user(passcode, username, repeat, age, focus_area, time_available, suggestions):
-    if not User.find_one({"Passcode": passcode}):
+    user = User.find_one({"Passcode": passcode})
+    if not user:
         return False, "Something went wrong, user not registered"
-    if User.find_one({"Username": username}):
+    if User.find_one({"Username": username}) and username != user['Username']:
         return False, "You need to enter a unique username"
     if not focus_area.strip() or time_available == 0 or suggestions == 0 or repeat == 0 or not age.strip():
         return False, "You need to enter appropriate information"
@@ -565,6 +617,7 @@ def sort_by_created_by(entry):
 def create_recommendation_history(passcode, order, include_favorite, include_removed,
                                   include_Recommendations, completed):
     user = User.find_one({"Passcode": passcode})
+    query = f"Order: {order} - Favorite {include_favorite} - Removed {include_removed} - Per Person {include_Recommendations} / {completed}"
     if not user:
         return False, None, "Something went wrong, user not registered"
     user_recommendation = []
@@ -578,6 +631,14 @@ def create_recommendation_history(passcode, order, include_favorite, include_rem
     if temporary_table is not None:
         user_recommendation.extend(temporary_table)
     user_recommendation.sort(key=sort_by_created_by, reverse=(order == -1))
+    Record.insert_one(
+        {
+            'Passcode': passcode,
+            'Action': f"User {passcode} requested record for {query}",
+            'Type': "L",
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
     return True, user_recommendation, f"Record for user {passcode} assembled."
 
 
@@ -588,7 +649,7 @@ def add_recommendation(ID, passcode, title, description, link, points):
         return False, "Something went wrong, user not registered"
     if Recommendation.find_one({"ID": ID}):
         return False, "Please try again, it look like the ID generated has already been added."
-    if not title.strip() or not description.strip() or points < 10 or points > 150:
+    if not title.strip() or not description.strip() or points < 10 or points > 150 or (link is not None and not link.strip()):
         return False, "You need to fill in all mandatory fields"
     Recommendation.insert_one(
         {
@@ -625,9 +686,11 @@ def add_tag(ID, passcode, title, category):
 
 
 # Database page (for admin) function
-def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
+def delete_entry(passcode, key, key2, created, collection_name, this_user_passcode):
     if not User.find_one({"Passcode": passcode}):
         return False, "Something went wrong, user not registered"
+    if not User.find_one({"Passcode": this_user_passcode}):
+        return False, None, "User not registered"
     if collection_name == "User":
         query = {"Passcode": passcode}
     elif collection_name == "Question":
@@ -655,8 +718,8 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
     deleted_count = delete_result.deleted_count
     Record.insert_one(
         {
-            'Passcode': user_passcode,
-            'Action': f"User {user_passcode} requested to delete record {query} from {collection_name}",
+            'Passcode': this_user_passcode,
+            'Action': f"User {this_user_passcode} requested to delete record {query} from {collection_name}",
             'Type': "J",
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -664,8 +727,8 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
     if deleted_count > 0:
         Record.insert_one(
             {
-                'Passcode': user_passcode,
-                'Action': f"Deleted 1 record for {query} from {collection_name} as requested by user {user_passcode}",
+                'Passcode': this_user_passcode,
+                'Action': f"Deleted 1 record for {query} from {collection_name} as requested by user {this_user_passcode}",
                 'Type': "K",
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
@@ -673,8 +736,8 @@ def delete_entry(passcode, key, key2, created, collection_name, user_passcode):
         return True, f"Deleted 1 record for {query} from {collection_name}"
     Record.insert_one(
         {
-            'Passcode': user_passcode,
-            'Action': f"No matching record {query} found in {collection_name} as requested by user {user_passcode}",
+            'Passcode': this_user_passcode,
+            'Action': f"No matching record {query} found in {collection_name} as requested by user {this_user_passcode}",
             'Type': "K",
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -700,10 +763,12 @@ def sort_by_type(entry):
 # Database page (for user) function
 def create_history(passcode, priority, order, include_user, include_question, include_record,
                    include_status, include_recommendation, include_Tag,
-                   include_favorite, include_removed, include_recommendation_per_person):
-    user = User.find_one({"Passcode": passcode})
-    if not user:
+                   include_favorite, include_removed, include_recommendation_per_person, this_user_passcode):
+    if not User.find_one({"Passcode": passcode}):
+        return False, None, "User requested not registered"
+    if not User.find_one({"Passcode": this_user_passcode}):
         return False, None, "User not registered"
+    query = f"Priority {priority} - Order {order} - User {include_user} - Question {include_question} - Record {include_record} - Status {include_status} - Recommendation {include_recommendation} - Tag {include_Tag} - Favorite {include_favorite} - Removed {include_removed} - Per Person {include_recommendation_per_person}"
     user_history = []
     message_templates = {
         "User": "User {Passcode} registered.",
@@ -757,5 +822,13 @@ def create_history(passcode, priority, order, include_user, include_question, in
         user_history.sort(key=sort_by_message, reverse=(order == -1))
     else:
         user_history.sort(key=sort_by_type, reverse=(order == -1))
+    Record.insert_one(
+        {
+            'Passcode': passcode,
+            'Action': f"User {this_user_passcode} requested record for {query} for user {passcode}",
+            'Type': "L",
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
     return True, user_history, f"Record for user {passcode} assembled."
 
