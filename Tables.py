@@ -2,9 +2,9 @@ Users = [
     {'Username': 'Admin', 'Passcode': 'Admin123', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20,'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'}
 ]
 
-Questions = []
-
 Questionnaire = []
+
+Questions = []
 
 Status = []
 
@@ -14,7 +14,9 @@ Recommendations_Per_Person = []
 
 Records = []
 
-Removed_Recomendations = []
+Removed_Recommendations = []
+
+Score_History = []
 
 Recommendations = [
     {'ID': 1, 'Passcode': 'Admin123', 'Created_At': '2025-01-18 12:00:00', 'Title': '5-Minute Breathing Exercise', 'Description': 'A quick guIDed breathing session to reduce stress and refocus.', 'Link': 'https://example.com/breathing', 'Points': 10 },
@@ -61,4 +63,5 @@ Tags = [
     {'ID': 19, 'Passcode': 'Admin123','Title_Of_Criteria': 'Age Variant', 'Category': '26-35', 'Created_At': '2025-01-18 12:00:00'},
     {'ID': 20, 'Passcode': 'Admin123','Title_Of_Criteria': 'Age Variant', 'Category': '18-25', 'Created_At': '2025-01-18 12:00:00'},
 ]
+
 
