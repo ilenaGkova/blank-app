@@ -21,6 +21,7 @@ Tag = db["Tag"]
 Recommendation = db["Recommendation"]
 Removed_Recommendation = db["Removed_Recommendation"]
 Favorite_Recommendation = db["Favorite"]
+Question_Questionnaire = db["Questionnaire"]
 
 if not User.find_one({"Username": "Admin"}):
     User.insert_many(Users)
@@ -323,7 +324,9 @@ def generate_recommendation(passcode):
     if not today:
         return False, "Something went wrong, status was not found"
     status = Status.find_one({"_id": index})
-    if Recommendation_Per_Person.count_documents({"Passcode": passcode, "Status_Created_At": status['Created_At']}) >= int(Recommendation.count_documents({})/4)+int(Recommendation.count_documents({}) * 0.1):
+    if Recommendation_Per_Person.count_documents(
+            {"Passcode": passcode, "Status_Created_At": status['Created_At']}) >= int(
+            Recommendation.count_documents({}) / 4) + int(Recommendation.count_documents({}) * 0.1):
         return False, "You have received most available recommendations. No more for now!"
     user_recommendations = list(
         Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At']},
@@ -340,7 +343,7 @@ def generate_recommendation(passcode):
             new_entry = {
                 'Passcode': passcode,
                 'ID': potential_recommendation_index,
-                'Pointer': len(user_recommendations)+1,
+                'Pointer': len(user_recommendations) + 1,
                 'Outcome': True,
                 'Fail_Count': f"{fails} / {max_tries}",
                 'Completed_At': None,
@@ -352,10 +355,10 @@ def generate_recommendation(passcode):
         else:
             fails += 1
             potential_recommendation_index = generate_valid_index()
-    new_entry ={
+    new_entry = {
         'Passcode': passcode,
         'ID': generate_valid_index(),
-        'Pointer': len(user_recommendations)+1,
+        'Pointer': len(user_recommendations) + 1,
         'Outcome': True,
         'Fail_Count': f"{fails} / {max_tries}",
         'Completed_At': None,
@@ -587,7 +590,9 @@ def create_entry(index, passcode, collection, outcome, created):
                 'Created_At': created,
                 'Extend': True,
                 'Remove': (
-                    True if Removed_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode}) or Favorite_Recommendation.find_one({"ID": this_recommendation['ID'], "Passcode": passcode})
+                    True if Removed_Recommendation.find_one(
+                        {"ID": this_recommendation['ID'], "Passcode": passcode}) or Favorite_Recommendation.find_one(
+                        {"ID": this_recommendation['ID'], "Passcode": passcode})
                     else False
                 )
             }
@@ -621,13 +626,15 @@ def create_recommendation_history(passcode, order, include_favorite, include_rem
     if not user:
         return False, None, "Something went wrong, user not registered"
     user_recommendation = []
-    temporary_table = add_collection(passcode, include_favorite, "Favorite_Recommendation", Favorite_Recommendation, None)
+    temporary_table = add_collection(passcode, include_favorite, "Favorite_Recommendation", Favorite_Recommendation,
+                                     None)
     if temporary_table is not None:
         user_recommendation.extend(temporary_table)
     temporary_table = add_collection(passcode, include_removed, "Removed_Recommendation", Removed_Recommendation, None)
     if temporary_table is not None:
         user_recommendation.extend(temporary_table)
-    temporary_table = add_collection(passcode, include_Recommendations, "Recommendation_Per_Person", Recommendation_Per_Person, completed)
+    temporary_table = add_collection(passcode, include_Recommendations, "Recommendation_Per_Person",
+                                     Recommendation_Per_Person, completed)
     if temporary_table is not None:
         user_recommendation.extend(temporary_table)
     user_recommendation.sort(key=sort_by_created_by, reverse=(order == -1))
@@ -649,7 +656,8 @@ def add_recommendation(ID, passcode, title, description, link, points):
         return False, "Something went wrong, user not registered"
     if Recommendation.find_one({"ID": ID}):
         return False, "Please try again, it look like the ID generated has already been added."
-    if not title.strip() or not description.strip() or points < 10 or points > 150 or (link is not None and not link.strip()):
+    if not title.strip() or not description.strip() or points < 10 or points > 150 or (
+            link is not None and not link.strip()):
         return False, "You need to fill in all mandatory fields"
     Recommendation.insert_one(
         {
@@ -667,6 +675,7 @@ def add_recommendation(ID, passcode, title, description, link, points):
 
 # Recommendation page (for admin) function
 def add_tag(ID, passcode, title, category):
+    ID = int(ID)
     if not User.find_one({"Passcode": passcode}):
         return False, "Something went wrong, user not registered"
     if not Recommendation.find_one({"ID": ID}):
@@ -675,7 +684,7 @@ def add_tag(ID, passcode, title, category):
         return False, "Tag already exists"
     Tag.insert_one(
         {
-            'ID': int(ID),
+            'ID': ID,
             'Passcode': passcode,
             'Title_Of_Criteria': title,
             'Category': category,
@@ -683,6 +692,28 @@ def add_tag(ID, passcode, title, category):
         }
     )
     return True, "Tag added"
+
+
+# Questionnaire page (for admin) function
+def add_question_to_questionnaire(ID, passcode, question_input):
+    ID = int(ID)
+    if not User.find_one({"Passcode": passcode}):
+        return False, "Something went wrong, user not registered"
+    if Question_Questionnaire.find_one({"ID": ID}):
+        return False, "ID already exists"
+    if Question_Questionnaire.find_one({"Question": question_input}):
+        return False, "Question already exists"
+    if not question_input.strip():
+        return False, "You need to enter a question"
+    Question_Questionnaire.insert_one(
+        {
+            'ID': ID,
+            'Passcode': passcode,
+            'Question': question_input,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    return True, "Question added"
 
 
 # Database page (for admin) function
@@ -709,6 +740,8 @@ def delete_entry(passcode, key, key2, created, collection_name, this_user_passco
         query = {"Passcode": passcode, "ID": key, "Created_At": created}
     elif collection_name == "Recommendation_Per_Person":
         query = {"Passcode": passcode, "Pointer": key, "ID": key2, "Created_At": created}
+    elif collection_name == "Question_Questionnaire":
+        query = {"Passcode": passcode, "ID": key, "Question": key2, "Created_At": created}
     else:
         return False, "Invalid collection name"
     collection = globals().get(collection_name)  # Get the actual collection object
@@ -763,7 +796,7 @@ def sort_by_type(entry):
 # Database page (for user) function
 def create_history(passcode, priority, order, include_user, include_question, include_record,
                    include_status, include_recommendation, include_Tag,
-                   include_favorite, include_removed, include_recommendation_per_person, this_user_passcode):
+                   include_favorite, include_removed, include_recommendation_per_person, include_question_questionnair, this_user_passcode):
     if not User.find_one({"Passcode": passcode}):
         return False, None, "User requested not registered"
     if not User.find_one({"Passcode": this_user_passcode}):
@@ -780,6 +813,7 @@ def create_history(passcode, priority, order, include_user, include_question, in
         "Favorite_Recommendation": "User {Passcode} marked recommendation with ID {ID} as favorite.",
         "Removed_Recommendation": "User {Passcode} rejected recommendation with ID {ID}.",
         "Recommendation_Per_Person": "Recommendation with ID {ID} was assigned to User {Passcode} with pointer {Pointer}.",
+        "Question_Questionnaire": "User {Passcode} added question '{Question}' with ID {ID}"
     }
 
     # Datapage page side function
@@ -816,6 +850,8 @@ def create_history(passcode, priority, order, include_user, include_question, in
         add_history_entries("Removed_Recommendation", Removed_Recommendation, "ID")
     if include_recommendation_per_person:
         add_history_entries("Recommendation_Per_Person", Recommendation_Per_Person, "Pointer", "ID")
+    if include_question_questionnair:
+        add_history_entries("Question_Questionnaire", Question_Questionnaire, "ID", "Question")
     if priority == "Time":
         user_history.sort(key=sort_by_time, reverse=(order == -1))
     elif priority == "Substance":
