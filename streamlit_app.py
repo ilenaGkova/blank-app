@@ -10,7 +10,7 @@ st.set_page_config(
 # Additional Imports
 import plotly.graph_objects as go  # Needs to be downloaded
 import pandas as pd  # Needs to be downloaded
-import altair as alt  # ???????????????????
+import altair as alt  # Needs to be downloaded
 from datetime import datetime, timedelta
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 from Tables import Recommendations, Tags, Users  # Import from files
