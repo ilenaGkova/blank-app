@@ -9,6 +9,8 @@ st.set_page_config(
 
 # Additional Imports
 import plotly.graph_objects as go  # Needs to be downloaded
+import pandas as pd  # Needs to be downloaded
+import altair as alt  # ???????????????????
 from datetime import datetime, timedelta
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 from Tables import Recommendations, Tags, Users  # Import from files
@@ -16,7 +18,7 @@ from mongo_connection import add_points, change_recommendation_preference_for_us
     generate_animal_username, generate_unique_passcode, get_limits, get_recommendations, get_record, get_status, \
     init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
     record_question, create_history, delete_entry, create_recommendation_history, update_user, add_recommendation, \
-    add_tag, generate_recommendation, add_question_to_questionnaire  # Import from files
+    add_tag, generate_recommendation, add_question_to_Questionnaire  # Import from files
 
 # Part A: The Initial Session Variables
 
@@ -54,7 +56,9 @@ Recommendation = db[
 Question = db["Question"]  # Will get the collection Question to get a user's confessions when needed
 Status = db["Status"]  # Will get the collection Status to see to count entries made by the user and see if they are new
 Question_Questionnaire = db[
-    "Questionnaire"]  # Will get the Collection that holds the questions for the Daily Stress Questionnair when needed
+    "Questionnaire"]  # Will get the Collection that holds the questions for the Daily Stress Questionnaire when needed
+Score_History = db[
+    "Score_History"]  # Will get the Score_History Collection that takes a time stamp the score changes to make a graph and show the user their score history
 
 # The majority of the function alterations are done in the mongo file.
 # The above database collections are initialized here and used exclusively for find and count_document actions in the mongo database
@@ -274,7 +278,7 @@ def get_time():  # Called with the home page to get the count-down towards the n
     hours, remainder = divmod(time_remaining.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return f"{days_until_sunday}:{hours:02}:{minutes:02}:{seconds:02}"  # Will return time remaining repeated
+    return f"{days_until_sunday} Days {hours:02} Hours {minutes:02} Minutes and {seconds:02} Seconds"  # Will return time remaining repeated
 
 
 def add_recommendation_to_user():  # Called when the user wants to see another recommendation
@@ -365,9 +369,9 @@ def generate_recommendation_id():  # Called what an admin wants to make a new re
     return generated_id
 
 
-def generate_question_id():  # Called what an admin wants to add a question to the Daily Stress Questionnair
+def generate_question_id():  # Called what an admin wants to add a question to the Daily Stress Questionnaire
 
-    # Step 1: Get bigger ID in Questionnair collection
+    # Step 1: Get bigger ID in Questionnaire collection
     last_entry = Question_Questionnaire.find_one({}, sort=[("ID", -1)])
 
     if last_entry:
@@ -407,7 +411,7 @@ def add_recommendation_here(your_passcode_here, this_generated_id_here, points_h
 
 
 def add_question(ID, passcode_for_question, question_input, question_for_question_input, question_for_id):
-    st.session_state.error_status, st.session_state.error = add_question_to_questionnaire(ID, passcode_for_question,
+    st.session_state.error_status, st.session_state.error = add_question_to_Questionnaire(ID, passcode_for_question,
                                                                                           question_input)  # Will update the session error variables and maybe add a recommendation if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
@@ -431,6 +435,78 @@ def add_tag_here(recommendation_id_here, passcode_here, title_here, category,
         record_question(title_here, category, passcode_here)
 
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
+
+
+def create_store_history_graph():  # Called to make a graph of the score history of a user
+
+    # Below we will get data from a collection and create a table to make a graph out of
+    # The new table df will start with
+    # Passcode - We will show only the passcodes matching out user
+    # Score - The user's score
+    # Level - The user's level at the time
+    # Outcome - Either True if score will promote user to next level False if ot will demote them or None for anything else
+    # Created_At - When it was recorded
+    # These were from the collection. Through calculations, we will add 3 more attributes
+    # Color - Will dictate the color of the dot created for the entry depending on the outcome
+    # Promotion_Score - Will tell us the promotion point depending on the level
+    # Demotion_Score - Will tell us the demotion point depending on the level
+
+    df = pd.DataFrame(list(Score_History.find({
+        "Passcode": st.session_state.current_passcode})))  # Convert dictionary list that comes from the user's score history to DataFrame
+
+    # Create a color mapping for Outcome
+    # The colors are Red for score that gets demoted, green for promoted score and blue for sustaining score
+    # Here we are not creating the dots just setting the colors
+
+    df['Color'] = df['Outcome'].map({True: 'green', False: 'red', None: 'blue'})
+
+    def get_limits_here(
+            level):  # The below are calculation also done in the mongo file, see more there. We just cloned it here to take a different parameter
+        x = 100 * int(level)
+        y = 50 - 5 * int(level)
+        move_up_threshold = x * int(level)
+        move_down_threshold = move_up_threshold * (1 - y / 100)
+        return move_up_threshold, move_down_threshold
+
+    result = list(zip(*df['Level'].apply(get_limits_here)))
+    df['Promotion_Score'] = result[0]
+    df['Demotion_Score'] = result[1]
+
+    hover = alt.selection_single(
+        fields=["Created_At"],
+        nearest=True,
+        on="mouseover",
+        empty="none",
+    )  # Sets the baseline that is the date the score number was recorded based on the Created_At field if the Collection
+
+    # Create the baseline chart with custom field names
+    # The tooltip is what the user see when they hover on a dot
+    # The letters used mean Q for numeric value and T for date and time
+    # Other letter not used are N for categories / names and O for ordered data
+    # The values before the letters are the attributes created in the df table we are showing
+    # The Titles are what the user sees
+
+    base = alt.Chart(df).encode(
+        x=alt.X('Created_At:T', title='Date'),
+        y=alt.X('Score:Q', title='Performance Score'),
+        tooltip=[
+            alt.Tooltip('Score:Q', title='Performance Score'),
+            alt.Tooltip('Level:Q', title='Difficulty Level'),
+            alt.Tooltip('Promotion_Score:Q', title='Promotion Score'),
+            alt.Tooltip('Demotion_Score:Q', title='Demotion Score'),
+            alt.Tooltip('Created_At:T', title='Date and Time')
+        ]
+    )
+
+    line = base.mark_line()  # Create a line to connect all scores
+
+    dots = base.mark_circle(size=100).encode(
+        color=alt.Color('Color:N', scale=None)  # Here we created the dots of the scores
+    ).add_selection(hover)  # Create points with colors based on Outcome
+
+    chart_for_score_history = line + dots  # Combine the line and points
+
+    return chart_for_score_history
 
 
 # Part D: The layouts
@@ -680,26 +756,30 @@ else:
 
             # Section 1: Streak and Days Connected
 
-            with st.container(border=True):  # Add a square around the section to seperate
+            show_streak, show_days_connected = st.columns([2, 2])  # Show the information side by side
 
-                show_streak, show_days_connected = st.columns([2, 2])  # Show the information side by side
+            with show_streak:
 
-                with show_streak:
+                with st.container(border=True):  # Add a square around the section to seperate them
+
                     st.markdown(
-                        f"<div style='text-align: center;font-size: 30px;'>Streak</div>",
+                        f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Streak']}</div>",
                         unsafe_allow_html=True)
 
                     st.markdown(
-                        f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Streak']}</div>",
+                        f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Consecutive Days connected</div>",
                         unsafe_allow_html=True)
 
-                with show_days_connected:
+            with show_days_connected:
+
+                with st.container(border=True):  # Add a square around the section to seperate them
+
                     st.markdown(
-                        f"<div style='text-align: center;font-size: 30px;'>Days connected</div>",
+                        f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Days_Summed']}</div>",
                         unsafe_allow_html=True)
 
                     st.markdown(
-                        f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Days_Summed']}</div>",
+                        f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Days connected</div>",
                         unsafe_allow_html=True)
 
             # Section 2: User Score and Level
@@ -721,6 +801,10 @@ else:
 
                 with show_level:
                     st.markdown(
+                        f"<div style='text-align: center;font-size: 20px;'>Level</div>",
+                        unsafe_allow_html=True)
+
+                    st.markdown(
                         f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Level']}</div>",
                         unsafe_allow_html=True)
 
@@ -741,6 +825,17 @@ else:
                     f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>",
                     unsafe_allow_html=True)
 
+            if Score_History.count_documents(
+                    {"Passcode": st.session_state.current_passcode}) >= 1:  # Only make graph when you have data
+
+                see_score_history = st.checkbox(
+                    "See your Score history")  # See score history graph, only show she when there are data to show
+
+                if see_score_history:  # and the user want to see it
+
+                    st.altair_chart(create_store_history_graph(),
+                                    use_container_width=True)  # Display the score history graph when the user has results and wants it
+
             # For new user, add a message to direct them to the tutorial and give them the rundown of managing the recommendations they are given
 
             if Status.count_documents({"Passcode": st.session_state.current_passcode}) == 1:
@@ -751,10 +846,10 @@ else:
                              ' to sign in again after you close the application')
 
                     st.write('Click :material/done_outline: to complete a task')
-                    st.write('Click :material/favorite: to mark your favorites')
-                    st.write('Click :material/heart_broken: to avoid future tasks')
+                    st.write('Click :material/thumb_up: to mark your favorites')
+                    st.write('Click :material/thumb_down: to avoid future tasks')
                     st.write(
-                        'Click :material/delete: to remove any of the :material/favorite: or :material/heart_broken: registration of a task')
+                        'Click :material/delete: to remove any of the :material/thumb_up: or :material/thumb_down: registration of a task')
                     st.write('Click the :material/open_in_full: to see a recommendation in detail')
 
                     st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
@@ -790,8 +885,7 @@ else:
 
                             # Each column is named after the content it shows
 
-                            column_for_pointer, column_for_title_or_description, column_for_extension_button, column_for_category_in_home_page, = st.columns(
-                                [0.2, 3, 0.5, 0.5])
+                            column_for_pointer, column_for_title_or_description = st.columns([0.2, 5])
 
                             with column_for_pointer:
 
@@ -819,8 +913,7 @@ else:
 
                                 # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
 
-                                if entry_for_user_recommendation_generated_list_with_recommendations[
-                                    'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
 
                                     st.markdown(
                                         f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
@@ -832,60 +925,18 @@ else:
                                         f"<div style='text-align: center;'>Task completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
                                         unsafe_allow_html=True)
 
-                            with column_for_category_in_home_page:
+                            # Each column is named after the content it shows
 
-                                # Preference indicates if the recommendation is in the favorite/removed or no section for this user.
-                                # Depending on that the user will see a different combination of buttons
-                                # A recommendation can't be both in the favorite and removed section. To be in one it will be removed from the other.
+                            column_for_outcome, column_for_extension_button, column_for_reference_1, column_for_reference_2 = st.columns(
+                                [5, 2, 0.5, 0.5])
 
-                                if entry_for_user_recommendation_generated_list_with_recommendations[
-                                    'Preference'] is False:
-                                    st.button("", icon=":material/favorite:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[1,
-                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                               'ID']],
-                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+                            # Preference indicates if the recommendation is in the favorite/removed or no section for this user.
+                            # Depending on that the user will see a different combination of buttons
+                            # A recommendation can't be both in the favorite and removed section. To be in one it will be removed from the other.
 
-                                    st.button("", icon=":material/delete:", use_container_width=True,
-                                              on_click=change_recommendation_preference_for_user,
-                                              args=[1, st.session_state.current_passcode,
-                                                    entry_for_user_recommendation_generated_list_with_recommendations[
-                                                        'ID'], True],
-                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+                            with column_for_outcome:
 
-                                if entry_for_user_recommendation_generated_list_with_recommendations[
-                                    'Preference'] is True:
-                                    st.button("", icon=":material/delete:", use_container_width=True,
-                                              on_click=change_recommendation_preference_for_user,
-                                              args=[1, st.session_state.current_passcode,
-                                                    entry_for_user_recommendation_generated_list_with_recommendations[
-                                                        'ID'], True],
-                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
-
-                                    st.button("", icon=":material/heart_broken:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[-1,
-                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                               'ID']],
-                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
-
-                                if entry_for_user_recommendation_generated_list_with_recommendations[
-                                    'Preference'] is None:
-                                    st.button("", icon=":material/favorite:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[1,
-                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                               'ID']],
-                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
-
-                                    st.button("", icon=":material/heart_broken:", use_container_width=True,
-                                              on_click=change_recommendation_status, args=[-1,
-                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                               'ID']],
-                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
-
-                            with column_for_extension_button:
-
-                                if entry_for_user_recommendation_generated_list_with_recommendations[
-                                    'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
 
                                     st.button("", icon=":material/done_outline:", use_container_width=True,
                                               on_click=completed_recommendation,
@@ -895,10 +946,59 @@ else:
                                                         'Status_Created_At']],
                                               key=f"complete_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
+                            with column_for_extension_button:
+
                                 st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                          on_click=open_recommendation, args=[
-                                        entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                                          on_click=open_recommendation, args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
                                           key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+
+                            with column_for_reference_1:
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is False:
+                                    st.button("", icon=":material/thumb_up:", use_container_width=True,
+                                              on_click=change_recommendation_status, args=[1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is True:
+                                    st.button("", icon=":material/delete:", use_container_width=True,
+                                              on_click=change_recommendation_preference_for_user,
+                                              args=[1, st.session_state.current_passcode,
+                                                    entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'ID'], True],
+                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is None:
+                                    st.button("", icon=":material/thumb_up:", use_container_width=True,
+                                              on_click=change_recommendation_status, args=[1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
+
+                            with column_for_reference_2:
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is False:
+                                    st.button("", icon=":material/delete:", use_container_width=True,
+                                              on_click=change_recommendation_preference_for_user,
+                                              args=[1, st.session_state.current_passcode,
+                                                    entry_for_user_recommendation_generated_list_with_recommendations[
+                                                        'ID'], True],
+                                              key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is True:
+                                    st.button("", icon=":material/thumb_down:", use_container_width=True,
+                                              on_click=change_recommendation_status, args=[-1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
+
+                                if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is None:
+                                    st.button("", icon=":material/thumb_down:", use_container_width=True,
+                                              on_click=change_recommendation_status, args=[-1,
+                                                                                           entry_for_user_recommendation_generated_list_with_recommendations[
+                                                                                               'ID']],
+                                              key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
 
                         pointer_for_user_recommendation_generated_list_with_recommendations += 1
 
@@ -1111,19 +1211,16 @@ else:
 
                                 with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
 
-                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Type'] == "Favorite_Recommendation":
+                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Favorite_Recommendation":
 
-                                        st.header(':material/favorite:')  # Category Favorites and Favorite Collection
+                                        st.header(':material/thumb_up:')  # Category Favorites and Favorite Collection
 
-                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Type'] == "Removed_Recommendation":
+                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Removed_Recommendation":
 
                                         st.header(
-                                            ':material/heart_broken:')  # Category Removed and Removed_Recommendation Collection
+                                            ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
-                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Outcome']:  # The below are in the Recommendation_per_person Collection
+                                    elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Outcome']:  # The below are in the Recommendation_per_person Collection
 
                                         st.header(
                                             ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
@@ -1164,7 +1261,7 @@ else:
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[
-                                                entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                                    entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                                   key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
@@ -1206,6 +1303,7 @@ else:
                     [2, 2, 2])
                 column_for_favorite_category, column_for_removed_category, column_for_per_person_category = st.columns(
                     [2, 2, 2])
+                column_for_Questionnaire, column_for_score, column_for_uniformity_in_outline = st.columns([2, 2, 2])
 
                 with column_for_user_category:
 
@@ -1250,9 +1348,16 @@ else:
                     person_status = st.checkbox(
                         "See what tasks have been given to you")  # Include Recommendation_Per_Person Collection
 
-                if user['Role'] != 'User':
-                    questionnaire_status = st.checkbox(
-                        "See what questions have entered in the Daily Stress Questionnaire")  # Include Questionnaire Collection
+                with column_for_Questionnaire:
+
+                    if user['Role'] != 'User':
+                        Questionnaire_status = st.checkbox(
+                            "See what questions have entered in the Daily Stress Questionnaire")  # Include Questionnaire Collection
+
+                with column_for_score:
+
+                    score_status = st.checkbox(
+                        "See your score history")  # Include Score_History Collection
 
             # Step 2: Selecting a Shorting Method
 
@@ -1292,7 +1397,7 @@ else:
 
             st.header('See your record')  # See the result
 
-            if user_status or question_status or record_status or status_status or recommendation_status or tag_status or favorite_status or removed_status or person_status or questionnaire_status:
+            if user_status or question_status or record_status or status_status or recommendation_status or tag_status or favorite_status or removed_status or person_status or Questionnaire_status or score_status:
 
                 # Send the user's choices and make the record
                 # The function takes a boolean value for each collection, a priority value (Time/Substance) and order (1/-1)
@@ -1305,7 +1410,7 @@ else:
                     tag_status,
                     favorite_status, removed_status,
                     person_status,
-                    questionnaire_status,
+                    Questionnaire_status, score_status,
                     st.session_state.current_passcode)
 
                 st.write(user_history_list_message)  # Show the message given by the function
@@ -1326,8 +1431,7 @@ else:
 
                         with st.container(border=True):  # Puts a border around each entry to seperate
 
-                            if user[
-                                'Role'] == 'User':  # This page has dual usage for and user or an admin. As a result we have 2 different tables
+                            if user['Role'] == 'User':  # This page has dual usage for and user or an admin. As a result we have 2 different tables
 
                                 column_for_pointer_for_user_history_list_user_menu, column_for_timestamp_for_user_history_list_user_menu, column_for_message_for_user_history_list_user_menu, column_for_buttons_for_user_history_list_user_menu = st.columns(
                                     [2, 2, 4, 1])  # Columns are named after the content they show
@@ -1352,8 +1456,7 @@ else:
                                     # We see if it's one of the appropriate collections and send the right key to the open recommendation
 
                                     if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry[
-                                        'Type'] == "Favorite_Recommendation" or entry[
-                                        'Type'] == "Removed_Recommendation":
+                                            'Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
 
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
@@ -1396,8 +1499,7 @@ else:
                                     # That function is explain in the mongo file
 
                                     if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry[
-                                        'Type'] == "Favorite_Recommendation" or entry[
-                                        'Type'] == "Removed_Recommendation":
+                                         'Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
 
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
@@ -1566,7 +1668,7 @@ else:
 
                 st.header('Daily Stress Questionnaire')
 
-                st.write('Every day, you’ll need to fill out a questionnaire to rate your daily stress.')
+                st.write('Every day, you’ll need to fill out a Questionnaire to rate your daily stress.')
                 st.write('You only need to complete this once per day, not every time you log in.')
 
             with st.container(border=True):  # Hug each section in a square to seperate them
@@ -1578,11 +1680,11 @@ else:
                 st.write(
                     'To complete a task and earn points click the button with the :material/done_outline: icon next to it.')
                 st.write(
-                    'To mark your favorites click the button with the :material/favorite: icon next to the task you like.')
+                    'To mark your favorites click the button with the :material/thumb_up: icon next to the task you like.')
                 st.write(
-                    'To avoid future suggestions click the button with the :material/heart_broken: icon next to the task you don’t want to see again.')
+                    'To avoid future suggestions click the button with the :material/thumb_down: icon next to the task you don’t want to see again.')
                 st.write(
-                    'To remove any of the :material/favorite: or :material/heart_broken: registration click the button with the :material/delete: icon.')
+                    'To remove any of the :material/thumb_up: or :material/thumb_down: registration click the button with the :material/delete: icon.')
                 st.write(
                     'That option is available at the Home page or the ‘Profile and Preferences’ page at the navigation menu.')
                 st.write('To see a task in detail click the :material/open_in_full: button next to it.')
@@ -1605,6 +1707,17 @@ else:
 
             with st.container(border=True):  # Hug each section in a square to seperate them
 
+                st.header('Score History')
+
+                st.write(
+                    "At the home page you will find a box called 'See your record history'. if you click that you will see how your score has progressed during you time in the application in a graph.")
+                st.write("The dots represent a record of your score changing.")
+                st.write(
+                    "Red is for scores that would get demoted, Blue is for unaffected scores and Green is for scores that get promoted.")
+                st.write('To close the score history click the box again.')
+
+            with st.container(border=True):  # Hug each section in a square to seperate them
+
                 st.header('Your Preferences')
 
                 st.write(
@@ -1615,10 +1728,10 @@ else:
                 st.write('To navigate the results by keeping track of the icons next to the results:')
                 st.write('Look for the :material/badge: icon to find a task given to you.')
                 st.write('Look for the :material/done_outline: icon to find a completed task.')
-                st.write('Look for the :material/heart_broken: icon to find a removed task.')
-                st.write('Look for the :material/favorite: icon to find a favorite task.')
+                st.write('Look for the :material/thumb_down: icon to find a removed task.')
+                st.write('Look for the :material/thumb_up: icon to find a favorite task.')
                 st.write(
-                    'Look for the :material/delete: icon to remove a recommendation from the :material/heart_broken: or :material/favorite: category.')
+                    'Look for the :material/delete: icon to remove a recommendation from the :material/thumb_down: or :material/thumb_up: category.')
                 st.write('Click on the :material/open_in_full: icon to open the recommendation in full.')
 
             with st.container(border=True):  # Hug each section in a square to seperate them
@@ -1740,7 +1853,7 @@ else:
 
             # The Title
 
-            st.title('Add Recommendations and Tags')
+            st.title('Add Entries to DataBase')
 
             # Section 1: Add a Recommendation
 
@@ -1968,7 +2081,7 @@ else:
                 st.session_state.error_status = False
                 st.session_state.error = 'There are no recommendations in the data base'
 
-            # Section 3: Questions in Daily Stress Questionnair
+            # Section 3: Questions in Daily Stress Questionnaire
 
             # The Title
 
@@ -1980,7 +2093,7 @@ else:
                     [4, 4])  # Columns named after the content they show
 
                 with column_for_question_ID:
-                    # This is auto field by finding and ID that is not in the Questionnair collection and can't change
+                    # This is auto field by finding and ID that is not in the Questionnaire collection and can't change
                     # Warning: While this is a text input the text in converted into a number before being entered with the recommendation
 
                     Question_ID = "Question ID"  # Saved separately to be used in function
@@ -2001,7 +2114,8 @@ else:
                 question = st.text_area(question_input, height=100,
                                         key="question")  # Warning: Alike other input text filed this type need control+enter to save the new information
 
-                st.button('Add Question To Daily Stress Questionnair', icon=":material/question_mark:", use_container_width=True,
+                st.button('Add Question To Daily Stress Questionnaire', icon=":material/question_mark:",
+                          use_container_width=True,
                           on_click=add_question,
                           args=[this_generated_id, your_passcode_for_question, question, question_input, Question_ID],
                           key="add_question_entry_button")
