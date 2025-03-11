@@ -22,6 +22,7 @@ Recommendation = db["Recommendation"]
 Removed_Recommendation = db["Removed_Recommendation"]
 Favorite_Recommendation = db["Favorite"]
 Question_Questionnaire = db["Questionnaire"]
+Score_History = db["Score_History"]
 
 if not User.find_one({"Username": "Admin"}):
     User.insert_many(Users)
@@ -71,6 +72,15 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions):
             'Streak': 0,
             'Days_Summed': 0,
             'Role': 'User',
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
+    Score_History.insert_one(
+        {
+            'Passcode': passcode,
+            'Score': 0,
+            'Level': 1,
+            'Outcome': False,
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
@@ -452,6 +462,15 @@ def determine_level_change(passcode):
             message_for_user = "You have been demoted but remained at level 1."
             message_for_system = f"User {passcode} was demoted but remained at level 1"
     User.update_one({"Passcode": passcode}, {"$set": {"Score": 0}})
+    Score_History.insert_one(
+        {
+            'Passcode': passcode,
+            'Score': user["Score"],
+            'Level': user["Level"],
+            'Outcome': False,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
     Record.insert_many(
         [
             {
@@ -484,18 +503,35 @@ def add_points(index, passcode, status):
     if not recommendation_per_person_entry:
         return False, "Something went wrong, Recommendation not found in given recommendations"
     up, down = get_limits(user)
+    points = user['Level'] * recommendation['Points']
     if user['Score'] + user['Level'] * recommendation['Points'] <= up + 50:
         User.update_one({"Passcode": passcode}, {"$inc": {"Score": user['Level'] * recommendation['Points']}})
     else:
         User.update_one({"Passcode": passcode}, {"$set": {"Score": up + 50}})
-    user_after_addition = User.find_one({"Passcode": passcode})
+        points = up + 50 - user['Score']
     Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {
         "$set": {"Outcome": False, "Completed_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}})
+    user = User.find_one({"Passcode": passcode})
+    outcome = None
+    if user["Score"] > up:
+        outcome = True
+    if user["Score"] < down:
+        outcome = False
+    Score_History.insert_one(
+        {
+            'Passcode': passcode,
+            'Score': user["Score"],
+            'Level': user["Level"],
+            'Outcome': outcome,
+            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
+
     Record.insert_many(
         [
             {
                 'Passcode': passcode,
-                'Action': f"User {passcode} increased their score by {user_after_addition['Score'] - user['Score']} points",
+                'Action': f"User {passcode} increased their score by {points} points",
                 'Type': "E",
                 'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             },
@@ -507,7 +543,7 @@ def add_points(index, passcode, status):
             }
         ]
     )
-    return True, f"User {passcode} increased their score by {user_after_addition['Score'] - user['Score']} points"
+    return True, f"User {passcode} increased their score by {points} points"
 
 
 # Main page function
@@ -695,7 +731,7 @@ def add_tag(ID, passcode, title, category):
 
 
 # Questionnaire page (for admin) function
-def add_question_to_questionnaire(ID, passcode, question_input):
+def add_question_to_Questionnaire(ID, passcode, question_input):
     ID = int(ID)
     if not User.find_one({"Passcode": passcode}):
         return False, "Something went wrong, user not registered"
@@ -719,9 +755,9 @@ def add_question_to_questionnaire(ID, passcode, question_input):
 # Database page (for admin) function
 def delete_entry(passcode, key, key2, created, collection_name, this_user_passcode):
     if not User.find_one({"Passcode": passcode}):
-        return False, "Something went wrong, user not registered"
+        return False, "Something went wrong, requested user not registered"
     if not User.find_one({"Passcode": this_user_passcode}):
-        return False, None, "User not registered"
+        return False, None, "Something went wrong, User not registered"
     if collection_name == "User":
         query = {"Passcode": passcode}
     elif collection_name == "Question":
@@ -742,6 +778,8 @@ def delete_entry(passcode, key, key2, created, collection_name, this_user_passco
         query = {"Passcode": passcode, "Pointer": key, "ID": key2, "Created_At": created}
     elif collection_name == "Question_Questionnaire":
         query = {"Passcode": passcode, "ID": key, "Question": key2, "Created_At": created}
+    elif collection_name == "Score_History":
+        query = {"Passcode": passcode, "Score": key, "Level": key2, "Created_At": created}
     else:
         return False, "Invalid collection name"
     collection = globals().get(collection_name)  # Get the actual collection object
@@ -796,12 +834,12 @@ def sort_by_type(entry):
 # Database page (for user) function
 def create_history(passcode, priority, order, include_user, include_question, include_record,
                    include_status, include_recommendation, include_Tag,
-                   include_favorite, include_removed, include_recommendation_per_person, include_question_questionnair, this_user_passcode):
+                   include_favorite, include_removed, include_recommendation_per_person, include_question_Questionnaire, include_score, this_user_passcode):
     if not User.find_one({"Passcode": passcode}):
         return False, None, "User requested not registered"
     if not User.find_one({"Passcode": this_user_passcode}):
         return False, None, "User not registered"
-    query = f"Priority {priority} - Order {order} - User {include_user} - Question {include_question} - Record {include_record} - Status {include_status} - Recommendation {include_recommendation} - Tag {include_Tag} - Favorite {include_favorite} - Removed {include_removed} - Per Person {include_recommendation_per_person}"
+    query = f"Priority {priority} - Order {order} - User {include_user} - Question {include_question} - Record {include_record} - Status {include_status} - Recommendation {include_recommendation} - Tag {include_Tag} - Favorite {include_favorite} - Removed {include_removed} - Per Person {include_recommendation_per_person} - Daily Stress Questionnaire - {include_question_Questionnaire} - Score {include_score}"
     user_history = []
     message_templates = {
         "User": "User {Passcode} registered.",
@@ -813,7 +851,8 @@ def create_history(passcode, priority, order, include_user, include_question, in
         "Favorite_Recommendation": "User {Passcode} marked recommendation with ID {ID} as favorite.",
         "Removed_Recommendation": "User {Passcode} rejected recommendation with ID {ID}.",
         "Recommendation_Per_Person": "Recommendation with ID {ID} was assigned to User {Passcode} with pointer {Pointer}.",
-        "Question_Questionnaire": "User {Passcode} added question '{Question}' with ID {ID}"
+        "Question_Questionnaire": "User {Passcode} added question '{Question}' with ID {ID}",
+        "Score_History": "Score {Score} recorded for user {Passcode} at level {Level}"
     }
 
     # Datapage page side function
@@ -850,8 +889,11 @@ def create_history(passcode, priority, order, include_user, include_question, in
         add_history_entries("Removed_Recommendation", Removed_Recommendation, "ID")
     if include_recommendation_per_person:
         add_history_entries("Recommendation_Per_Person", Recommendation_Per_Person, "Pointer", "ID")
-    if include_question_questionnair:
+    if include_question_Questionnaire:
         add_history_entries("Question_Questionnaire", Question_Questionnaire, "ID", "Question")
+    if include_score:
+        add_history_entries("Score_History", Score_History, "Score", "Level")
+
     if priority == "Time":
         user_history.sort(key=sort_by_time, reverse=(order == -1))
     elif priority == "Substance":
@@ -867,4 +909,3 @@ def create_history(passcode, priority, order, include_user, include_question, in
         }
     )
     return True, user_history, f"Record for user {passcode} assembled."
-
