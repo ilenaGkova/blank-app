@@ -2,3 +2,5 @@ streamlit
 pymongo[srv]==4.0.0
 plotly==5.22.0
 streamlit-cookies-controller
+pandas==2.2.3
+altair==5.0.1
