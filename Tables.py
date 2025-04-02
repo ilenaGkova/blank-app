@@ -1,5 +1,6 @@
 Users = [
-    {'Username': 'Admin', 'Passcode': 'Admin123', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20,'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'}
+    {'Username': 'Admin', 'Passcode': 'Admin123', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20,'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'},
+    {'Username': 'OpenAI', 'Passcode': 'OpenAI', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20,'Level': 1,'Score': 500, 'Streak': 0, 'Days_Summed': 0, 'Role': 'Admin','Created_At': '2025-01-18 12:00:00'}
 ]
 
 Questionnaire = []
@@ -63,5 +64,6 @@ Tags = [
     {'ID': 19, 'Passcode': 'Admin123','Title_Of_Criteria': 'Age Variant', 'Category': '26-35', 'Created_At': '2025-01-18 12:00:00'},
     {'ID': 20, 'Passcode': 'Admin123','Title_Of_Criteria': 'Age Variant', 'Category': '18-25', 'Created_At': '2025-01-18 12:00:00'},
 ]
+
 
 
