@@ -1145,17 +1145,17 @@ else:
 
                     recommendation_status_for_user_preferences = st.radio(
                         "Include only",
-                        ("Completed Recommendations", "Incomplete Recommendations"),
+                        ("Completed Tasks", "Incomplete Tasks"),
                         index=None
                     )  # Unlike other radio buttons this won't have a preselected answer
 
                     final_recommendation_status_for_user_preferences = None  # With no option selected all recommendations are shown
 
-                    if recommendation_status_for_user_preferences == "Completed Recommendations":
+                    if recommendation_status_for_user_preferences == "Completed Tasks":
 
                         final_recommendation_status_for_user_preferences = False  # Mirrors how the recommendation_per_person stores recommendation outcomes
 
-                    elif recommendation_status_for_user_preferences == "Incomplete Recommendations":
+                    elif recommendation_status_for_user_preferences == "Incomplete Tasks":
 
                         final_recommendation_status_for_user_preferences = True  # Mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
 
