@@ -710,13 +710,17 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI, profile):
 
         prompt = f"""User has profile {profile}. Generate (1) recommendation for relieving Stress."""  # Submit the prompt and get the response
 
-        response = llm(prompt)  # Call the Hugging Face model to generate a response
+        new_recommendation = llm(prompt)  # Call the Hugging Face model to generate a response
 
         recommendation_generated_id = generate_recommendation_id()  # Generate an ID for a new recommendation in the Recommendation collection, this means that future users will be able to see this generated recommendation
 
+        if new_recommendation.startswith(prompt):
+
+            new_recommendation = new_recommendation[len(prompt):]
+
         recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id, "OpenAI",
                                                                                 f"Recommendation number {recommendation_generated_id}",
-                                                                                response, None,
+                                                                                new_recommendation, None,
                                                                                 10)  # We enter OpenAI as the passcode of the creator
 
         fail_count = 0  # We have a minor fail count to keep track if the recommendation was added, we probably won't have to use it unless we have various users doing this at the same time
