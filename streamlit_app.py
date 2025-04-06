@@ -1585,7 +1585,7 @@ else:
                                      User.find_one({"Passcode": entry_in_tags['Passcode']})[
                                          'Username'])  # To avoid data leakage we will show the creator by username
 
-        elif recommendation is None:
+        elif user is not None and index != -1:
 
             st.session_state.error_status = False
             st.session_state.error = f"Something went wrong, Recommendation with ID number {st.session_state.open_recommendation} not found."
