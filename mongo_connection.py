@@ -94,7 +94,7 @@ Question_Questionnaire = db[
 Score_History = db[
     "Score_History"]  # Keeps a record for the user's score history to create a chart showing the changes of the score
 
-llm = HuggingFaceHub(repo_id="mistralai/Mistral-7B-Instruct-v0.2",
+llm = HuggingFaceHub(repo_id="all-hands/openhands-lm-32b-v0.1",
                      huggingfacehub_api_token="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")  # Initialize the LLM
 
 
