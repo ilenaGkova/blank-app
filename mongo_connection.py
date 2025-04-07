@@ -499,7 +499,7 @@ def calculate_entries(passcode):
 
     # Start with max possible values
 
-    entries_generated_by_AI = 0
+    entries_generated_by_AI = 1
 
     entries_chosen_by_Tags = int((total_possible_entries - entries_generated_by_AI) // 2)
 
