@@ -95,7 +95,7 @@ Score_History = db[
     "Score_History"]  # Keeps a record for the user's score history to create a chart showing the changes of the score
 
 llm = HuggingFaceHub(repo_id="all-hands/openhands-lm-32b-v0.1",
-                     huggingfacehub_api_token="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")  # Initialize the LLM
+                     huggingfacehub_api_token="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")  # Initialize the LLM
 
 
 # Here we will return the collections to be used in the application, this happens here to take away the need to double the connection code on another file
