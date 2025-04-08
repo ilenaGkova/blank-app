@@ -3,7 +3,7 @@ import random
 import pymongo
 import streamlit as st
 from Tables import Users, Tags, Recommendations
-from langchain_community.llms import HuggingFaceHub
+from langchain_huggingface import HuggingFaceEndpoint
 
 
 @st.cache_resource
@@ -94,7 +94,7 @@ Question_Questionnaire = db[
 Score_History = db[
     "Score_History"]  # Keeps a record for the user's score history to create a chart showing the changes of the score
 
-llm = HuggingFaceHub(repo_id="deepseek-ai/DeepSeek-V3-0324",
+llm = HuggingFaceEndpoint(repo_id="mistralai/Mistral-7B-Instruct-v0.2", task="text-generation",
                      huggingfacehub_api_token="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")  # Initialize the LLM
 
 
@@ -174,12 +174,12 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions):
 
     # Username and Passcode needs to be unique. These are uniquely generated initially, but we check just in case
     if User.find_one({
-        "Username": username}):  # Since the user can change the username given to them this might be true, so we need to check the username is unique
+            "Username": username}):  # Since the user can change the username given to them this might be true, so we need to check the username is unique
 
         return False, "You need to enter a unique username"
 
     if User.find_one({
-        "Passcode": passcode}):  # The passcode isn't available to the user, so we just need to make sure a user didn't register with the generated passcode
+            "Passcode": passcode}):  # The passcode isn't available to the user, so we just need to make sure a user didn't register with the generated passcode
 
         return False, "Something went wrong, please reload the page and try again"
 
@@ -265,7 +265,7 @@ def generate_animal_username(max_attempts=100):
         username = f"{random.choice(adjectives)}{random.choice(animals)}#{random.randint(1000, 9999)}"  # The username is 2 words from the tables above and a 4-digit number
 
         if not User.find_one({
-            "Username": username}):  # Unlike the Passcode the username is only stored in the User Collection, so we only need to check in this table
+                "Username": username}):  # Unlike the Passcode the username is only stored in the User Collection, so we only need to check in this table
 
             return username  # If we can't find the generated username we submit it
 
@@ -499,7 +499,7 @@ def calculate_entries(passcode):
 
     # Start with max possible values
 
-    entries_generated_by_AI = 0
+    entries_generated_by_AI = 1
 
     entries_chosen_by_Tags = int((total_possible_entries - entries_generated_by_AI) // 2)
 
@@ -574,7 +574,7 @@ def generate_recommendation_id():
 
         generated_id = 1
 
-    while Recommendation.find_one({"ID": generated_id}) or Tag.find_one({"ID": generated_id}):
+    while Recommendation.find_one({"ID": generated_id}) or Tag.find_one({"ID": generated_id}) or Recommendation_Per_Person.find_one({"ID": generated_id}):
         generated_id += 1  # Step 3: Increase by 1 until the new id doesn't exist
 
     return generated_id
@@ -732,7 +732,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI, profile):
             recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id,
                                                                                     "OpenAI",
                                                                                     f"Recommendation number {recommendation_generated_id}",
-                                                                                    response, None,
+                                                                                    new_recommendation, None,
                                                                                     10)  # We enter OpenAI as the passcode of the creator
 
             fail_count += 1  # Increase the minor fail count
@@ -1343,7 +1343,7 @@ def change_recommendation_preference_for_user(preference, passcode, index, just_
     # This function returns a condition as to if it completed the function needed of it and a message
 
     if User.count_documents({
-        "Passcode": passcode}) == 0:  # If we can't find the user we can't do anything about adding a connotation to a recommendation for them
+            "Passcode": passcode}) == 0:  # If we can't find the user we can't do anything about adding a connotation to a recommendation for them
         return False, "Something went wrong, user not found"
 
     if Recommendation.count_documents(
@@ -1659,11 +1659,11 @@ def sort_by_type(entry):  # Find_me
 
 # This function gets data about a collection, including the collection itself and populates the table given with entries before returning it
 def add_history_entries(passcode, user_history, collection_name, collection, key, key2=None):
-
     # Each collection is built differently. All have a passcode attribute and a Created_At timestamp but all have different uses and other data stored in
     # Our goal is to condense that data into a message that shows the collection entry
 
-    message_templates = { # This table refers to attributes in the collection it's about by name, not value. We have one for each collection
+    message_templates = {
+        # This table refers to attributes in the collection it's about by name, not value. We have one for each collection
         "User": "User {Passcode} registered.",
         "Question": "User {Passcode} was asked '{Question}' and answered {Answer}.",
         "Record": "{Action}",
@@ -1677,17 +1677,20 @@ def add_history_entries(passcode, user_history, collection_name, collection, key
         "Score_History": "Score {Score} recorded for user {Passcode} at level {Level}"
     }
 
-    entries = collection.find({"Passcode": passcode})  # We have to global variable for the collection, so we use it to only get the data for the user
+    entries = collection.find({
+                                  "Passcode": passcode})  # We have to global variable for the collection, so we use it to only get the data for the user
 
     for entry in entries:  # For each entry we have
 
         user_history.append(
             {
                 'Type': collection_name,  # The collection it came from
-                'Key': entry.get(key, "N/A"), # 1 to 2 key attributes for the entry in the collection, so we can delete this entry on command later
+                'Key': entry.get(key, "N/A"),
+                # 1 to 2 key attributes for the entry in the collection, so we can delete this entry on command later
                 'Key2': entry.get(key2, None),
                 'Message': message_templates[collection_name].format(**entry),  # A message as dictated above
-                'Created_At': entry['Created_At'],  # The timestamp of the general creation for the entry in the collection - not the current time
+                'Created_At': entry['Created_At'],
+                # The timestamp of the general creation for the entry in the collection - not the current time
                 'Passcode': passcode  # The user passcode
             }
         )
@@ -1779,5 +1782,6 @@ def create_history(passcode, priority, order, include_user, include_question, in
                                    f"User {this_user_passcode} requested record for {query} for user {passcode}", "Q")
 
     return True, user_history, f"Record for user {passcode} assembled."
+
 
 
