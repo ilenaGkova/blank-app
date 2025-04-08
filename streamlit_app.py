@@ -13,10 +13,9 @@ import pandas as pd  # Needs to be downloaded
 import altair as alt  # Needs to be downloaded
 from datetime import datetime, timedelta
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
-from Tables import Recommendations, Tags, Users  # Import from files
 from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, \
     generate_animal_username, generate_unique_passcode, get_limits, get_recommendations, get_record, get_status, \
-    init_connection, make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
+    make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
     record_question, create_history, delete_entry, create_recommendation_history, update_user, add_recommendation, \
     add_tag, generate_recommendation, add_question_to_Questionnaire, insert_data, \
     return_collections, generate_recommendation_id, get_maximum_entries  # Import from files
@@ -185,12 +184,16 @@ def catalog_question(question, answer, passcode1):  # Called for each question i
 
     record_question(question, answer, passcode1)  # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
 
-    # Depending on the answer the stress level will rise by 0, 1 or 2
-    if answer == "Good":
-        return 0
-    elif answer == "Neutral":
+    # Depending on the answer the stress level will rise by 0 through 4
+    if answer == "That happened very often today":
+        return 4
+    if answer == "That happened often today":
+        return 3
+    if answer == "That happened sometimes today":
+        return 2
+    if answer == "That happened rarely today":
         return 1
-    return 2
+    return 0
 
 
 def make_status(
@@ -383,15 +386,15 @@ def add_recommendation_here(your_passcode_here, this_generated_id_here, points_h
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
 
 
-def add_question(ID, passcode_for_question, question_input, question_for_question_input, question_for_id):
+def add_question(ID, passcode_for_question, question_input_here, question_for_question_input, question_for_id):
     st.session_state.error_status, st.session_state.error = add_question_to_Questionnaire(ID, passcode_for_question,
-                                                                                          question_input)  # Will update the session error variables and maybe add a recommendation if appropriate
+                                                                                          question_input_here)  # Will update the session error variables and maybe add a recommendation if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
         record_question(question_for_id, ID, passcode_for_question)
-        record_question(question_for_question_input, question_input, passcode_for_question)
+        record_question(question_for_question_input, question_input_here, passcode_for_question)
 
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
 
@@ -437,10 +440,15 @@ def create_store_history_graph():  # Called to make a graph of the score history
     df['Promotion_Score'] = result[0]
     df['Demotion_Score'] = result[1]
 
+    x = alt.X('Created_At:T',
+              title='Date',
+              scale=alt.Scale(nice=False),  # Prevents automatic rounding of domain
+              axis=alt.Axis(labelOverlap=True))  # Handles overlapping labels
+
     hover = alt.selection_single(
         fields=["Created_At"],
         nearest=True,
-        on="mouseover",
+        on="mouseover",  # This is correct for Streamlit
         empty="none",
     )  # Sets the baseline that is the date the score number was recorded based on the Created_At field if the Collection
 
@@ -631,7 +639,7 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
             # For each question we will have a slider for the user to answer
             st.select_slider(
                 entry['Question'],
-                options=["Bad", "Neutral", "Good"],
+                options=["That never happened today", "That happened rarely today", "That happened sometimes today", "That happened often today", "That happened very often today"],
                 key=key
             )
 
@@ -939,7 +947,7 @@ else:
 
                                 st.button("", icon=":material/open_in_full:", use_container_width=True,
                                           on_click=open_recommendation, args=[
-                                        entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                                            entry_for_user_recommendation_generated_list_with_recommendations['ID']],
                                           key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                             with column_for_reference_1:
@@ -2107,6 +2115,7 @@ else:
         # This should never realistically happen
 
         st.write('You are on page ', st.session_state.page)
+
 
 
 
