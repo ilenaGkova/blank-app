@@ -1,5 +1,5 @@
 import random
-from mongo_connection import Tag, User, Status, Recommendation
+from mongo_connection import Tag, User, Status, Recommendation, Recommendation_Per_Person
 from check_and_balance import get_status
 from generate_recomendations_functions import enter_recommendation_for_user, generate_valid_index
 from generate_items import calculate_fail_count
