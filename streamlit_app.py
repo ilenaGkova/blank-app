@@ -13,12 +13,19 @@ import pandas as pd  # Needs to be downloaded
 import altair as alt  # Needs to be downloaded
 from datetime import datetime, timedelta
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
-from mongo_connection import add_points, change_recommendation_preference_for_user, determine_level_change, \
-    generate_animal_username, generate_unique_passcode, get_limits, get_recommendations, get_record, get_status, \
-    make_recommendation_table, record_status, update_user_streak, validate_user, new_user, \
-    record_question, create_history, delete_entry, create_recommendation_history, update_user, add_recommendation, \
-    add_tag, generate_recommendation, add_question_to_Questionnaire, insert_data, \
-    return_collections, generate_recommendation_id, get_maximum_entries  # Import from files
+from user_information import add_points, change_recommendation_preference_for_user, update_user
+from structure_recommendation_table import make_recommendation_table
+from mongo_connection import User, Recommendation, Question_Questionnaire, Score_History, insert_data, Status, Tag, \
+    Question
+from make_record import create_history, delete_entry
+from make_record_recommendations import create_recommendation_history
+from log_in_page_create_user_page import new_user, validate_user
+from generate_items import generate_animal_username, get_maximum_entries, get_limits, generate_unique_passcode, \
+    generate_recommendation_id
+from generate_recommendations_main import get_recommendations, generate_recommendation
+from check_and_balance import get_status, record_question, record_status
+from application_actions import update_user_streak, get_record, determine_level_change
+from add_data_in_collection import add_recommendation, add_question_to_Questionnaire, add_tag
 
 # Part A: The Initial Session Variables
 
@@ -49,8 +56,6 @@ if 'answers' not in st.session_state:
 # Part B: The Global But Not Session Variables
 
 # Step 1: Get collections. This happens via function, so we don't have to establish any connection here, on this file
-
-User, Recommendation, Tag, Question_Questionnaire, Score_History, Question, Status = return_collections()
 
 # The majority of the function alterations are done in the mongo file.
 # The above database collections are initialized here and used exclusively for find and count_document actions in the mongo database
@@ -182,7 +187,8 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
 
 def catalog_question(question, answer, passcode1):  # Called for each question in the Daily Stress Questionnaire
 
-    record_question(question, answer, passcode1)  # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
+    record_question(question, answer,
+                    passcode1)  # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
 
     # Depending on the answer the stress level will rise by 0 through 4
     if answer == "That happened very often today":
@@ -359,7 +365,6 @@ def generate_question_id():  # Called what an admin wants to add a question to t
 
     # Step 2: Increase by 1 until the new id doesn't exist
     while Question_Questionnaire.find_one({"ID": generated_id}):
-
         generated_id += 1
 
     return generated_id
@@ -633,17 +638,18 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
         questionnaire_list = Question_Questionnaire.find()  # Get the questioner questions
 
         for entry in questionnaire_list:
-
             key = f"Question_{entry['ID']}"  # Make a unique key for each input field.
 
             # For each question we will have a slider for the user to answer
             st.select_slider(
                 entry['Question'],
-                options=["That never happened today", "That happened rarely today", "That happened sometimes today", "That happened often today", "That happened very often today"],
+                options=["That never happened today", "That happened rarely today", "That happened sometimes today",
+                         "That happened often today", "That happened very often today"],
                 key=key
             )
 
-            st.session_state.answers[entry['Question']] = st.session_state[key]  # Store the answer to the question via the key
+            st.session_state.answers[entry['Question']] = st.session_state[
+                key]  # Store the answer to the question via the key
 
         if st.button("Submit", key="make_status"):  # Step 2: Click button to submit answers
 
@@ -653,8 +659,8 @@ elif st.session_state.page == 2:  # 2 is the page where the user can answer ques
             stress_level = 0  # Set Stress Level as 0, so we can add to it
 
             for question, answer in question_answer_pairs:
-
-                stress_level += catalog_question(question, answer, st.session_state.current_passcode)  # Record the question-answer pairs and increase the stress level
+                stress_level += catalog_question(question, answer,
+                                                 st.session_state.current_passcode)  # Record the question-answer pairs and increase the stress level
 
             make_status(stress_level)  # Submit to final stress level to move on
 
@@ -910,7 +916,7 @@ else:
                                 # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
+                                    'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
 
                                     st.markdown(
                                         f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
@@ -933,7 +939,8 @@ else:
 
                             with column_for_outcome:
 
-                                if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
+                                if entry_for_user_recommendation_generated_list_with_recommendations[
+                                    'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
 
                                     st.button("", icon=":material/done_outline:", use_container_width=True,
                                               on_click=completed_recommendation,
@@ -947,13 +954,13 @@ else:
 
                                 st.button("", icon=":material/open_in_full:", use_container_width=True,
                                           on_click=open_recommendation, args=[
-                                            entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                                        entry_for_user_recommendation_generated_list_with_recommendations['ID']],
                                           key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                             with column_for_reference_1:
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is False:
+                                    'Preference'] is False:
                                     st.button("", icon=":material/thumb_up:", use_container_width=True,
                                               on_click=change_recommendation_status, args=[1,
                                                                                            entry_for_user_recommendation_generated_list_with_recommendations[
@@ -961,7 +968,7 @@ else:
                                               key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is True:
+                                    'Preference'] is True:
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
                                               args=[1, st.session_state.current_passcode,
@@ -970,7 +977,7 @@ else:
                                               key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is None:
+                                    'Preference'] is None:
                                     st.button("", icon=":material/thumb_up:", use_container_width=True,
                                               on_click=change_recommendation_status, args=[1,
                                                                                            entry_for_user_recommendation_generated_list_with_recommendations[
@@ -980,7 +987,7 @@ else:
                             with column_for_reference_2:
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is False:
+                                    'Preference'] is False:
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
                                               args=[1, st.session_state.current_passcode,
@@ -989,7 +996,7 @@ else:
                                               key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is True:
+                                    'Preference'] is True:
                                     st.button("", icon=":material/thumb_down:", use_container_width=True,
                                               on_click=change_recommendation_status, args=[-1,
                                                                                            entry_for_user_recommendation_generated_list_with_recommendations[
@@ -997,7 +1004,7 @@ else:
                                               key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
 
                                 if entry_for_user_recommendation_generated_list_with_recommendations[
-                                        'Preference'] is None:
+                                    'Preference'] is None:
                                     st.button("", icon=":material/thumb_down:", use_container_width=True,
                                               on_click=change_recommendation_status, args=[-1,
                                                                                            entry_for_user_recommendation_generated_list_with_recommendations[
@@ -1215,18 +1222,18 @@ else:
                                 with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
 
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                            'Type'] == "Favorite_Recommendation":
+                                        'Type'] == "Favorite_Recommendation":
 
                                         st.header(':material/thumb_up:')  # Category Favorites and Favorite Collection
 
                                     elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                            'Type'] == "Removed_Recommendation":
+                                        'Type'] == "Removed_Recommendation":
 
                                         st.header(
                                             ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
                                     elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                            'Outcome']:  # The below are in the Recommendation_per_person Collection
+                                        'Outcome']:  # The below are in the Recommendation_per_person Collection
 
                                         st.header(
                                             ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
@@ -1267,7 +1274,7 @@ else:
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[
-                                                    entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                                entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                                   key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
@@ -1437,7 +1444,8 @@ else:
 
                         with st.container(border=True):  # Puts a border around each entry to seperate
 
-                            if user['Role'] == 'User':  # This page has dual usage for and user or an admin. As a result we have 2 different tables
+                            if user[
+                                'Role'] == 'User':  # This page has dual usage for and user or an admin. As a result we have 2 different tables
 
                                 column_for_pointer_for_user_history_list_user_menu, column_for_timestamp_for_user_history_list_user_menu, column_for_message_for_user_history_list_user_menu, column_for_buttons_for_user_history_list_user_menu = st.columns(
                                     [2, 2, 4, 1])  # Columns are named after the content they show
@@ -1461,7 +1469,9 @@ else:
                                     # For a recommendation related collection either have Key 1 or 2 as the ID of the recommendation which we can use to open the recommendation in full
                                     # We see if it's one of the appropriate collections and send the right key to the open recommendation
 
-                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry[
+                                        'Type'] == "Favorite_Recommendation" or entry[
+                                        'Type'] == "Removed_Recommendation":
 
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
@@ -1503,7 +1513,9 @@ else:
                                     # The Keys are used so the admin can delete peaces of the record, by sending the collection name and the keys to a delete function
                                     # That function is explain in the mongo file
 
-                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry['Type'] == "Favorite_Recommendation" or entry['Type'] == "Removed_Recommendation":
+                                    if entry['Type'] == "Recommendation" or entry['Type'] == "Tag" or entry[
+                                        'Type'] == "Favorite_Recommendation" or entry[
+                                        'Type'] == "Removed_Recommendation":
 
                                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                                   on_click=open_recommendation, args=[entry['Key']],
@@ -1570,7 +1582,7 @@ else:
 
                     with st.container(border=True):  # Add a square around the information
 
-                        st.write(recommendation['Description'])  # Show the description
+                        st.write(recommendation['Description'])
 
                         if recommendation['Link'] is not None:
                             st.write('See more information on ', recommendation['Link'])  # Show a link if one exists
@@ -1851,7 +1863,6 @@ else:
                                                       disabled=True)  # This ID is generated on the spot
 
                 with column_for_point_for_new_recommendation:
-
                     # The minimum points a recommendation can get is 10 points
                     # The maximum points is 150 which is the cap points for a user in level 1
 
@@ -1996,7 +2007,6 @@ else:
                             "Uncertainty & Future Planning"))  # Options match the ones given to user
 
                     with column_for_focus_area_tag_done:
-
                         if Recommendation.find_one(
                                 {"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
 
@@ -2042,7 +2052,8 @@ else:
                     with column_for_level_tag_title:  # Write the kind of tag the user is entering
 
                         level_variant = st.radio("Tag Name", (
-                            "Show for levels above", "Show for levels below", "Show for levels equal"))  # Options match the ones given to user
+                            "Show for levels above", "Show for levels below",
+                            "Show for levels equal"))  # Options match the ones given to user
 
                     with column_for_level_tag_value:  # User selects the Tag Value
 
@@ -2115,9 +2126,3 @@ else:
         # This should never realistically happen
 
         st.write('You are on page ', st.session_state.page)
-
-
-
-
-
-

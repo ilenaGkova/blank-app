@@ -65,5 +65,3 @@ Tags = [
     {'ID': 20, 'Passcode': 'Admin123','Title_Of_Criteria': 'Age Variant', 'Category': '18-25', 'Created_At': '2025-01-18 12:00:00'},
 ]
 
-
-
