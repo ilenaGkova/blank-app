@@ -6,7 +6,7 @@ from check_and_balance import new_entry_in_score_history_collection, new_entry_i
 
 
 # This function adds points when a user completes a recommendation.
-def add_points(index, passcode, status):
+def add_points(index, passcode, status, pointer):
     user = User.find_one({"Passcode": passcode})  # Find the user using their Passcode
 
     if not user:  # If we can't find the user we can't do anything about this points
@@ -45,7 +45,7 @@ def add_points(index, passcode, status):
 
         points = maximum_points - combined_points  # We are using the variable to keep track of how many points were added to the user
 
-    Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {
+    Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status, "Pointer": pointer}, {
         "$set": {"Outcome": False, "Completed_At": datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S")}})  # Update the recommendation outcome to add the completion timestamp and change the outcome
 

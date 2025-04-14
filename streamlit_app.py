@@ -293,11 +293,11 @@ def add_recommendation_to_user():  # Called when the user wants to see another r
 
 
 def completed_recommendation(index_for_completed_recommendation,
-                             status):  # Called when the user completes a recommendation
+                             status, pointer):  # Called when the user completes a recommendation
 
     st.session_state.error_status, st.session_state.error = add_points(index_for_completed_recommendation,
                                                                        st.session_state.current_passcode,
-                                                                       status)  # Will update the session error variables and maybe increase the user's score if appropriate
+                                                                       status, pointer)  # Will update the session error variables and maybe increase the user's score if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
@@ -947,7 +947,7 @@ else:
                                               args=[entry_for_user_recommendation_generated_list_with_recommendations[
                                                         'ID'],
                                                     entry_for_user_recommendation_generated_list_with_recommendations[
-                                                        'Status_Created_At']],
+                                                        'Status_Created_At'], entry_for_user_recommendation_generated_list_with_recommendations['Pointer']],
                                               key=f"complete_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                             with column_for_extension_button:
