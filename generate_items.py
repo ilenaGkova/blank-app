@@ -61,7 +61,7 @@ def generate_animal_username(max_attempts=100):
 
 # This function generates a recommendation ID for a new recommendation to be added
 def generate_recommendation_id():
-    last_entry = Recommendation.find_one({},
+    last_entry = Recommendation.find_one({"Passcode": {"$ne": "OpenAI"}},
                                          sort=[("ID", -1)])  # Step 1: Get the biggest ID in recommendation collection
 
     if last_entry:  # Step 2: Increase the biggest ID by one if there are recommendations, or set the new ID as 1
@@ -80,7 +80,7 @@ def generate_recommendation_id():
 
 # This Function returns 2 things. The minimum limit for the recommendations a user can request when ending their information and the additional they can request via a button
 def get_maximum_entries():
-    return int(Recommendation.count_documents({}) / 4), int(Recommendation.count_documents({}) * 0.1)
+    return int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) / 4), int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) * 0.1)
 
 
 # This function gets a level and will calculate the limit score of the level.
@@ -103,9 +103,9 @@ def get_limits(level):
 # This function calculates the amount of times an algorithm can fail to find an appropriate recommendation for a user depending on the amount of recommendations available
 def calculate_fail_count():
     number_of_recommendations_in_total = Recommendation.count_documents(
-        {})  # Step 1: Get the current number of recommendations in the Database
+        {"Passcode": {"$ne": "OpenAI"}})  # Step 1: Get the current number of recommendations in the Database
 
-    total_possible_IDs = Recommendation.find_one({}, sort=[('ID', -1)])[
+    total_possible_IDs = Recommendation.find_one({"Passcode": {"$ne": "OpenAI"}}, sort=[('ID', -1)])[
         'ID']  # Step 2: Get the ID of the last entered recommendation
 
     number_of_recommendation_after_removing_deleted_entries = total_possible_IDs - number_of_recommendations_in_total  # Step 3: Find the actual amount of recommendations by subtracting the biggest ID with the number of recommendations
