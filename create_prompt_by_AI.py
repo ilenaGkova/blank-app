@@ -60,7 +60,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                 description = response_json.get("Description", new_recommendation)
             except json.JSONDecodeError:
                 title = "Invalid Format"
-                description = new_recommendation
+                description = json_str_cleaned
         else:
             title = "No JSON Found"
             description = new_recommendation
