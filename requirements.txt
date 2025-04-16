@@ -1,14 +1,14 @@
-streamlit
-pymongo[srv]==4.0.0
-plotly==5.22.0
-streamlit-cookies-controller
-pandas==2.2.3
-altair==5.0.1
-langchain>=0.1.0
-langchain-community>=0.1.0
+streamlit  # Application hosting software
+pymongo[srv]==4.0.0  # Mongo database functions
+plotly==5.22.0  # Visualisation of data
+streamlit-cookies-controller  # Cookie software
+pandas==2.2.3  # For tables
+altair==5.0.1 # Data structuring
+langchain>=0.1.0  # # AI model
+langchain-community>=0.1.0 # AI model
 transformers>=4.30.0
 torch>=2.0.0
-huggingface_hub>=0.16.4
-langchain-huggingface>=0.0.1
+huggingface_hub>=0.16.4  # AI model
+langchain-huggingface>=0.0.1 # AI model
 
 

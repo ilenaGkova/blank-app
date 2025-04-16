@@ -43,7 +43,7 @@ def generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_tags):
                 if (Recommendation.find_one({'ID': tag['ID']})
                         and tag['ID'] not in user_recommendations
                         and tag['Passcode'] != 'OpenAI'
-                        and Recommendation_Per_Person.find_one({"Passcode": passcode, "Status_Created_At": status['Created_At'], "ID": tag['ID']}) is None):
+                        and Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At'], "ID": tag['ID']}) is None):
                     recommendations.append({'ID': tag['ID'], 'Pointer': pointer})
 
                     user_recommendations.add(int(tag['ID']))  # Track recommendations added to avoid duplicates

@@ -9,7 +9,7 @@ from add_data_in_collection import add_recommendation, add_tag
 from generate_recomendations_functions import enter_recommendation_for_user, generate_valid_index
 
 llm = HuggingFaceEndpoint(repo_id="mistralai/Mistral-7B-Instruct-v0.2", task="text-generation",
-                          huggingfacehub_api_token="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")  # Initialize the LLM
+                          huggingfacehub_api_token="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")  # Initialize the LLM
 
 
 # This function generates a required amount of recommendations by setting a prompt in an openAI machine
@@ -42,80 +42,108 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
             f"}}"
         )
 
-        new_recommendation = llm(prompt)  # Call the Hugging Face model to generate a response
-
-        recommendation_generated_id = generate_recommendation_id()  # Generate an ID for a new recommendation in the Recommendation collection, this means that future users will be able to see this generated recommendation
-
-        if new_recommendation.startswith(prompt):  # Remove prompt from the response
-            new_recommendation = new_recommendation[len(prompt):]
-
-        match = re.search(r'\{.*?\}', new_recommendation, re.DOTALL)  # Try to extract JSON from the response
-
-        if match:
-            json_str = match.group(0)
-            json_str_cleaned = json_str.replace("'", '"') # Convert single quotes to double quotes
-            try:
-                response_json = json.loads(json_str_cleaned)
-                title = response_json.get("Title", "Untitled")
-                description = response_json.get("Description", new_recommendation)
-            except json.JSONDecodeError:
-                title = "Invalid Format"
-                description = json_str_cleaned
-        else:
-            title = "No JSON Found"
-            description = new_recommendation
-
-        if new_recommendation.startswith(prompt):
-            new_recommendation = new_recommendation[len(prompt):]
-
-        recommendation_added, recommendation_added_message = (
-            add_recommendation(recommendation_generated_id, "OpenAI",
-                               title,
-                               description, None,
-                               10))  # We enter OpenAI as the passcode of the creator
+        outcome, new_recommendation = return_prompt(prompt)
 
         fail_count = 0  # We have a minor fail count to keep track if the recommendation was added, we probably won't have to use it unless we have various users doing this at the same time
 
-        while not recommendation_added and fail_count <= 100:  # We have a maximum of 100 attempts to enter the recommendations
+        recommendation_added = False
 
-            recommendation_generated_id = generate_recommendation_id()  # Generate an ID for a new recommendation in the Recommendation collection, this means that future users will be able to see this generated recommendation
+        if outcome:
 
-            recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id,
-                                                                                    "OpenAI",
-                                                                                    f"Recommendation number {recommendation_generated_id}",
-                                                                                    new_recommendation, None,
-                                                                                    10)  # We enter OpenAI as the passcode of the creator
+            description, title = extract_json(new_recommendation, prompt)
 
-            fail_count += 1  # Increase the minor fail count
+            while fail_count <= 100 and not recommendation_added:  # We have a maximum of 100 attempts to enter the recommendations
 
-        if fail_count > 100 and not recommendation_added:
+                recommendation_generated_id = generate_recommendation_id()  # Generate an ID for a new recommendation in the Recommendation collection, this means that future users will be able to see this generated recommendation
+
+                recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id,
+                                                                                        "OpenAI",
+                                                                                        title, description, None,
+                                                                                        10)  # We enter OpenAI as the passcode of the creator
+
+                if recommendation_added:
+
+                    # We add tags so this recommendation, so it will be shown to users equal and below the user's level
+                    # Tags usually restrict the recommendation from being seen by all the users, so use them sparingly and only if needed
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Age Variant', user['Age_Category'])
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Focus Area', user['Focus_Area'])
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Time Available', user['Time_Available'])
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Stress Level', status['Stress_Level'])
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Show for levels below', user['Level'])
+
+                    add_tag(recommendation_generated_id, "OpenAI", 'Show for levels equal', user['Level'])
+
+                    enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
+                                                  'A')  # Add the recommendation with Category A, aka generated by OpenAI
+
+                else:
+
+                    fail_count += 1  # Increase the minor fail count
+
+        if not recommendation_added:
+
+            if outcome:
+
+                category = 'A-'
+
+            else:
+
+                category = 'F'
 
             enter_recommendation_for_user(passcode, generate_valid_index(), fail_count,
-                                          'A-')  # Add the recommendation with Category A-, aka chosen by algorithm when is should have been generated by OpenAI
-
-        else:
-
-            # We add tags so this recommendation, so it will be shown to users equal and below the user's level
-            # Tags usually restrict the recommendation from being seen by all the users, so use them sparingly and only if needed
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Age Variant', user['Age_Category'])
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Focus Area', user['Focus_Area'])
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Time Available', user['Time_Available'])
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Stress Level', status['Stress_Level'])
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Show for levels below', user['Level'])
-
-            add_tag(recommendation_generated_id, "OpenAI", 'Show for levels equal', user['Level'])
-
-            enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
-                                          'A')  # Add the recommendation with Category A, aka generated by OpenAI
+                                          category)  # Add the recommendation with Category A-, aka chosen by algorithm when is should have been generated by OpenAI
 
         index += 1  # Increase to the index to indicate we added a recommendation to the user to keep track of how many
 
     return index
+
+
+def return_prompt(prompt):
+    try:
+
+        new_recommendation = llm(prompt)  # Call the Hugging Face model to generate a response
+
+        return True, new_recommendation
+
+    except Exception as e:
+
+        return False, None
+
+
+def extract_json(new_recommendation, prompt):
+    if new_recommendation.startswith(prompt):  # Remove prompt from the response
+        new_recommendation = new_recommendation[len(prompt):]
+
+    match = re.search(r'\{.*?\}', new_recommendation, re.DOTALL)  # Try to extract JSON from the response
+
+    if match:
+
+        json_str = match.group(0)
+
+        json_str_cleaned = json_str.replace("'", '"')  # Convert single quotes to double quotes
+
+        try:
+            response_json = json.loads(json_str_cleaned)
+
+            title = response_json.get("Title", "Untitled")
+            description = response_json.get("Description", new_recommendation)
+
+        except json.JSONDecodeError:
+
+            title = "Invalid Format"
+            description = json_str_cleaned
+
+    else:
+
+        title = "No JSON Found"
+        description = new_recommendation
+
+    return description, title
 
 
 # This function generates a user profile to be added to a prompt to an AI, and a condition to indicate if it did it correctly
@@ -145,7 +173,6 @@ def generate_user_profile(passcode):
     for entry in data:
 
         if Recommendation.find_one({"ID": entry['ID']}):
-
             previous_recommendations.append(
                 {
                     'Recommendation': Recommendation.find_one({"ID": entry['ID']})['Description']
@@ -180,7 +207,8 @@ def generate_user_profile(passcode):
 
                 )
 
-    data = list(Recommendation.find({"Passcode": passcode}))  # Gathering user preferences by checking recommendations we have
+    data = list(
+        Recommendation.find({"Passcode": passcode}))  # Gathering user preferences by checking recommendations we have
     preferences = []  # Initialise table
 
     for entry in data:

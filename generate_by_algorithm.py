@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from check_and_balance import get_status
-from mongo_connection import User, Recommendation_Per_Person, Status, Tag, Recommendation, Removed_Recommendation
-from generate_items import calculate_fail_count, get_maximum_entries
+from mongo_connection import User, Recommendation_Per_Person, Status, Tag, Removed_Recommendation
+from generate_items import calculate_fail_count
 from generate_recomendations_functions import enter_recommendation_for_user, generate_valid_index
 
 

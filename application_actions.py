@@ -8,23 +8,14 @@ from generate_items import get_limits
 def update_user_streak(passcode):
     # This function returns a message for the outcome of the function to show the user
 
-    # As mentioned, user records are identified by letter that means a kind of action
-    # Type B is days connected increased, so we need to check if we have done this daily action already
-
-    last_record = Record.find_one({"Passcode": passcode, "Type": "C"}, sort=[("Created_At", -1)])
-
-    if last_record:  # If there was a type B action made for the user we need to make sure it didn't happen today
-
-        # Format the timestamp of the last action B to get the date and compare it with today
-
-        last_time = datetime.strptime(last_record["Created_At"], "%Y-%m-%d %H:%M:%S")
-        now = datetime.now()
-
-        if last_time.date() == now.date():
-            return "You have already signed in today, your streak will not change."
-
     if not User.find_one({"Passcode": passcode}):
         return "Something went wrong, user not registered."  # Make sure the user is registered first - another thing that probably won't happen since this function won't be called then
+
+    today, yesterday, index = get_status(passcode)
+
+    if today:  # If there was a type C action made for the user we need to make sure it didn't happen today
+
+        return "You have already signed in today, your streak will not change."
 
     User.update_one({"Passcode": passcode},
                     {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
