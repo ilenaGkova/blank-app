@@ -12,7 +12,7 @@ A simple Streamlit app template for you to modify!
    $ pip install -r requirements.txt
    ```
 
-2. Run the app
+2. Run the app  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
 
    ```
    $ streamlit run streamlit_app.py

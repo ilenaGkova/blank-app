@@ -113,7 +113,7 @@ def new_entry_in_score_history_collection(passcode):
 
 
 # This function records a question and an answer the user has given
-def record_question(question, answer, passcode, function=None):
+def record_question(question, answer, passcode, function=True):
     # The function has 2 returns
     # One is a message of the outcome of the function and the other is True/False
     # True means the function completed its task: recording the question/answer
@@ -122,10 +122,8 @@ def record_question(question, answer, passcode, function=None):
     # It's a disclaimer and there isn't a middle function to weed out the unfit entries
     # Usually the function will be called when the data have already been verified
 
-    if function is not None:  # The fact the function isn't None means we also need to check before entering the question in
-
-        if not answer.strip() or not question.strip() or function is False:
-            return False, "Question failed to be recorded"
+    if not answer.strip() or not question.strip() or not function:
+        return False, "Question failed to be recorded"
 
     # This entry includes 4 attributes
     # The key attributes to seperate this entry in the Question collection can vary

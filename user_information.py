@@ -6,7 +6,7 @@ from check_and_balance import new_entry_in_score_history_collection, new_entry_i
 
 
 # This function adds points when a user completes a recommendation.
-def add_points(index, passcode, status, pointer):
+def add_points(index, passcode, status):
     user = User.find_one({"Passcode": passcode})  # Find the user using their Passcode
 
     if not user:  # If we can't find the user we can't do anything about this points
@@ -45,7 +45,7 @@ def add_points(index, passcode, status, pointer):
 
         points = maximum_points - combined_points  # We are using the variable to keep track of how many points were added to the user
 
-    Recommendation_Per_Person.update_one({"ID": index, "Passcode": passcode, "Status_Created_At": status, "Pointer": pointer}, {
+    Recommendation_Per_Person.update_many({"ID": index, "Passcode": passcode, "Status_Created_At": status}, {
         "$set": {"Outcome": False, "Completed_At": datetime.now().strftime(
             "%Y-%m-%d %H:%M:%S")}})  # Update the recommendation outcome to add the completion timestamp and change the outcome
 
@@ -59,7 +59,7 @@ def add_points(index, passcode, status, pointer):
 
 
 # This function removes a recommendation from a favorite / removed status and maybe add them to another
-def change_recommendation_preference_for_user(preference, passcode, index, just_remove=None):
+def change_recommendation_preference_for_user(preference, passcode, index, just_remove=False):
     # This function returns a condition as to if it completed the function needed of it and a message
 
     if User.count_documents({

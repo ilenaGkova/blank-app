@@ -1,16 +1,16 @@
 import streamlit as st  # Streamlit Software
 from initialise_variables import initialize_variables, question_username, question_age, \
     question_focus_area, question_time_available, min_time_limit, max_limit, \
-    question_suggestions, min_limit, max_recommendation_limit  # Application Function
+    question_suggestions, min_limit, max_recommendation_limit, ages, focus_areas  # Application Function
 from user_information import update_user, change_recommendation_preference_for_user  # Database Function
 from check_and_balance import record_question  # Database Function
 from change_page import change_page, open_recommendation  # Application Function
 from make_record_recommendations import create_recommendation_history
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
 if 'error' not in st.session_state:
@@ -19,7 +19,7 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if "open_recommendation" not in st.session_state:
+if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 
@@ -48,7 +48,7 @@ def update_user_here(new_username, passcode_for_update_employee, new_age, new_fo
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
 
 
-def layout():
+def layout_4():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
     if user is not None and index != -1:
@@ -83,19 +83,25 @@ def layout():
                                                 key="update_passcode", value=user['Passcode'], disabled=True)
 
             with column_for_age:
-                update_age = st.radio(question_age, ("18-25", "26-35", "36-55", "56-70", "70+"))
+                update_age = st.selectbox(
+                    question_age,
+                    ages,
+                    index=ages.index(user['Age_Category']) if user['Age_Category'] in ages else 0,
+                    placeholder="Select an age category..."
+                )
 
-                st.write('Current Age Category: ', user[
-                    'Age_Category'])  # For radio button entries I can't preselect the user data, so I am adding them below
+                if not user['Age_Category'] in ages:  # The value comes defaulted as the user's but if the options have changed, we write it down
+                    st.write('Current Age Category: ', user['Age_Category'])
 
             with column_for_focus_area:
-                update_focus_area = st.radio(question_focus_area, (
-                    "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management",
-                    "Personal Identity",
-                    "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
+                update_focus_area = st.selectbox(
+                    question_focus_area,
+                    focus_areas,
+                    index=focus_areas.index(user['Focus_Area']) if user['Focus_Area'] in focus_areas else 0,
+                    placeholder="Select a focus area...")
 
-                st.write('Current Focus Area: ', user[
-                    'Focus_Area'])  # For radio button entries I can't preselect the user data, so I am adding them below
+                if not user['Focus_Area'] in focus_areas:  # The value comes defaulted as the user's but if the options have changed, we write it down
+                    st.write('Current Focus Area: ', user['Focus_Area'])
 
             with column_for_time_available:
                 update_time_available = st.number_input(question_time_available, min_value=min_time_limit,
@@ -120,7 +126,7 @@ def layout():
             st.write(
                 "Warning: by clicking the button below will update every field of your profile, make sure you are altering only the fields you wish to alter")  # Add a disclaimer for the user
 
-            st.button("Save Alterations", icon=":material/save_as:", use_container_width=True,
+            st.button("Save Changes", icon=":material/save_as:", use_container_width=True,
                       on_click=update_user_here,
                       args=[update_username, update_passcode, update_age, update_focus_area,
                             update_time_available, update_suggestions, update_repeat,
@@ -248,16 +254,19 @@ def layout():
 
                             with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
 
-                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Favorite_Recommendation":
+                                if entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                    'Type'] == "Favorite_Recommendation":
 
                                     st.header(':material/thumb_up:')  # Category Favorites and Favorite Collection
 
-                                elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Removed_Recommendation":
+                                elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                    'Type'] == "Removed_Recommendation":
 
                                     st.header(
                                         ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
-                                elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Outcome']:  # The below are in the Recommendation_per_person Collection
+                                elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                    'Outcome']:  # The below are in the Recommendation_per_person Collection
 
                                     st.header(
                                         ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
@@ -297,7 +306,8 @@ def layout():
 
                                 if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                     st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                              on_click=open_recommendation, args=[entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                              on_click=open_recommendation, args=[
+                                            entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                               key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
                                 if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:

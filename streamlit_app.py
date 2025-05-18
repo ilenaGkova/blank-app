@@ -11,7 +11,7 @@ st.set_page_config(
 
 from mongo_connection import insert_data
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
 if 'error' not in st.session_state:
@@ -82,9 +82,9 @@ if st.session_state.page == 1:  # 1 is the page where the user makes a new accou
 
 elif st.session_state.page == 2:  # 2 is the page where the user can answer questions about stress levels
 
-    from page_2 import layout
+    from page_2 import layout_2
 
-    layout()
+    layout_2()
 
 else:
 
@@ -94,45 +94,45 @@ else:
 
     if st.session_state.page == 3:  # 3 is the home page where the user can see and complete recommendations
 
-        from page_3 import layout
+        from page_3 import layout_3
 
-        layout()
+        layout_3()
 
     elif st.session_state.page == 4:  # 4 is the profile and preferences page where the user can update their profile and manage their preferences
 
-        from page_4 import layout
+        from page_4 import layout_4
 
-        layout()
+        layout_4()
 
     elif st.session_state.page == 5:  # 5 is the Record page where the user can see their application history
 
-        from page_5 import layout
+        from page_5 import layout_5
 
-        layout()
+        layout_5()
 
     elif st.session_state.page == 6:  # 6 is the page where the user can see a recommendation in full
 
-        from page_6 import layout
+        from page_6 import layout_6
 
-        layout()
+        layout_6()
 
     elif st.session_state.page == 7:  # 7 is the tutorial page where the user can see how the application works
 
-        from page_7 import layout
+        from page_7 import layout_7
 
-        layout()
+        layout_7()
 
     elif st.session_state.page == 8:  # 8 is the page where the user can make a confession and manage their confessions
 
-        from page_8 import layout
+        from page_8 import layout_8
 
-        layout()
+        layout_8()
 
     elif st.session_state.page == 9:  # 9 is the page where an admin can add entries to the collections of the database
 
-        from page_9 import layout
+        from page_9 import layout_9
 
-        layout()
+        layout_9()
 
     else:
 

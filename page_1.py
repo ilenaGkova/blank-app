@@ -2,19 +2,17 @@ import streamlit as st  # Streamlit Software
 from change_page import change_page  # Application Function
 from log_in_page_create_user_page import validate_user, new_user  # Database Function
 from initialise_variables import question_passcode, question_username, question_age, question_focus_area, \
-    question_time_available, min_time_limit, question_suggestions, max_recommendation_limit, min_limit, max_limit
+    question_time_available, min_time_limit, question_suggestions, max_recommendation_limit, min_limit, max_limit, \
+    focus_areas, ages
 from generate_items import generate_unique_passcode, generate_animal_username  # Application Function
 from check_and_balance import record_question, get_status  # Database Function
 from mongo_connection import Recommendation  # Database Function
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
-
-if 'previous_passcode' not in st.session_state:
-    st.session_state.previous_passcode = ''  # Will register the last passcode used so the used doesn't have to remember it
 
 if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
@@ -22,15 +20,16 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if "username" not in st.session_state:
+if 'username' not in st.session_state:
     st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
+
+if 'show_questions' not in st.session_state:
+    st.session_state.show_questions = False
 
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 
 controller = CookieController()
 cookies = controller.getAll()
-st.session_state.previous_passcode = cookies.get("previous_user_passcode",
-                                                 "")  # Save the previous passcode on the session variable
 
 
 def set_username(passcode_for_setting_username):  # Called when user signs in or makes a new account
@@ -98,12 +97,18 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
             user_user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
+def show_profile():
+
+    st.session_state.show_questions = True
+    change_page(st.session_state.page)
+
+
 def layout():
     # The SideBar - User Signs In With Passcode
 
     st.sidebar.header('Already have an account? Sign in!')
 
-    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=st.session_state.previous_passcode)
+    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode", ""))  # Save the previous passcode on the session variable)
 
     st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
                       key="sign_in_user")
@@ -117,19 +122,23 @@ def layout():
 
     st.write("New here? Please answer the following questions and we'll create your account.")
 
-    # The Initial Questions Section
+    with st.container(border=True):  # Add a square around the section to seperate
 
-    if Recommendation.count_documents(
-            {}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
+        # Step 1: User enters a username - randomly generated at first
 
-        with st.container(border=True):  # Add a square around the section to seperate
+        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
 
-            # Step 1: User enters a username - randomly generated at first
+        if user_username != st.session_state.username:
+            st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
 
-            user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
+        if not st.session_state.show_questions:
 
-            if user_username != st.session_state.username:
-                st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
+            st.button('Make profile', use_container_width=True, on_click=show_profile, key="make_profile")
+
+        elif Recommendation.count_documents(
+                # The application won't sign on new users if there are no recommendations to be given
+                {}) >= 1:
+            # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
 
@@ -137,12 +146,9 @@ def layout():
 
             # Step 3: User enters an Age category and focus area to personalise the experience
 
-            age = st.radio(question_age, ("18-25", "26-35", "36-55", "56-70", "70+"))
+            age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
 
-            focus_area = st.radio(question_focus_area, (
-                "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management",
-                "Personal Identity",
-                "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"))
+            focus_area = st.selectbox(question_focus_area, focus_areas, index=0, placeholder="Select a focus area...")
 
             # Step 4: User enters their free time amount and the amount of suggestion they wish to see
 

@@ -30,25 +30,29 @@ def calculate_entries(passcode):
 
     entries_chosen_by_algorithm = 0
 
-    while entries_required > 0:
+    while entries_generated_by_AI + entries_chosen_by_Tags + entries_chosen_by_algorithm < entries_required:
 
-        category = int(random.randint(0, 10))  # Add to a category at random until you get enough
-
-        if category < 5:
-
-            entries_generated_by_AI += 1
-
-        elif category <= 8:
-
-            entries_chosen_by_Tags += 1
-
-        else:
-
-            entries_chosen_by_algorithm += 1
-
-        entries_required -= 1
+        entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_generated_by_AI = add_category(
+            entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_generated_by_AI)
 
     return True, entries_chosen_by_algorithm, entries_chosen_by_Tags, entries_generated_by_AI  # Return all 3 numbers
+
+
+def add_category(entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_generated_by_AI):
+    category = int(random.randint(0, 10))  # Add to a category at random until you get enough
+    if category < 5:
+
+        entries_generated_by_AI += 1
+
+    elif category <= 8:
+
+        entries_chosen_by_Tags += 1
+
+    else:
+
+        entries_chosen_by_algorithm += 1
+
+    return entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_generated_by_AI
 
 
 # This function generates recommendations via varius methods for users
@@ -138,13 +142,13 @@ def generate_recommendation(passcode):
                 'Created_At']}) >= entries_requested + additional_entries_via_button:  # A user can't see the whole database daily, so we have limits
         return False, "You have received most available recommendations. No more for now!"
 
-    category = int(random.randint(0, 10))  # We need to add a recommendation, we will use the same method as when we calculate categories
+    entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_generated_by_AI = add_category(0, 0, 0)
 
-    if category < 5:
+    if entries_generated_by_AI == 1:
 
         generate_recommendations_by_AI(passcode, 1)
 
-    elif category <= 8:
+    elif entries_chosen_by_Tags == 1:
 
         generate_recommendations_chosen_by_tags(passcode, 1)
 

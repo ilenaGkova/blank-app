@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from check_and_balance import get_status
 from mongo_connection import User, Recommendation_Per_Person, Status, Tag, Removed_Recommendation
 from generate_items import calculate_fail_count
-from generate_recomendations_functions import enter_recommendation_for_user, generate_valid_index
+from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
 
 
 #  This function randomly chooses a recommendation for the user based of Tags and history

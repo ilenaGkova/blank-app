@@ -36,7 +36,7 @@ def delete_entry(passcode, key, key2, created, collection_name, this_user_passco
         query = {"Passcode": passcode, "Created_At": created}
 
     elif collection_name == "Recommendation":
-        query = {"ID": key, "Created_At": created}
+        query = {"Passcode": passcode, "ID": key, "Created_At": created}
 
     elif collection_name == "Tag":
         query = {"Passcode": passcode, "ID": key, "Category": key2, "Created_At": created}
@@ -60,9 +60,6 @@ def delete_entry(passcode, key, key2, created, collection_name, this_user_passco
         return False, "Invalid collection name"
 
     collection = globals().get(collection_name)  # Get the actual collection object
-
-    if not collection_name:  # End early of we couldn't have the collection object
-        return False, "Collection not found"
 
     delete_result = collection.delete_one(query)  # Make the delete query
     deleted_count = delete_result.deleted_count  # And keep count of the result, if we did it right it will be either 0 or 1. O means the data we got were wrong somehow

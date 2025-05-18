@@ -1,5 +1,5 @@
 from datetime import datetime
-from mongo_connection import User, Recommendation, Tag, Question_Questionnaire
+from mongo_connection import User, Recommendation, Tag, Question_Questionnaire, Recommendation_Per_Person
 
 
 # This function adds a recommendation in the Recommendation collection, it returns an indicator that shows whether the function completed and a message
@@ -12,7 +12,7 @@ def add_recommendation(ID, passcode, title, description, link, points):
         return False, "Something went wrong, user not registered"
 
     if Recommendation.find_one({"ID": ID}) or Tag.find_one(
-            {"ID": ID}):  # If the ID matches any of the Tags or other Recommendations we can't add it
+            {"ID": ID}) or Recommendation_Per_Person.find_one({"ID": ID}):  # If the ID matches any of the Tags or other Recommendations we can't add it
 
         return False, "Please try again, it look like the ID generated has already been added."
 

@@ -3,10 +3,10 @@ from initialise_variables import initialize_variables  # Application Function
 from change_page import open_recommendation  # Database Function
 from make_record import create_history, delete_entry  # Database Function
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
 if 'error' not in st.session_state:
@@ -15,11 +15,11 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if "open_recommendation" not in st.session_state:
+if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 
-def layout():
+def layout_5():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
 

@@ -30,3 +30,24 @@ question_focus_area = "Where would you like to focus?"
 question_time_available = f"How many minutes are you willing to spend in reducing stress ({min_time_limit} - {max_limit})?"
 question_suggestions = f"How many tasks do you want to try daily ({min_limit} - {max_recommendation_limit})?"
 question_passcode = "What's your passcode?"
+focus_areas = "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"
+ages = "18-25", "26-35", "36-55", "56-70", "70+"
+options = {
+    "Not happened": 0,
+    "Happened rarely": 1,
+    "Happened sometimes": 2,
+    "Happened often": 3,
+    "Happened very often": 4
+}
+con_question = 'Want to take something off your chest? Make a confession!'
+
+question_about_passcode = "User Passcode"
+question_about_recommendation_id = "Recommendation ID"
+question_about_points = "Points (10-150)"
+question_about_title = "Title"
+question_about_description = "Description"
+question_about_link = "Link - optional"
+
+Question_ID = "Question ID"  # Saved separately to be used in function
+question_input = "Question"  # Saved separately to be used in function
+

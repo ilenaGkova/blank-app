@@ -20,10 +20,6 @@ def update_user_streak(passcode):
     User.update_one({"Passcode": passcode},
                     {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
 
-    # Find the last status the user made (look in the function for more) and make sure we enter the right amount if return variables
-
-    today, yesterday, index = get_status(passcode)
-
     if yesterday:
 
         User.update_one({"Passcode": passcode}, {

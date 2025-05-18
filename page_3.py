@@ -5,18 +5,18 @@ from mongo_connection import User, Score_History, Status  # Database Function
 from generate_recommendations_main import get_recommendations, generate_recommendation  # Database Function
 from initialise_variables import max_recommendation_limit  # Application Function
 from structure_recommendation_table import make_recommendation_table  # Database Function
-from user_information import add_points, change_recommendation_preference_for_user  # Database Function
 from change_page import change_page, open_recommendation  # Application Function
 from generate_items import get_limits  # Database Function
 from datetime import datetime, timedelta  # Other
 import plotly.graph_objects as go  # Visual Elements
 import pandas as pd  # Visual Elements
 import altair as alt  # Visual Elements
+from page_7 import summary
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
 if 'error' not in st.session_state:
@@ -25,7 +25,7 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if "open_recommendation" not in st.session_state:
+if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 
@@ -111,24 +111,21 @@ def create_store_history_graph():  # Called to make a graph of the score history
     # Color - Will dictate the color of the dot created for the entry depending on the outcome
     # Promotion_Score - Will tell us the promotion point depending on the level
     # Demotion_Score - Will tell us the demotion point depending on the level
-
-    df = pd.DataFrame(list(Score_History.find({
-        "Passcode": st.session_state.current_passcode})))  # Convert dictionary list that comes from the user's score history to DataFrame
+    df = pd.DataFrame(list(Score_History.find({"Passcode": st.session_state.current_passcode})))
 
     # Create a color mapping for Outcome
     # The colors are Red for score that gets demoted, green for promoted score and blue for sustaining score
     # Here we are not creating the dots just setting the colors
+    df['Color'] = df['Outcome'].map({True: 'green', False: 'red', None: 'blue'}) # Create color mapping as before
 
-    df['Color'] = df['Outcome'].map({True: 'green', False: 'red', None: 'blue'})
-
+    # Calculate promotion/demotion scores
     result = list(zip(*df['Level'].apply(get_limits)))
     df['Promotion_Score'] = result[0]
     df['Demotion_Score'] = result[1]
 
-    x = alt.X('Created_At:T',
-              title='Date',
-              scale=alt.Scale(nice=False),  # Prevents automatic rounding of domain
-              axis=alt.Axis(labelOverlap=True))  # Handles overlapping labels
+    # Extract date and time components
+    df['Date'] = pd.to_datetime(df['Created_At']).dt.date
+    df['Time'] = pd.to_datetime(df['Created_At']).dt.time
 
     hover = alt.selection_single(
         fields=["Created_At"],
@@ -137,32 +134,34 @@ def create_store_history_graph():  # Called to make a graph of the score history
         empty="none",
     )  # Sets the baseline that is the date the score number was recorded based on the Created_At field if the Collection
 
-    # Create the baseline chart with custom field names
-    # The tooltip is what the user see when they hover on a dot
-    # The letters used mean Q for numeric value and T for date and time
-    # Other letter not used are N for categories / names and O for ordered data
-    # The values before the letters are the attributes created in the df table we are showing
-    # The Titles are what the user sees
-
-    base = alt.Chart(df).encode(
-        x=alt.X('Created_At:T', title='Date'),
-        y=alt.X('Score:Q', title='Performance Score'),
+    # Create column-based chart
+    dots = alt.Chart(df).mark_circle(size=100).encode(
+        x=alt.X('Date:T', title='Date', axis=alt.Axis(format='%b %d, %Y')),  # Use date as x-axis (categorical)
+        y=alt.Y('Score:Q', title='Performance Score'), # Use score for y-axis
+        order=alt.Order('Time:T', sort='descending'),
+        color=alt.Color('Color:N', scale=None), # Color based on outcome
+        # The tooltip is what the user see when they hover on a dot
+        # The letters used mean Q for numeric value and T for date and time
+        # Other letter not used are N for categories / names and O for ordered data
+        # The values before the letters are the attributes created in the df table we are showing
+        # The Titles are what the user sees
         tooltip=[
             alt.Tooltip('Score:Q', title='Performance Score'),
             alt.Tooltip('Level:Q', title='Difficulty Level'),
             alt.Tooltip('Promotion_Score:Q', title='Promotion Score'),
             alt.Tooltip('Demotion_Score:Q', title='Demotion Score'),
-            alt.Tooltip('Created_At:T', title='Date and Time')
+            alt.Tooltip('Date:T', title='Date', format='%b %d, %Y'),  # Date separately
+            alt.Tooltip('Time:T', title='Time', format='%H:%M:%S'),  # Time separately
         ]
+    ).add_selection(hover)
+
+    lines = alt.Chart(df).mark_line().encode(
+        x='Date:T',
+        y='Score:Q',
+        order=alt.Order('Created_At:T')  # Connect points in chronological order
     )
 
-    line = base.mark_line()  # Create a line to connect all scores
-
-    dots = base.mark_circle(size=100).encode(
-        color=alt.Color('Color:N', scale=None)  # Here we created the dots of the scores
-    ).add_selection(hover)  # Create points with colors based on Outcome
-
-    chart_for_score_history = line + dots  # Combine the line and points
+    chart_for_score_history = dots + lines
 
     return chart_for_score_history
 
@@ -177,34 +176,7 @@ def add_recommendation_to_user():  # Called when the user wants to see another r
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
 
 
-def completed_recommendation(index_for_completed_recommendation,
-                             status, pointer):  # Called when the user completes a recommendation
-
-    st.session_state.error_status, st.session_state.error = add_points(index_for_completed_recommendation,
-                                                                       st.session_state.current_passcode,
-                                                                       status,
-                                                                       pointer)  # Will update the session error variables and maybe increase the user's score if appropriate
-
-    if st.session_state.error_status:  # Warning: The status variable is in reverse
-
-        change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
-
-
-def change_recommendation_status(preference, index_for_change_recommendation_status,
-                                 function=None):  # Will be called if the user wants to add / remove a recommendation form the favorite / removed category
-
-    # Will update the session error variables and remove a recommendation from the favorite / removed category
-    # Depending on whether the function parameter is None it will also add the recommendation either into the favorite or removed collection
-    st.session_state.error_status, st.session_state.error = change_recommendation_preference_for_user(preference,
-                                                                                                      st.session_state.current_passcode,
-                                                                                                      index_for_change_recommendation_status,
-                                                                                                      function)
-    if st.session_state.error_status:  # Warning: The status variable is in reverse
-
-        change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
-
-
-def layout():
+def layout_3():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
 
@@ -301,23 +273,7 @@ def layout():
         # For new user, add a message to direct them to the tutorial and give them the rundown of managing the recommendations they are given
 
         if Status.count_documents({"Passcode": st.session_state.current_passcode}) == 1:
-            with st.container(border=True):
-                st.header('New here? Here is how you can navigate our task table!')
-
-                st.write('Remember the number ', user['Passcode'],
-                         ' to sign in again after you close the application')
-
-                st.write('Click :material/done_outline: to complete a task')
-                st.write('Click :material/thumb_up: to mark your favorites')
-                st.write('Click :material/thumb_down: to avoid future tasks')
-                st.write(
-                    'Click :material/delete: to remove any of the :material/thumb_up: or :material/thumb_down: registration of a task')
-                st.write('Click the :material/open_in_full: to see a recommendation in detail')
-
-                st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
-
-                st.write(
-                    "Check out our tutorial to better navigate the rest of the application! You will locate it in our navigation menu on your left.")
+            summary(st.session_state.current_passcode)
 
         # Section 3: The daily recommendations
 
@@ -387,83 +343,9 @@ def layout():
                                     f"<div style='text-align: center;'>Task completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
                                     unsafe_allow_html=True)
 
-                        # Each column is named after the content it shows
-
-                        column_for_outcome, column_for_extension_button, column_for_reference_1, column_for_reference_2 = st.columns(
-                            [5, 2, 0.5, 0.5])
-
-                        # Preference indicates if the recommendation is in the favorite/removed or no section for this user.
-                        # Depending on that the user will see a different combination of buttons
-                        # A recommendation can't be both in the favorite and removed section. To be in one it will be removed from the other.
-
-                        with column_for_outcome:
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes
-
-                                st.button("", icon=":material/done_outline:", use_container_width=True,
-                                          on_click=completed_recommendation,
-                                          args=[entry_for_user_recommendation_generated_list_with_recommendations[
-                                                    'ID'],
-                                                entry_for_user_recommendation_generated_list_with_recommendations[
-                                                    'Status_Created_At'],
-                                                entry_for_user_recommendation_generated_list_with_recommendations[
-                                                    'Pointer']],
-                                          key=f"complete_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
-
-                        with column_for_extension_button:
-
-                            st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                      on_click=open_recommendation, args=[
-                                        entry_for_user_recommendation_generated_list_with_recommendations['ID']],
-                                      key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
-
-                        with column_for_reference_1:
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is False:
-                                st.button("", icon=":material/thumb_up:", use_container_width=True,
-                                          on_click=change_recommendation_status, args=[1,
-                                                                                       entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                           'ID']],
-                                          key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is True:
-                                st.button("", icon=":material/delete:", use_container_width=True,
-                                          on_click=change_recommendation_preference_for_user,
-                                          args=[1, st.session_state.current_passcode,
-                                                entry_for_user_recommendation_generated_list_with_recommendations[
-                                                    'ID'], True],
-                                          key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is None:
-                                st.button("", icon=":material/thumb_up:", use_container_width=True,
-                                          on_click=change_recommendation_status, args=[1,
-                                                                                       entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                           'ID']],
-                                          key=f"love_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
-
-                        with column_for_reference_2:
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is False:
-                                st.button("", icon=":material/delete:", use_container_width=True,
-                                          on_click=change_recommendation_preference_for_user,
-                                          args=[1, st.session_state.current_passcode,
-                                                entry_for_user_recommendation_generated_list_with_recommendations[
-                                                    'ID'], True],
-                                          key=f"remove_recommendation_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is True:
-                                st.button("", icon=":material/thumb_down:", use_container_width=True,
-                                          on_click=change_recommendation_status, args=[-1,
-                                                                                       entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                           'ID']],
-                                          key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_x")
-
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Preference'] is None:
-                                st.button("", icon=":material/thumb_down:", use_container_width=True,
-                                          on_click=change_recommendation_status, args=[-1,
-                                                                                       entry_for_user_recommendation_generated_list_with_recommendations[
-                                                                                           'ID']],
-                                          key=f"hate_open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}_y")
+                        st.button("", icon=":material/open_in_full:", use_container_width=True,
+                                  on_click=open_recommendation, args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                                  key=f"open_user_recommendation_generated_list_with_recommendations_{entry_for_user_recommendation_generated_list_with_recommendations['ID']}")
 
                     pointer_for_user_recommendation_generated_list_with_recommendations += 1
 

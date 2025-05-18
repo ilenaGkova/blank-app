@@ -1,14 +1,15 @@
 import streamlit as st  # Streamlit Software
-from initialise_variables import initialize_variables  # Application Function
+from initialise_variables import initialize_variables, options  # Application Function
 from check_and_balance import record_question, record_status  # Database Function
 from change_page import change_page  # Application Function
 from application_actions import update_user_streak  # Database Function
 from mongo_connection import Question_Questionnaire  # Database Function
+# Application Function
 
-if "page" not in st.session_state:
+if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
 if 'error' not in st.session_state:
@@ -20,7 +21,7 @@ if 'error_status' not in st.session_state:
 if 'answers' not in st.session_state:
     st.session_state.answers = {}  # Will store answers to the Daily Stress Questioner
 
-if "open_recommendation" not in st.session_state:
+if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 
@@ -37,21 +38,11 @@ def submit_questionnaire():  # Called when the user completes the questioner
     make_status(stress_level)  # Submit to final stress level to move on
 
 
-def catalog_question(question, answer, passcode1):  # Called for each question in the Daily Stress Questionnaire
+def catalog_question(question, answer, passcode):  # Called for each question in the Daily Stress Questionnaire
 
-    record_question(question, answer,
-                    passcode1)  # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
+    record_question(question, answer, passcode)  # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
 
-    # Depending on the answer the stress level will rise by 0 through 4
-    if answer == "That happened very often today":
-        return 4
-    if answer == "That happened often today":
-        return 3
-    if answer == "That happened sometimes today":
-        return 2
-    if answer == "That happened rarely today":
-        return 1
-    return 0
+    return options.get(answer)  # Depending on the answer the stress level will rise by 0 through 4
 
 
 def make_status(
@@ -65,7 +56,7 @@ def make_status(
         change_page(3)  # Will can function to move to Home page
 
 
-def layout():
+def layout_2():
 
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
@@ -102,12 +93,7 @@ def layout():
             key = f"Question_{entry['ID']}"  # Make a unique key for each input field.
 
             # For each question we will have a slider for the user to answer
-            st.select_slider(
-                entry['Question'],
-                options=["That never happened today", "That happened rarely today", "That happened sometimes today",
-                         "That happened often today", "That happened very often today"],
-                key=key
-            )
+            st.select_slider(entry['Question'], list(options.keys()), key=key)
 
             st.session_state.answers[entry['Question']] = st.session_state[key]  # Store the answer to the question via the key
 

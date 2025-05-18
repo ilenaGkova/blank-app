@@ -1,7 +1,7 @@
 import random
 from mongo_connection import Tag, User, Status, Recommendation, Recommendation_Per_Person
 from check_and_balance import get_status
-from generate_recomendations_functions import enter_recommendation_for_user, generate_valid_index
+from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
 from generate_items import calculate_fail_count
 
 
@@ -76,7 +76,7 @@ def generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_tags):
 
             # Fill remaining slots if there are not enough recommendations
 
-            while index <= entries_chosen_by_tags:
+            while index < entries_chosen_by_tags:
                 potential_recommendation_index = generate_valid_index()  # Generate a recommendation ID the exists
 
                 index, fail_count, user_recommendations = validate_recommendation_pick(fail_count, index, passcode,

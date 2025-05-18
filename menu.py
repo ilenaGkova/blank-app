@@ -38,7 +38,14 @@ def menu_layout():
 
     st.sidebar.write("")  # Add blank line
 
-    if user is not None and index != -1 and user['Role'] == 'User':  # Users have a more limited menu than an admin
+    if user is not None and index != -1:  # Users have a more limited menu than an admin
+
+        if user['Role'] != 'User':
+
+            st.sidebar.button('Add Data to Stress Test Database', icon=":material/add_circle:",
+                              use_container_width=True,
+                              on_click=change_page,
+                              args=[9], key="admin_add_page_admin")
 
         st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3],
                           key="main_page")
@@ -56,28 +63,6 @@ def menu_layout():
                           on_click=change_page, args=[7], key="tutorial_page")
         st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1],
                           key="log_out")
-
-    elif user is not None and index != -1:
-
-        st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3],
-                          key="main_page_admin")
-        st.sidebar.button("Profile and Preferences", icon=":material/person_3:", use_container_width=True,
-                          on_click=change_page, args=[4], key="profile_page_admin")
-        st.sidebar.button("Daily Stress Questionnaire", icon=":material/add:", use_container_width=True,
-                          on_click=change_page,
-                          args=[2], key="status_page_admin")
-        st.sidebar.button("See Record", icon=":material/clinical_notes:", use_container_width=True,
-                          on_click=change_page, args=[5], key="record_page_admin")
-        st.sidebar.button('Add Data to Stress Test Database', icon=":material/add_circle:", use_container_width=True,
-                          on_click=change_page,
-                          args=[9], key="admin_add_page_admin")
-        st.sidebar.button('Make a confession', icon=":material/draw:", use_container_width=True,
-                          on_click=change_page,
-                          args=[8], key="admin_make_confession_admin")
-        st.sidebar.button("See Tutorial", icon=":material/auto_stories:", use_container_width=True,
-                          on_click=change_page, args=[7], key="tutorial_page_admin")
-        st.sidebar.button("Exit", icon=":material/logout:", use_container_width=True, on_click=change_page, args=[1],
-                          key="log_out_admin")
 
     elif user is None:
 
