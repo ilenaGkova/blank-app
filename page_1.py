@@ -107,14 +107,14 @@ def show_profile():
 def layout():
     # The SideBar - User Signs In With Passcode
 
+    mongo_connection.key = st.sidebar.text_input("Please enter API key", value=mongo_connection.key)
+
     st.sidebar.header('Already have an account? Sign in!')
 
     passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode", ""))  # Save the previous passcode on the session variable)
 
     st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
                       key="sign_in_user")
-
-    mongo_connection.key = st.sidebar.text_input("Please enter API key", value=mongo_connection.key)
 
     # The Title
 
