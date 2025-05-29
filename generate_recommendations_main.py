@@ -26,7 +26,7 @@ def calculate_entries(passcode):
 
     entries_generated_by_AI = 0
 
-    entries_chosen_by_Tags = 0
+    entries_chosen_by_Tags = 1
 
     entries_chosen_by_algorithm = 0
 
@@ -157,6 +157,15 @@ def generate_recommendation(passcode):
         generate_recommendations_by_algorithm(passcode, 1)
 
     return True, "Recommendation added"
+
+
+
+
+
+
+
+
+
 
 
 

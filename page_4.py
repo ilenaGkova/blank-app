@@ -94,14 +94,13 @@ def layout_4():
                     st.write('Current Age Category: ', user['Age_Category'])
 
             with column_for_focus_area:
-                update_focus_area = st.selectbox(
+
+                default_focus = [x for x in user['Focus_Area'] if x in focus_areas]
+
+                update_focus_area = st.multiselect(
                     question_focus_area,
                     focus_areas,
-                    index=focus_areas.index(user['Focus_Area']) if user['Focus_Area'] in focus_areas else 0,
-                    placeholder="Select a focus area...")
-
-                if not user['Focus_Area'] in focus_areas:  # The value comes defaulted as the user's but if the options have changed, we write it down
-                    st.write('Current Focus Area: ', user['Focus_Area'])
+                    default=default_focus)
 
             with column_for_time_available:
                 update_time_available = st.number_input(question_time_available, min_value=min_time_limit,

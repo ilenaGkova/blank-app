@@ -1,8 +1,8 @@
 import random
-from mongo_connection import Tag, User, Status, Recommendation, Recommendation_Per_Person
-from check_and_balance import get_status
-from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
+from mongo_connection import Tag, Recommendation, Recommendation_Per_Person, User, Status
+from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index, pass_filter
 from generate_items import calculate_fail_count
+from check_and_balance import get_status
 
 
 # This function generates a required amount of recommendations by establishing filters based on the various tags
@@ -17,17 +17,6 @@ def generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_tags):
 
     status = Status.find_one({"_id": index})  # Use the last result to find the status to get the stress level
 
-    filters = [
-        # Establish the filters as we are watering down the recommendation we are choosing from into the ones that match the tags
-        {'Title_Of_Criteria': 'Age Variant', 'Category': user['Age_Category']},
-        {'Title_Of_Criteria': 'Focus Area', 'Category': user['Focus_Area']},
-        {'Title_Of_Criteria': 'Stress Level', 'Category': status['Stress_Level']},
-        {'Title_Of_Criteria': 'Time Available', 'Category': user['Time_Available']},
-        {'Title_Of_Criteria': 'Show for levels above', 'Category': user['Level']},
-        {'Title_Of_Criteria': 'Show for levels below', 'Category': user['Level']},
-        {'Title_Of_Criteria': 'Show for levels equal', 'Category': user['Level']},
-    ]
-
     recommendations = []  # Set the recommendations table to keep the right recommendations
 
     pointer = 0  # The recommendation table is small and holds a number here and an ID
@@ -36,19 +25,18 @@ def generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_tags):
 
     for tag in tags:  # Loop to match tags with filters and gather valid recommendations
 
-        for entry in filters:
+        if pass_filter(tag['Title_Of_Criteria'], tag['Category'], user, status):
 
-            if entry['Title_Of_Criteria'] == tag['Title_Of_Criteria'] and entry['Category'] == tag['Category']:
+            if (Recommendation.find_one({'ID': tag['ID']})
+                    and tag['ID'] not in user_recommendations
+                    and tag['Passcode'] != 'OpenAI'
+                    and Recommendation_Per_Person.find(
+                        {"Passcode": passcode, "Status_Created_At": status['Created_At'], "ID": tag['ID']}) is None):
+                recommendations.append({'ID': tag['ID'], 'Pointer': pointer})
 
-                if (Recommendation.find_one({'ID': tag['ID']})
-                        and tag['ID'] not in user_recommendations
-                        and tag['Passcode'] != 'OpenAI'
-                        and Recommendation_Per_Person.find({"Passcode": passcode, "Status_Created_At": status['Created_At'], "ID": tag['ID']}) is None):
-                    recommendations.append({'ID': tag['ID'], 'Pointer': pointer})
+                user_recommendations.add(int(tag['ID']))  # Track recommendations added to avoid duplicates
 
-                    user_recommendations.add(int(tag['ID']))  # Track recommendations added to avoid duplicates
-
-                    pointer += 1
+                pointer += 1
 
     fail_count = 0  # Set fail count to avoid loops
 

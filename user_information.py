@@ -115,7 +115,7 @@ def update_user(passcode, username, repeat, age, focus_area, time_available, sug
                 "Username": username,
                 "Repeat_Preference": repeat,
                 "Age_Category": age,
-                "Focus_Area": focus_area,
+                "Focus_Area": [str(item) for item in focus_area],
                 "Suggestions": suggestions,
                 "Time_Available": time_available
             }

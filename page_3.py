@@ -353,7 +353,7 @@ def layout_3():
                 # After the get their initial recommendations they can request 1/10 more of the number of recommendations in the Recommendation collection
 
                 if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit + max_additional_recommendations:
-                    st.button("Add A Task", icon=":material/add_task:", use_container_width=True,
+                    st.button("", icon=":material/add_task:", use_container_width=True,
                               on_click=add_recommendation_to_user,
                               args=[],
                               key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation

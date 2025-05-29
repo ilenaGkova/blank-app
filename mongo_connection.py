@@ -9,6 +9,8 @@ def init_connection():
                                    "uri"])  # Establish Connection with database using the url given by the server in the secrets file
 
 
+key = None
+
 client = init_connection()  # Establish Connection with database using the url given by the server in the secrets file
 
 db = client.StressTest  # Find and define the database itself

@@ -21,7 +21,7 @@ if 'error_status' not in st.session_state:
 if 'answers' not in st.session_state:
     st.session_state.answers = {}  # Will store answers to the Daily Stress Questioner
 
-if 'open_recommendation' not in st.session_state:
+if "open_recommendation" not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 
@@ -35,7 +35,7 @@ def submit_questionnaire():  # Called when the user completes the questioner
         stress_level += catalog_question(question, answer,
                                          st.session_state.current_passcode)  # Record the question-answer pairs and increase the stress level
 
-    make_status(stress_level)  # Submit to final stress level to move on
+    make_status(int(stress_level/len(question_answer_pairs)))  # Submit to final stress level to move on
 
 
 def catalog_question(question, answer, passcode):  # Called for each question in the Daily Stress Questionnaire

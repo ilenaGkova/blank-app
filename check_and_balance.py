@@ -122,6 +122,8 @@ def record_question(question, answer, passcode, function=True):
     # It's a disclaimer and there isn't a middle function to weed out the unfit entries
     # Usually the function will be called when the data have already been verified
 
+    answer = str(answer)
+
     if not answer.strip() or not question.strip() or not function:
         return False, "Question failed to be recorded"
 

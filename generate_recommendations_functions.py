@@ -78,3 +78,51 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
             'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
+
+def pass_filter(title, category, user, status, out_early=False):
+
+    filters = [
+        # Establish the filters as we are watering down the recommendation we are choosing from into the ones that match the tags
+        {'Title_Of_Criteria': 'Age Variant', 'Category': user['Age_Category']},
+        {'Title_Of_Criteria': 'Stress Level', 'Category': status['Stress_Level']},
+        {'Title_Of_Criteria': 'Time Available', 'Category': user['Time_Available']},
+        {'Title_Of_Criteria': 'Show for levels above', 'Category': user['Level']},
+        {'Title_Of_Criteria': 'Show for levels below', 'Category': user['Level']},
+        {'Title_Of_Criteria': 'Show for levels equal', 'Category': user['Level']},
+    ]
+
+    for entry in user['Focus_Area']:
+        filters.append({'Title_Of_Criteria': 'Focus Area', 'Category': entry})
+
+    for entry in filters:
+
+        if title == entry['Title_Of_Criteria']:
+
+            condition = True
+
+            if title == "Time Available" or title == "Show for levels below":
+
+                if int(category) > int(entry['Category']):
+
+                    condition = False
+
+            elif title == "Show for levels above":
+
+                if int(category) < int(entry['Category']):
+
+                    condition = False
+
+            elif title == "Show for levels equal":
+
+                if category != entry['Category']:
+
+                    condition = False
+
+            elif category != entry['Category']:
+
+                condition = False
+
+            if (out_early and not condition) or (not out_early and condition):
+                return condition
+
+    return condition

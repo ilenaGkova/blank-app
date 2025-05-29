@@ -6,7 +6,7 @@ from initialise_variables import question_passcode, question_username, question_
     focus_areas, ages
 from generate_items import generate_unique_passcode, generate_animal_username  # Application Function
 from check_and_balance import record_question, get_status  # Database Function
-from mongo_connection import Recommendation  # Database Function
+from mongo_connection import Recommendation, key  # Database Function
 
 if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
@@ -20,7 +20,7 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'username' not in st.session_state:
+if "username" not in st.session_state:
     st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
 
 if 'show_questions' not in st.session_state:
@@ -57,7 +57,7 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
     st.session_state.error_status, st.session_state.error = validate_user(
         passcode_for_signing_in_user)  # Will update the session error variables
 
-    if st.session_state.error_status:  # Warning: The status variable is in reverse
+    if st.session_state.error_status and key is not None:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(passcode_for_signing_in_user))  # Will remember the passcode for the future so the user won't have to enter it
@@ -80,7 +80,7 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
                                                                      user_time_available,
                                                                      user_suggestions)  # Will update the session error variables and maybe create new user if appropriate
 
-    if st.session_state.error_status:  # Warning: The status variable is in reverse
+    if st.session_state.error_status and key is not None:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
@@ -89,7 +89,7 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
         record_question(question_username_for_create_user, user_user_username, user_user_passcode)
         record_question(question_passcode_for_create_user, user_user_passcode, user_user_passcode)
         record_question(question_age_for_create_user, user_age, user_user_passcode)
-        record_question(question_focus_area_for_create_user, user_focus_area, user_user_passcode)
+        record_question(question_focus_area_for_create_user, str(user_focus_area), user_user_passcode)
         record_question(question_time_available_for_create_user, user_time_available, user_user_passcode)
         record_question(question_suggestions_for_create_user, user_suggestions, user_user_passcode)
 
@@ -148,7 +148,7 @@ def layout():
 
             age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
 
-            focus_area = st.selectbox(question_focus_area, focus_areas, index=0, placeholder="Select a focus area...")
+            focus_area = st.multiselect(question_focus_area, focus_areas)
 
             # Step 4: User enters their free time amount and the amount of suggestion they wish to see
 

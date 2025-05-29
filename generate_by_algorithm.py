@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from check_and_balance import get_status
 from mongo_connection import User, Recommendation_Per_Person, Status, Tag, Removed_Recommendation
 from generate_items import calculate_fail_count
-from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
+from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index, pass_filter
 
 
 #  This function randomly chooses a recommendation for the user based of Tags and history
@@ -62,29 +62,8 @@ def do_the_tags_match(passcode, potential_recommendation_index):
 
     for tag in tags:
 
-        # There are 4 kinds of criteria as identified by the Title_Of_Criteria
-        # Depending on them, we compare with the right attribute
-        # We gather data from the user profile and the last status
+        if not pass_filter(tag['Title_Of_Criteria'], tag['Category'], user, status, True):
 
-        if tag['Title_Of_Criteria'] == 'Age Variant' and tag['Category'] != user['Age_Category']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Focus Area' and tag['Category'] != user['Focus_Area']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Stress Level' and int(tag['Category']) <= status['Stress_Level']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Time Available' and int(tag['Category']) < user['Time_Available']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Show for levels above' and int(tag['Category']) < user['Level']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Show for levels below' and int(tag['Category']) > user['Level']:
-            return False
-
-        if tag['Title_Of_Criteria'] == 'Show for levels equal' and int(tag['Category']) != user['Level']:
             return False
 
     return True
