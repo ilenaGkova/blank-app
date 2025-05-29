@@ -75,6 +75,8 @@ if st.session_state.error_status is not None and not st.session_state.error_stat
 
 insert_data()  # Insert default data if needed
 
+st.write(mongo_connection.key)
+
 if mongo_connection.key is None:
     mongo_connection.key = st.text_input("Please enter API key")
 
