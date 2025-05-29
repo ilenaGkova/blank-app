@@ -10,7 +10,7 @@ st.set_page_config(
 # Additional Imports
 
 import mongo_connection
-from mongo_connection import insert_data, key
+from mongo_connection import insert_data
 
 if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
@@ -75,7 +75,7 @@ if st.session_state.error_status is not None and not st.session_state.error_stat
 
 insert_data()  # Insert default data if needed
 
-if key is None:
+if mongo_connection.key is None:
     mongo_connection.key = st.text_input("Please enter API key")
 
 if st.session_state.page == 1:  # 1 is the page where the user makes a new account or signs in with their passcode
