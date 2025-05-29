@@ -114,7 +114,9 @@ def layout():
     st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
                       key="sign_in_user")
 
-    mongo_connection.key = st.text_input("Please enter API key")
+    if mongo_connection.key in not None:
+    
+        mongo_connection.key = st.text_input("Please enter API key")
 
     # The Title
 
