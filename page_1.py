@@ -21,7 +21,7 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if "username" not in st.session_state:
+if 'username' not in st.session_state:
     st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
 
 if 'show_questions' not in st.session_state:
