@@ -9,7 +9,9 @@ def init_connection():
                                    "uri"])  # Establish Connection with database using the url given by the server in the secrets file
 
 
-key = None
+key1 = 'esC5Z4SFWGdyb3FYBu2QcyJ'
+key2 = 'gsk_oQPy8Tw5mGVm'
+key3 = 'jErkb8OYrCptMut6H'
 
 client = init_connection()  # Establish Connection with database using the url given by the server in the secrets file
 
