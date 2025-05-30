@@ -37,6 +37,7 @@ if st.session_state.error_status is not None and not st.session_state.error_stat
     with st.container(border=True):
         st.header(st.session_state.error)
 
+
 # Step 2: Show the rest of the page
 
 # Layout logistics

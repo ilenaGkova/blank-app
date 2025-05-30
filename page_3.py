@@ -28,6 +28,9 @@ if 'error_status' not in st.session_state:
 if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
+if 'apikey' not in st.session_state:
+    st.session_state.apikey = 'No Key'
+
 
 def create_custom_slider(min_value, max_value, down_barrier, up_barrier,
                          score):  # Called with the home page, will visualise the user's score to make it easy to track progress
@@ -166,10 +169,10 @@ def create_store_history_graph():  # Called to make a graph of the score history
     return chart_for_score_history
 
 
-def add_recommendation_to_user():  # Called when the user wants to see another recommendation
+def add_recommendation_to_user(key):  # Called when the user wants to see another recommendation
 
     st.session_state.error_status, st.session_state.error = generate_recommendation(
-        st.session_state.current_passcode)  # Will update the session error variables and maybe increase the user's score if appropriate
+        st.session_state.current_passcode, key)  # Will update the session error variables and maybe increase the user's score if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
@@ -280,7 +283,7 @@ def layout_3():
         st.subheader('Our task list for you today')
 
         user_recommendation_generated_list_build, user_recommendation_generated_list, user_recommendation_generated_list_message = get_recommendations(
-            st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
+            st.session_state.current_passcode, st.session_state.apikey)  # Step 1: Create the recommendation table based on the user's information
 
         st.write(
             user_recommendation_generated_list_message)  # Write the result of the function above, see mongo file for more
@@ -355,5 +358,5 @@ def layout_3():
                 if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit + max_additional_recommendations:
                     st.button("", icon=":material/add_task:", use_container_width=True,
                               on_click=add_recommendation_to_user,
-                              args=[],
+                              args=[st.session_state.apikey],
                               key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation

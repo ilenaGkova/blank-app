@@ -1,7 +1,7 @@
 import re
 import json
 from mongo_connection import User, Status, Question_Questionnaire, Question, Favorite_Recommendation, \
-    Removed_Recommendation, Recommendation, Recommendation_Per_Person, key1, key2, key3
+    Removed_Recommendation, Recommendation, Recommendation_Per_Person
 from check_and_balance import get_status
 from generate_items import generate_recommendation_id, calculate_fail_count
 from add_data_in_collection import add_recommendation
@@ -12,20 +12,15 @@ from langchain.schema import SystemMessage
 import os
 from langchain.chat_models import init_chat_model
 
-if not os.environ.get("GROQ_API_KEY"):
-    os.environ["GROQ_API_KEY"] = key2+key1+key3
-
-model = init_chat_model("llama3-8b-8192", model_provider="groq")
-
 
 # This function generates a required amount of recommendations by setting a prompt in an openAI machine
-def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
+def generate_recommendations_by_AI(passcode, entries_generated_by_AI, key):
 
     index = 0  # Set to the index to indicate we added a recommendation to the user to keep track of how many
 
     while index < entries_generated_by_AI:
 
-        outcome, new_recommendation = return_prompt(passcode)
+        outcome, new_recommendation = return_prompt(passcode, key)
 
         print(new_recommendation)
 
@@ -80,7 +75,13 @@ def create_prompt(passcode):
     )
 
 
-def return_prompt(passcode):
+def return_prompt(passcode, key):
+
+    if not os.environ.get("GROQ_API_KEY"):
+        os.environ["GROQ_API_KEY"] = key
+
+    model = init_chat_model("llama3-8b-8192", model_provider="groq")
+
     try:
 
         messages = [
