@@ -6,7 +6,6 @@ from initialise_variables import question_passcode, question_username, question_
     focus_areas, ages
 from generate_items import generate_unique_passcode, generate_animal_username  # Application Function
 from check_and_balance import record_question, get_status  # Database Function
-import mongo_connection
 from mongo_connection import Recommendation  # Database Function
 
 if 'page' not in st.session_state:
@@ -58,7 +57,7 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
     st.session_state.error_status, st.session_state.error = validate_user(
         passcode_for_signing_in_user)  # Will update the session error variables
 
-    if st.session_state.error_status and mongo_connection.key is not None:  # Warning: The status variable is in reverse
+    if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(passcode_for_signing_in_user))  # Will remember the passcode for the future so the user won't have to enter it
@@ -81,7 +80,7 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
                                                                      user_time_available,
                                                                      user_suggestions)  # Will update the session error variables and maybe create new user if appropriate
 
-    if st.session_state.error_status and mongo_connection.key is not None:  # Warning: The status variable is in reverse
+    if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
@@ -106,8 +105,6 @@ def show_profile():
 
 def layout():
     # The SideBar - User Signs In With Passcode
-
-    mongo_connection.key = st.sidebar.text_input("Please enter API key", value=mongo_connection.key)
 
     st.sidebar.header('Already have an account? Sign in!')
 
