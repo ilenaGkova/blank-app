@@ -4,7 +4,9 @@ plotly==5.22.0  # Visualisation of data
 streamlit-cookies-controller  # Cookie software
 pandas==2.2.3  # For tables
 altair==5.0.1 # Data structuring
-langchain>=0.0.148  # AI chat model
-groq>=0.2.0  # AI chat model
+langchain>=0.0.148
+groq>=0.2.0
+langchain-groq
+
 
 
