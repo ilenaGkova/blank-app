@@ -26,7 +26,7 @@ if 'username' not in st.session_state:
 if 'show_questions' not in st.session_state:
     st.session_state.show_questions = False
 
-if 'apikey' not in st.session_state:
+if "apikey" not in st.session_state:
     st.session_state.apikey = 'No Key'
 
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
