@@ -1,8 +1,7 @@
 import re
 import json
-import mongo_connection
 from mongo_connection import User, Status, Question_Questionnaire, Question, Favorite_Recommendation, \
-    Removed_Recommendation, Recommendation, Recommendation_Per_Person
+    Removed_Recommendation, Recommendation, Recommendation_Per_Person, key1, key2, key3
 from check_and_balance import get_status
 from generate_items import generate_recommendation_id, calculate_fail_count
 from add_data_in_collection import add_recommendation
@@ -14,7 +13,7 @@ import os
 from langchain.chat_models import init_chat_model
 
 if not os.environ.get("GROQ_API_KEY"):
-    os.environ["GROQ_API_KEY"] = mongo_connection.key
+    os.environ["GROQ_API_KEY"] = key2+key1+key3
 
 model = init_chat_model("llama3-8b-8192", model_provider="groq")
 
