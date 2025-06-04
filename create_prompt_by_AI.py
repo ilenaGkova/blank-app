@@ -82,8 +82,6 @@ def return_prompt(passcode, key):
 
     model = init_chat_model("llama3-8b-8192", model_provider="groq")
 
-    try:
-
         messages = [
             SystemMessage(content=(
                 "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
@@ -96,10 +94,6 @@ def return_prompt(passcode, key):
         new_recommendation = model.invoke(messages)
 
         return True, new_recommendation
-
-    except Exception as e:
-
-        return True, str(e)
 
 
 def extract_json(new_recommendation, prompt):
