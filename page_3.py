@@ -348,7 +348,7 @@ def layout_3():
 
                         st.button("", icon=":material/open_in_full:", use_container_width=True,
                                   on_click=open_recommendation, args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
-                                  key=f"open_user_recommendation_generated_list_with_recommendations_{entry_for_user_recommendation_generated_list_with_recommendations['ID']}")
+                                  key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
                     pointer_for_user_recommendation_generated_list_with_recommendations += 1
 
