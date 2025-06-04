@@ -82,18 +82,18 @@ def return_prompt(passcode, key):
 
     model = init_chat_model("llama3-8b-8192", model_provider="groq")
 
-        messages = [
+    messages = [
             SystemMessage(content=(
                 "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
                 "Always return exactly one (1) JSON object with a 'Title' and a 'Description' field. "
                 "Do not include anything outside of the JSON structure. Please escape all special characters, and wrap the JSON in a code block so it is valid."
             )),
             HumanMessage(content=create_prompt(passcode))
-        ]
+    ]
 
-        new_recommendation = model.invoke(messages)
+    new_recommendation = model.invoke(messages)
 
-        return True, new_recommendation
+    return True, new_recommendation
 
 
 def extract_json(new_recommendation, prompt):
