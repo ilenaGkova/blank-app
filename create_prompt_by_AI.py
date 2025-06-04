@@ -22,8 +22,6 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI, key):
 
         outcome, new_recommendation = return_prompt(passcode, key)
 
-        print(new_recommendation)
-
         fail_count = 0  # We have a minor fail count to keep track if the recommendation was added, we probably won't have to use it unless we have various users doing this at the same time
 
         recommendation_added = False
@@ -82,18 +80,24 @@ def return_prompt(passcode, key):
 
     model = init_chat_model("llama3-8b-8192", model_provider="groq")
 
-    messages = [
+    try:
+
+        messages = [
             SystemMessage(content=(
                 "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
                 "Always return exactly one (1) JSON object with a 'Title' and a 'Description' field. "
                 "Do not include anything outside of the JSON structure. Please escape all special characters, and wrap the JSON in a code block so it is valid."
             )),
             HumanMessage(content=create_prompt(passcode))
-    ]
+        ]
 
-    new_recommendation = model.invoke(messages)
+        new_recommendation = model.invoke(messages)
 
-    return True, new_recommendation
+        return True, new_recommendation
+
+    except Exception as e:
+
+        return True, str(e)
 
 
 def extract_json(new_recommendation, prompt):
