@@ -56,10 +56,7 @@ def add_category(entries_chosen_by_Tags, entries_chosen_by_algorithm, entries_ge
 
 
 # This function generates recommendations via varius methods for users
-def get_recommendations(passcode, key):
-
-    if key == 'No Key':
-        return False, None, 'No API Key'
+def get_recommendations(passcode):
 
     # The function has 3 returns
     # One is a message of the outcome of the function and the other is True/False
@@ -106,7 +103,7 @@ def get_recommendations(passcode, key):
 
     recommendations_given = 0
 
-    recommendations_given += generate_recommendations_by_AI(passcode, entries_generated_by_AI, key)
+    recommendations_given += generate_recommendations_by_AI(passcode, entries_generated_by_AI)
 
     recommendations_given += generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_Tags)
 
@@ -118,10 +115,7 @@ def get_recommendations(passcode, key):
                                               1)])), f"Feel free to try any of the {recommendations_given} tasks below."
 
 
-def generate_recommendation(passcode, key):
-
-    if key == 'No Key':
-        return False, 'No API Key'
+def generate_recommendation(passcode):
 
     if not User.find_one(
             {"Passcode": passcode}):  # If we can't find the user we can't generate recommendations for them
@@ -153,7 +147,7 @@ def generate_recommendation(passcode, key):
 
     if entries_generated_by_AI == 1:
 
-        generate_recommendations_by_AI(passcode, 1, key)
+        generate_recommendations_by_AI(passcode, 1)
 
     elif entries_chosen_by_Tags == 1:
 

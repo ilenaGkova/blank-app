@@ -28,9 +28,6 @@ if 'error_status' not in st.session_state:
 if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
-if 'apikey' not in st.session_state:
-    st.session_state.apikey = 'No Key'
-
 
 def create_custom_slider(min_value, max_value, down_barrier, up_barrier,
                          score):  # Called with the home page, will visualise the user's score to make it easy to track progress
@@ -119,7 +116,7 @@ def create_store_history_graph():  # Called to make a graph of the score history
     # Create a color mapping for Outcome
     # The colors are Red for score that gets demoted, green for promoted score and blue for sustaining score
     # Here we are not creating the dots just setting the colors
-    df['Color'] = df['Outcome'].map({True: 'green', False: 'red', None: 'blue'}) # Create color mapping as before
+    df['Color'] = df['Outcome'].map({True: 'green', False: 'red', None: 'blue'})  # Create color mapping as before
 
     # Calculate promotion/demotion scores
     result = list(zip(*df['Level'].apply(get_limits)))
@@ -140,9 +137,9 @@ def create_store_history_graph():  # Called to make a graph of the score history
     # Create column-based chart
     dots = alt.Chart(df).mark_circle(size=100).encode(
         x=alt.X('Date:T', title='Date', axis=alt.Axis(format='%b %d, %Y')),  # Use date as x-axis (categorical)
-        y=alt.Y('Score:Q', title='Performance Score'), # Use score for y-axis
+        y=alt.Y('Score:Q', title='Performance Score'),  # Use score for y-axis
         order=alt.Order('Time:T', sort='descending'),
-        color=alt.Color('Color:N', scale=None), # Color based on outcome
+        color=alt.Color('Color:N', scale=None),  # Color based on outcome
         # The tooltip is what the user see when they hover on a dot
         # The letters used mean Q for numeric value and T for date and time
         # Other letter not used are N for categories / names and O for ordered data
@@ -169,10 +166,10 @@ def create_store_history_graph():  # Called to make a graph of the score history
     return chart_for_score_history
 
 
-def add_recommendation_to_user(key):  # Called when the user wants to see another recommendation
+def add_recommendation_to_user():  # Called when the user wants to see another recommendation
 
     st.session_state.error_status, st.session_state.error = generate_recommendation(
-        st.session_state.current_passcode, key)  # Will update the session error variables and maybe increase the user's score if appropriate
+        st.session_state.current_passcode)  # Will update the session error variables and maybe increase the user's score if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
@@ -283,7 +280,7 @@ def layout_3():
         st.subheader('Our task list for you today')
 
         user_recommendation_generated_list_build, user_recommendation_generated_list, user_recommendation_generated_list_message = get_recommendations(
-            st.session_state.current_passcode, st.session_state.apikey)  # Step 1: Create the recommendation table based on the user's information
+            st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
 
         st.write(
             user_recommendation_generated_list_message)  # Write the result of the function above, see mongo file for more
@@ -358,5 +355,5 @@ def layout_3():
                 if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit + max_additional_recommendations:
                     st.button("", icon=":material/add_task:", use_container_width=True,
                               on_click=add_recommendation_to_user,
-                              args=[st.session_state.apikey],
+                              args=[],
                               key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation

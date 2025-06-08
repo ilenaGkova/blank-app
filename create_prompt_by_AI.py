@@ -7,20 +7,22 @@ from generate_items import generate_recommendation_id, calculate_fail_count
 from add_data_in_collection import add_recommendation
 from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
 from initialise_variables import con_question
-from langchain.schema import HumanMessage
-from langchain.schema import SystemMessage
+from langchain.schema import HumanMessage, SystemMessage
 import os
 from langchain.chat_models import init_chat_model
+import streamlit as st
+
+active_model = st.secrets["API"]["active_model"]
 
 
 # This function generates a required amount of recommendations by setting a prompt in an openAI machine
-def generate_recommendations_by_AI(passcode, entries_generated_by_AI, key):
+def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
     index = 0  # Set to the index to indicate we added a recommendation to the user to keep track of how many
 
     while index < entries_generated_by_AI:
 
-        outcome, new_recommendation = return_prompt(passcode, key)
+        outcome, new_recommendation = return_prompt(passcode)
 
         fail_count = 0  # We have a minor fail count to keep track if the recommendation was added, we probably won't have to use it unless we have various users doing this at the same time
 
@@ -38,7 +40,6 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI, key):
                                                                                         "OpenAI",
                                                                                         title, description, None,
                                                                                         10)  # We enter OpenAI as the passcode of the creator
-
                 if recommendation_added:
 
                     enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
@@ -73,14 +74,23 @@ def create_prompt(passcode):
     )
 
 
-def return_prompt(passcode, key):
-
-    if not os.environ.get("GROQ_API_KEY"):
-        os.environ["GROQ_API_KEY"] = key
-
-    model = init_chat_model("llama3-8b-8192", model_provider="groq")
-
+def return_prompt(passcode):
     try:
+
+        if active_model == "groq":
+            if not os.environ.get("GROQ_API_KEY"):
+                os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]
+
+            model = init_chat_model("llama3-8b-8192", model_provider="groq").with_structured_output(method="json_mode")
+
+        elif active_model == "gemini":
+            if not os.environ.get("GEMINI_API_KEY"):
+                os.environ["GEMINI_API_KEY"] = st.secrets["API"]["geminikey"]
+
+            model = init_chat_model("gemini-2.0-flash", model_provider="google_genai").with_structured_output(method="json_mode")
+
+        else:
+            return False, f"Unsupported active_model: {active_model}"
 
         messages = [
             SystemMessage(content=(
@@ -96,47 +106,49 @@ def return_prompt(passcode, key):
         return True, new_recommendation
 
     except Exception as e:
-
-        return True, str(e)
+        return False, str(e)
 
 
 def extract_json(new_recommendation, prompt):
     try:
+        # Handle groq (object with content) and gemini (string) cases
+        if hasattr(new_recommendation, "content"):
+            text = new_recommendation.content
+        else:
+            text = str(new_recommendation)
 
-        new_recommendation = new_recommendation.content
+        # Remove prompt from start if present
+        if text.startswith(prompt):
+            text = text[len(prompt):]
 
-        if new_recommendation.startswith(prompt):  # Remove prompt from the response
-            new_recommendation = new_recommendation[len(prompt):]
-
-        match = re.search(r'\{.*?\}', new_recommendation, re.DOTALL)  # Try to extract JSON from the response
+        # Extract JSON block (non-greedy match between first { and last })
+        match = re.search(r'\{.*?\}', text, re.DOTALL)
 
         if match:
-
             json_str = match.group(0)
 
-            json_str_cleaned = json_str.replace("'", '"')  # Convert single quotes to double quotes
+            # Replace single quotes with double quotes for JSON parsing
+            json_str_cleaned = json_str.replace("'", '"')
 
             try:
                 response_json = json.loads(json_str_cleaned)
 
                 title = response_json.get("Title", "Untitled")
-                description = response_json.get("Description", new_recommendation)
+                description = response_json.get("Description", text)
 
             except json.JSONDecodeError:
-
                 title = "Invalid Format"
                 description = json_str_cleaned
 
         else:
-
             title = "No JSON Found"
-            description = new_recommendation
+            description = text
 
     except Exception as e:
-
         return "Error", str(e)
 
-    return description, title
+    # Return title and description consistently
+    return f"{description} as generated by {active_model}", title
 
 
 # This function generates a user profile to be added to a prompt to an AI, and a condition to indicate if it did it correctly

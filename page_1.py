@@ -26,23 +26,18 @@ if 'username' not in st.session_state:
 if 'show_questions' not in st.session_state:
     st.session_state.show_questions = False
 
-if 'apikey' not in st.session_state:
-    st.session_state.apikey = 'No Key'
-
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 
 controller = CookieController()
 cookies = controller.getAll()
 
 
-def set_username(passcode_for_setting_username, key):  # Called when user signs in or makes a new account
+def set_username(passcode_for_setting_username):  # Called when user signs in or makes a new account
 
     st.session_state.current_passcode = passcode_for_setting_username  # Will register the user as the current user for this session
 
     today_for_setting_username, yesterday_for_setting_username, index_for_setting_username = get_status(
         st.session_state.current_passcode)  # Will see when the user made a last status
-
-    st.session_state.apikey = key
 
     if index_for_setting_username == -1:
 
@@ -57,12 +52,12 @@ def set_username(passcode_for_setting_username, key):  # Called when user signs 
         change_page(2)  # If the user hasn't made a status today the need to make one
 
 
-def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user, key):  # Called when user tries to long in
+def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user):  # Called when user tries to long in
 
     st.session_state.error_status, st.session_state.error = validate_user(
         passcode_for_signing_in_user)  # Will update the session error variables
 
-    if st.session_state.error_status and key != 'No Key':  # Warning: The status variable is in reverse
+    if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(passcode_for_signing_in_user))  # Will remember the passcode for the future so the user won't have to enter it
@@ -71,21 +66,21 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user,
         record_question(question_passcode_for_log_in_user, passcode_for_signing_in_user, passcode_for_signing_in_user)
 
         set_username(
-            passcode_for_signing_in_user, key)  # Will call the function to register the user as the current user and move on to the next page
+            passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def create_user(user_user_username, user_user_passcode, user_age, user_focus_area, user_time_available,
                 user_suggestions, question_username_for_create_user, question_age_for_create_user,
                 question_focus_area_for_create_user, question_time_available_for_create_user,
                 question_suggestions_for_create_user,
-                question_passcode_for_create_user, key):  # Called when a user wants to make a new account
+                question_passcode_for_create_user):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_user_username, user_user_passcode, user_age,
                                                                      user_focus_area,
                                                                      user_time_available,
                                                                      user_suggestions)  # Will update the session error variables and maybe create new user if appropriate
 
-    if st.session_state.error_status and key != 'No Key':  # Warning: The status variable is in reverse
+    if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
                        str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
@@ -99,7 +94,7 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
         record_question(question_suggestions_for_create_user, user_suggestions, user_user_passcode)
 
         set_username(
-            user_user_passcode, key)  # Will call the function to register the user as the current user and move on to the next page
+            user_user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def show_profile():
@@ -110,15 +105,13 @@ def show_profile():
 
 def layout():
 
-    apikey = st.sidebar.text_input('API Key', key="api_key", value=st.session_state.apikey)
-
     # The SideBar - User Signs In With Passcode
 
     st.sidebar.header('Already have an account? Sign in!')
 
-    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode", ""))  # Save the previous passcode on the session variable)
+    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode", ""))  # Save the previous passcode on the session variable
 
-    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode, apikey],
+    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
                       key="sign_in_user")
 
     # The Title
@@ -171,4 +164,4 @@ def layout():
                       args=[user_username, user_passcode, age, focus_area, time_available, suggestions,
                             question_username,
                             question_age, question_focus_area, question_time_available, question_suggestions,
-                            question_passcode, apikey], key="create_user")
+                            question_passcode], key="create_user")
