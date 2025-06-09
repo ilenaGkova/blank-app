@@ -32,7 +32,8 @@ question_suggestions = f"How many tasks do you want to try daily ({min_limit} - 
 question_passcode = "What's your passcode?"
 focus_areas = "Work/Career", "Finances", "Health & Well-being", "Relationships", "Time Management", "Personal Identity", "Major Life Changes", "Social Media & Technology", "Uncertainty & Future Planning"
 ages = "18-25", "26-35", "36-55", "56-70", "70+"
-genders = "Male", "Female", "Other"
+question_gender = "Gender"
+genders = "Male", "Female", "Other", "Would Rather Not Say"
 options = {
     "Not happened": 0,
     "Happened rarely": 1,
@@ -51,4 +52,6 @@ question_about_link = "Link - optional"
 
 Question_ID = "Question ID"  # Saved separately to be used in function
 question_input = "Question"  # Saved separately to be used in function
+
+question_about_duration = "Duration"
 

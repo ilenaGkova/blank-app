@@ -2,7 +2,8 @@ import streamlit as st  # Streamlit Software
 from initialise_variables import initialize_variables, min_limit, stress_max_limit, max_limit, \
     focus_areas, ages, question_about_recommendation_id, question_about_points, \
     question_about_title, question_about_description, question_about_link, \
-    question_about_passcode, question_age, question_focus_area, Question_ID, question_input  # Application Function
+    question_about_passcode, question_age, question_focus_area, Question_ID, question_input, \
+    question_gender, genders, question_about_duration  # Application Function
 from mongo_connection import Question_Questionnaire, Recommendation  # Database Function
 from add_data_in_collection import add_recommendation, add_question_to_Questionnaire, add_tag  # Database Function
 from check_and_balance import record_question  # Database Function
@@ -48,15 +49,16 @@ def generate_question_id():  # Called what an admin wants to add a question to t
 def add_recommendation_here(your_passcode_here, this_generated_id_here, points_here, title_here, description_here,
                             link_here, question_about_recommendation_id_here, question_about_points_here,
                             question_about_title_here, question_about_description_here,
-                            question_about_link_here):  # Called when the user wants to make a new recommendation
+                            question_about_link_here, duration, question_about_duration_here):  # Called when the user wants to make a new recommendation
 
     st.session_state.error_status, st.session_state.error = add_recommendation(this_generated_id_here,
                                                                                your_passcode_here, title_here,
                                                                                description_here, link_here,
-                                                                               points_here)  # Will update the session error variables and maybe add a recommendation if appropriate
+                                                                               points_here, duration)  # Will update the session error variables and maybe add a recommendation if appropriate
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
+        record_question(question_about_duration_here, duration, your_passcode_here)
         record_question(question_about_recommendation_id_here, this_generated_id_here, your_passcode_here)
         record_question(question_about_points_here, points_here, your_passcode_here)
         record_question(question_about_title_here, title_here, your_passcode_here)
@@ -94,7 +96,6 @@ def add_tag_here(recommendation_id_here, passcode_here, title_here, category,
 
 
 def layout_9():
-
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
 
@@ -244,7 +245,8 @@ def add_tags_layout():
 
             with column_for_focus_area_tag_value:  # User selects the Tag Value
 
-                focus_area = st.selectbox(question_focus_area, focus_areas, index=0, placeholder="Select a focus area...")  # Options match the ones given to user
+                focus_area = st.selectbox(question_focus_area, focus_areas, index=0,
+                                          placeholder="Select a focus area...")  # Options match the ones given to user
 
             with column_for_focus_area_tag_done:
                 if Recommendation.find_one(
@@ -269,7 +271,8 @@ def add_tags_layout():
 
             with column_for_age_tag_value:  # User selects the Tag Value
 
-                age_variant = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")  # Options match the ones given to user
+                age_variant = st.selectbox(question_age, ages, index=0,
+                                           placeholder="Select an age category...")  # Options match the ones given to user
 
             with column_for_age_tag_done:
                 if Recommendation.find_one(
@@ -290,7 +293,9 @@ def add_tags_layout():
 
             with column_for_level_tag_title:  # Write the kind of tag the user is entering
 
-                level_variant = st.selectbox("Tag Name", ("Show for levels above", "Show for levels below", "Show for levels equal"), index=0, placeholder="Select a Tag...")
+                level_variant = st.selectbox("Tag Name", (
+                    "Show for levels above", "Show for levels below", "Show for levels equal"), index=0,
+                                             placeholder="Select a Tag...")
 
             with column_for_level_tag_value:  # User selects the Tag Value
 
@@ -306,6 +311,30 @@ def add_tags_layout():
                                     question_about_recommendation_id],
                               key="add_level_tag_button")  # This function is local to record the questions and add the Tag
 
+        # Subsection F: Show for Levels Above or Below
+
+        with st.container(border=True):  # Seperate from sections below by putting this in a square
+
+            column_for_gender_tag_title, column_for_gender_tag_value, column_for_gender_tag_done = st.columns(
+                [2.1, 4, 0.5])  # Columns named after the content they show
+
+            with column_for_gender_tag_title:  # Write the kind of tag the user is entering
+
+                st.write("Add a Age Variant Tag")
+
+            with column_for_gender_tag_value:  # User selects the Tag Value
+
+                gender = st.selectbox(question_gender, genders, index=0,
+                                      placeholder="Select a focus area...")  # Options match the ones given to user
+
+            with column_for_gender_tag_done:
+                if Recommendation.find_one({"ID": id_for_tag}):  # User can only enter Tag to existing recommendation
+
+                    st.button('', icon=":material/check:", use_container_width=True,
+                              on_click=add_tag_here,
+                              args=[id_for_tag, your_passcode_for_tag, "Gender", gender,
+                                    question_about_recommendation_id],
+                              key="add_gender_tag_button")  # This function is local to record the questions and add the Tag
     else:
 
         # You can't add tags to a recommendation-less database
@@ -342,13 +371,7 @@ def add_a_recommendation_layout():
                                               value=generate_recommendation_id(),
                                               disabled=True)  # This ID is generated on the spot
 
-        with column_for_point_for_new_recommendation:
-            # The minimum points a recommendation can get is 10 points
-            # The maximum points is 150 which is the cap points for a user in level 1
-
-            points = st.number_input(question_about_points, min_value=10, max_value=150)
-
-        # Part 2: The recommendation
+        # Part 2a: The recommendation
 
         title = st.text_input(question_about_title, key="title")  # Recommendation title
 
@@ -357,8 +380,11 @@ def add_a_recommendation_layout():
 
         # Part 3: The Recommendation Link
 
-        column_for_url_link, column_for_url_link_disclaimer = st.columns(
-            [4, 3])  # Columns are named after the Recommendation information they show
+        column_for_duration, column_for_url_link, column_for_url_link_disclaimer = st.columns(
+            [2, 4, 3])  # Columns are named after the Recommendation information they show
+
+        with column_for_duration:
+            duration = st.number_input(question_about_duration, min_value=5, max_value=max_limit)
 
         with column_for_url_link:
             link_input = st.text_input(question_about_link,
@@ -374,6 +400,14 @@ def add_a_recommendation_layout():
 
             link = link_input
 
+        # Part 2b: The recommendation
+
+        with column_for_point_for_new_recommendation:
+            # The minimum points a recommendation can get is 10 points
+            # The maximum points is 150 which is the cap points for a user in level 1
+
+            points = st.number_input(question_about_points, min_value=duration*2, max_value=150)  # duration needed to exist before the value was registered so this is set up here
+
         # Step 3: Add the recommendation
         # To add the recommendation the user needs to click this button
         # The function it calls is a local one that will add the recommendation and record the questions
@@ -382,5 +416,5 @@ def add_a_recommendation_layout():
                   on_click=add_recommendation_here,
                   args=[your_passcode_for_recommendation, this_generated_id, points, title, description, link,
                         question_about_recommendation_id, question_about_points, question_about_title,
-                        question_about_description, question_about_link],
+                        question_about_description, question_about_link, duration, question_about_description],
                   key="add_recommendation_entry_button")

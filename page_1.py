@@ -3,7 +3,7 @@ from change_page import change_page  # Application Function
 from log_in_page_create_user_page import validate_user, new_user  # Database Function
 from initialise_variables import question_passcode, question_username, question_age, question_focus_area, \
     question_time_available, min_time_limit, question_suggestions, max_recommendation_limit, min_limit, max_limit, \
-    focus_areas, ages
+    focus_areas, ages, genders, question_gender
 from generate_items import generate_unique_passcode, generate_animal_username  # Application Function
 from check_and_balance import record_question, get_status  # Database Function
 from mongo_connection import Recommendation  # Database Function
@@ -69,16 +69,16 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
             passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def create_user(user_user_username, user_user_passcode, user_age, user_focus_area, user_time_available,
+def create_user(user_user_username, user_user_passcode, user_age, user_gender, user_focus_area, user_time_available,
                 user_suggestions, question_username_for_create_user, question_age_for_create_user,
                 question_focus_area_for_create_user, question_time_available_for_create_user,
-                question_suggestions_for_create_user,
+                question_suggestions_for_create_user, question_gender_for_create_user,
                 question_passcode_for_create_user):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_user_username, user_user_passcode, user_age,
                                                                      user_focus_area,
                                                                      user_time_available,
-                                                                     user_suggestions)  # Will update the session error variables and maybe create new user if appropriate
+                                                                     user_suggestions, user_gender)  # Will update the session error variables and maybe create new user if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
@@ -86,6 +86,7 @@ def create_user(user_user_username, user_user_passcode, user_age, user_focus_are
                        str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
+        record_question(question_gender_for_create_user, user_gender, user_user_passcode)
         record_question(question_username_for_create_user, user_user_username, user_user_passcode)
         record_question(question_passcode_for_create_user, user_user_passcode, user_user_passcode)
         record_question(question_age_for_create_user, user_age, user_user_passcode)
@@ -149,6 +150,8 @@ def layout():
 
             age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
 
+            gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
+
             focus_area = st.multiselect(question_focus_area, focus_areas)
 
             # Step 4: User enters their free time amount and the amount of suggestion they wish to see
@@ -163,5 +166,5 @@ def layout():
             st.button('Let us get started', use_container_width=True, on_click=create_user,
                       args=[user_username, user_passcode, age, focus_area, time_available, suggestions,
                             question_username,
-                            question_age, question_focus_area, question_time_available, question_suggestions,
+                            question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
                             question_passcode], key="create_user")

@@ -3,7 +3,7 @@ from mongo_connection import User, Recommendation, Tag, Question_Questionnaire, 
 
 
 # This function adds a recommendation in the Recommendation collection, it returns an indicator that shows whether the function completed and a message
-def add_recommendation(ID, passcode, title, description, link, points):
+def add_recommendation(ID, passcode, title, description, link, points, duration):
     ID = int(ID)  # Convert any possible IDs in text into numbers
 
     if not User.find_one(
@@ -17,7 +17,7 @@ def add_recommendation(ID, passcode, title, description, link, points):
         return False, "Please try again, it look like the ID generated has already been added."
 
     if not title.strip() or not description.strip() or points < 10 or points > 150 or (
-            link is not None and not link.strip()):
+            link is not None and not link.strip()) or duration <= 0:
         return False, "You need to fill in all mandatory fields"  # Make sure the data entered are appropriate to be added
 
     # This collection's entries contain an ID that can be used as a key to find the entry across the collections
@@ -35,6 +35,8 @@ def add_recommendation(ID, passcode, title, description, link, points):
             'Points': points
         }
     )
+
+    add_tag(ID, passcode, "Time Available", duration)
 
     return True, "Recommendation added"
 

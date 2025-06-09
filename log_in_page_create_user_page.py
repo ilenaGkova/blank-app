@@ -25,12 +25,12 @@ def validate_user(passcode):
 
 
 # This function will create a user if given the right data for them
-def new_user(username, passcode, age, focus_area, time_available, suggestions):
+def new_user(username, passcode, age, focus_area, time_available, suggestions, gender):
     # The function has 2 returns
     # One is a message of the outcome of the function and the other is True/False
     # True means the function completed its task: creating a new user and adding them to the collection for users
 
-    if not username.strip() or passcode == "Please reload the page" or not age.strip() or not focus_area or time_available == 0 or suggestions == 0:
+    if not username.strip() or passcode == "Please reload the page" or not age.strip() or not focus_area or time_available == 0 or suggestions == 0 or not gender.strip():
         # The user can't be created without all of their information being correct and appropriate
         # Some will just need to have value others will need to have appropriate value
         # Because these come from a streamlit input field, there have been limits placed to make sure the value in appropriate
@@ -60,6 +60,7 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions):
             'Repeat_Preference': 1,
             # Not initially available for change by the user. This number will show the number of days the user won't see a recommendation twice
             'Age_Category': age,  # Age is a category ranging between 2 number, not a number specifically
+            'Gender': gender,
             'Focus_Area': [str(item) for item in focus_area],
             'Suggestions': int(suggestions),
             # The number of suggestions to be picked are dependent of the number of available recommendation

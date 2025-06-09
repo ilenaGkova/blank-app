@@ -80,7 +80,7 @@ def generate_recommendation_id():
 
 # This Function returns 2 things. The minimum limit for the recommendations a user can request when ending their information and the additional they can request via a button
 def get_maximum_entries():
-    return int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) / 4), int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) * 0.1)
+    return min(int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) / 10), 5), min(int(Recommendation.count_documents({"Passcode": {"$ne": "OpenAI"}}) * 0.1), 3)
 
 
 # This function gets a level and will calculate the limit score of the level.
@@ -96,7 +96,8 @@ def get_limits(level):
     move_down_threshold = move_up_threshold * (1 - y / 100)
     move_down_threshold = min(move_down_threshold,
                               move_up_threshold * 0.95)  # Ensure demotion threshold is at most 95% of the promotion threshold
-
+    if level == 1:
+        return move_up_threshold, None
     return move_up_threshold, move_down_threshold
 
 

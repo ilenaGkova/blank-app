@@ -79,20 +79,24 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
         }
     )
 
+
 def pass_filter(title, category, user, status, out_early=False):
 
     filters = [
         # Establish the filters as we are watering down the recommendation we are choosing from into the ones that match the tags
         {'Title_Of_Criteria': 'Age Variant', 'Category': user['Age_Category']},
-        {'Title_Of_Criteria': 'Stress Level', 'Category': status['Stress_Level']},
+        {'Title_Of_Criteria': 'Stress caLevel', 'Category': status['Stress_Level']},
         {'Title_Of_Criteria': 'Time Available', 'Category': user['Time_Available']},
         {'Title_Of_Criteria': 'Show for levels above', 'Category': user['Level']},
         {'Title_Of_Criteria': 'Show for levels below', 'Category': user['Level']},
         {'Title_Of_Criteria': 'Show for levels equal', 'Category': user['Level']},
+        {'Title_Of_Criteria': 'Gender', 'Category': user['Gender']}
     ]
 
     for entry in user['Focus_Area']:
         filters.append({'Title_Of_Criteria': 'Focus Area', 'Category': entry})
+
+    condition = True
 
     for entry in filters:
 

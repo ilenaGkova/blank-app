@@ -94,7 +94,7 @@ def change_recommendation_preference_for_user(preference, passcode, index, just_
 
 
 # This function gets data for a user profile and updates the user profile in the collection for users
-def update_user(passcode, username, repeat, age, focus_area, time_available, suggestions):
+def update_user(passcode, username, repeat, age, focus_area, time_available, suggestions, gender):
     # This function returns in boolean indicator that the function completed a task and a message for the user
     # The message will be shown if the function failed
 
@@ -106,7 +106,7 @@ def update_user(passcode, username, repeat, age, focus_area, time_available, sug
     if User.find_one({"Username": username}) and username != user['Username']:
         return False, "You need to enter a unique username"  # End early is also the user has submitted a new username that already exists
 
-    if not focus_area.strip() or time_available == 0 or suggestions == 0 or repeat == 0 or not age.strip():
+    if not focus_area or time_available == 0 or suggestions == 0 or repeat == 0 or not age.strip() or not gender.strip():
         return False, "You need to enter appropriate information"  # End early if any other data is inappropriate, there are safeguards in place to avoid that placed in the application but still
 
     User.update_one({"Passcode": passcode}, {
@@ -115,6 +115,7 @@ def update_user(passcode, username, repeat, age, focus_area, time_available, sug
                 "Username": username,
                 "Repeat_Preference": repeat,
                 "Age_Category": age,
+                "Gender": gender,
                 "Focus_Area": [str(item) for item in focus_area],
                 "Suggestions": suggestions,
                 "Time_Available": time_available

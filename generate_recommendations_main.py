@@ -5,6 +5,7 @@ from generate_by_tags import generate_recommendations_chosen_by_tags
 from generate_by_algorithm import generate_recommendations_by_algorithm
 from create_prompt_by_AI import generate_recommendations_by_AI
 from generate_items import get_maximum_entries
+from initialise_variables import max_recommendation_limit
 
 
 # This function returns the amount of entries of the recommendations generated in 3 different ways, and a condition that tells us whether it run the entire function correctly
@@ -14,8 +15,8 @@ def calculate_entries(passcode):
 
         return False, 0, 0, 0
 
-    entries_required = User.find_one({"Passcode": passcode})[
-        'Suggestions']  # Find the user using their Passcode and get their number of preferences
+    entries_required = min(User.find_one({"Passcode": passcode})[
+        'Suggestions'], max_recommendation_limit)  # Find the user using their Passcode and get their number of preferences
 
     if entries_required > Recommendation.count_documents(
             {}):  # If required recommendations can't be satisfied by the available recommendations we return 0s
