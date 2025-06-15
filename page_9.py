@@ -114,7 +114,15 @@ def layout_9():
     elif user is not None and index != -1:
 
         st.session_state.error_status = False
-        st.session_state.error = 'You do not have access to this page'
+
+        if user is None and index == -1 and user['Role'] == 'User':
+            st.session_state.error = 'Something went wrong, User not signed in and no Status found'
+        elif user is None:
+            st.session_state.error = 'Something went wrong, no Status found'
+        elif index == -1:
+            st.session_state.error = 'Something went wrong, User not signed in'
+        else:
+            st.session_state.error = 'You do not have access to this page'
 
 
 def add_a_question_layout():

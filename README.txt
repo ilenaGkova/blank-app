@@ -26,7 +26,215 @@ Page 4: User profile alterations + Recommendation history
 
 Page 5: User record page
 
-    Functions
+    + Run streamlit_app.py file
+
+        + page from st.session_state
+
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+        + menu_layout() from menu.py
+
+            + current_passcode from st.session_state
+
+            + open_recommendation from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
+
+    + layout_5() from page_5.py
+
+        + current_passcode from st.session_state
+
+        + open_recommendation from st.session_state
+
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + initialize_variables() from initialise_variables.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + get_status() from check_and_balance.py
+
+                + Status from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+        + create_history() from make_record.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Question from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Record from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Status from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Favorite_Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Removed_Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation_Per_Person from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Question_Questionnaire from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Score_History from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + add_history_entries() from make_record.py
+
+            + sort_by_time() from make_record.py
+
+            + sort_by_message() from make_record.py
+
+            + sort_by_type() from make_record.py
+
+            + new_entry_in_record_collection() from check_and_balance.py
+
+                + Record from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+        + delete_entry() from make_record.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + new_entry_in_record_collection() from check_and_balance.py
+
+                + Record from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
 
 Page 6: Recommendation page
 
@@ -76,7 +284,7 @@ Page 6: Recommendation page
 
         + layout_6() from page_6.py
 
-             + current_passcode from st.session_state
+            + current_passcode from st.session_state
 
             + open_recommendation from st.session_state
 
@@ -262,6 +470,8 @@ Page 6: Recommendation page
 
                         + page from st.session_state
 
+                        + error_status from st.session_state
+
             + change_recommendation_status() from page_6.py
 
                 + error from st.session_state
@@ -336,10 +546,11 @@ Page 6: Recommendation page
 
                                     + init_connection() from mongo_connection.py
 
-
                 + change_page() from change_page.py
 
-                        + page from st.session_state
+                    + page from st.session_state
+
+                    + error_status from st.session_state
 
 Page 7: Tutorial page
 
@@ -831,6 +1042,8 @@ Page 9: Datapage management page
 
                         + page from st.session_state
 
+                        + error_status from st.session_state
+
             + add_tags_layout() from page_9.py
 
                 + question_about_passcode from initialise_variables.py
@@ -939,6 +1152,8 @@ Page 9: Datapage management page
 
                         + page from st.session_state
 
+                        + error_status from st.session_state
+
             + add_a_question_layout() from page_9.py
 
                 + question_about_passcode from initialise_variables.py
@@ -1020,3 +1235,5 @@ Page 9: Datapage management page
                     + change_page() from change_page.py
 
                         + page from st.session_state
+
+                        + error_status from st.session_state

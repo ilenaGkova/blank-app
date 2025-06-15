@@ -130,7 +130,6 @@ Recommendations = [
      'Description': 'Stand in front of a mirror, breathe deeply, and say something kind to yourself out loud. This helps counteract the internalized stress patterns common in female social conditioning.',
      'Link': None, 'Points': 10},
 
-    # Male Body-Oriented (IDs 22–27)
     {'ID': 22, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11",
      'Title': 'Progressive Muscle Burnout',
      'Description': 'Do a quick circuit: 15 push-ups, 20 squats, 30 seconds wall sit. Repeat 2x. This mimics a stress-response reset often effective for male bodies.',
@@ -269,61 +268,156 @@ Recommendations = [
      'Description': 'Break a big fear into 3 tiny doable steps and write them down.',
      'Link': None, 'Points': 20},
 
-    {'ID': 55, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Mindful Moment',
-     'Description': 'Take five to savor your calm—try a 5-minute guided gratitude meditation to stay grounded and reinforce the good vibes.',
-     'Link': None, 'Points': 10},
+    {
+        'ID': 56,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Gratitude Glance',
+        'Description': "Take a moment to write down three things you're grateful for. They can be big (a relationship, a life change) or small (warm socks, the smell of coffee). Gratitude gently rewires your brain toward positivity and reinforces the good moments.",
+        'Link': None,
+        'Points': 10
+    },
 
-    {'ID': 56, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Stretch & Breathe',
-     'Description': 'Mild tension? Step away for a short body scan and light stretch. Combine it with box breathing to shake off that static.',
-     'Link': None, 'Points': 20},
+    {
+        'ID': 57,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Sunlight Sip',
+        'Description': "Grab a cup of tea, coffee, or water and sit by a window or step outside. Let the sunlight (or just daylight) hit your skin while you slowly sip. No multitasking — just breathe and notice the world around you. This small pause keeps your nervous system regulated.",
+        'Link': None,
+        'Points': 20
+    },
 
-    {'ID': 57, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Outside Reset',
-     'Description': 'Go for a brisk walk outside or near a window. Let your senses recalibrate—notice three things you can see, hear, and feel.',
-     'Link': None, 'Points': 30},
+    {
+        'ID': 58,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Micro-Adventure',
+        'Description': "Leave your usual environment and go for a short walk — even just around the block. Let curiosity guide you: notice details you’ve never really seen before. Shifting your physical space resets your mental state and boosts creativity.",
+        'Link': None,
+        'Points': 30
+    },
 
-    {'ID': 58, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Creative Break: Doodle or Journal',
-     'Description': 'Take 20 minutes to engage in a creative outlet like freeform doodling or journaling your thoughts and feelings. Expressing yourself creatively helps reduce stress and brings mental clarity.',
-     'Link': None, 'Points': 40},
+    {
+        'ID': 59,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Stretch & Breathe',
+        'Description': "Stand up and do three easy stretches — reach your arms overhead, bend forward, roll your shoulders. Match your movement with deep, slow breaths. Even light physical movement can shift your body out of stress mode.",
+        'Link': None,
+        'Points': 14
+    },
 
-    {'ID': 59, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Guided Unwind',
-     'Description': 'Plug into a 15-minute guided progressive muscle relaxation. Pair it with soft lighting or a weighted blanket if available.',
-     'Link': None, 'Points': 30},
+    {
+        'ID': 60,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Sound Reset',
+        'Description': "Put on headphones and play something calming — nature sounds, instrumental music, a favorite mellow song. Sit or lie down, close your eyes, and give the music your full attention. This anchors you in the present and slows racing thoughts.",
+        'Link': None,
+        'Points': 20
+    },
 
-    {'ID': 60, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Emergency Reboot',
-     'Description': 'Stop everything. Find a quiet spot, dim the lights, and do a 5-4-3-2-1 grounding exercise followed by deep breathing. No problem-solving—just reset.',
-     'Link': None, 'Points': 36},
+    {
+        'ID': 61,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Mindful Savor',
+        'Description': "Choose a snack or drink and experience it as if for the first time. Eat slowly, noticing the taste, smell, texture, and temperature. Let this be your only task. When you fully experience something small, it tells your brain you're safe.",
+        'Link': None,
+        'Points': 20
+    },
 
-    {'ID': 61, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Quick Stretch & Breathe',
-     'Description': 'Take 5 minutes to stretch your arms, neck, and back. Finish with a few deep breaths to refresh your body and mind. Perfect for maintaining calm and focus.',
-     'Link': None, 'Points': 10},
+    {
+        'ID': 62,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': '5-4-3-2-1 Grounding',
+        'Description': "Engage your senses to return to the here and now: name 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, and 1 you can taste. This is a reliable tool for anxiety, especially when thoughts start spiraling.",
+        'Link': None,
+        'Points': 16
+    },
 
-    {'ID': 62, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Mindful Breathing Break',
-     'Description': 'Spend 10 minutes practicing mindful breathing. Inhale deeply for 4 seconds, hold for 4, and exhale for 6. This simple routine helps reduce tension and improves mental clarity.',
-     'Link': None, 'Points': 20},
+    {
+        'ID': 63,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Tidy a Corner',
+        'Description': "Choose one small space — your desk, your bed, your backpack — and tidy it up. Physical organization sends a signal to your brain that you’re regaining control. Don’t worry about perfection. Just reset one spot.",
+        'Link': None,
+        'Points': 30
+    },
 
-    {'ID': 63, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Guided Visualization',
-     'Description': 'Relax with a 15-minute guided imagery exercise. Imagine a peaceful place, focusing on sensory details to mentally escape stress and reset your mood.',
-     'Link': None, 'Points': 30},
+    {
+        'ID': 64,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Guided Mini-Meditation',
+        'Description': "Use a free app (like Insight Timer or Headspace) or a YouTube video to do a short guided meditation focused on calming breath or body awareness. Let someone else guide your mind so you don’t have to direct it yourself.",
+        'Link': 'https://insighttimer.com/',
+        'Points': 20
+    },
 
-    {'ID': 64, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Gentle Yoga Flow',
-     'Description': 'Follow a gentle 18-minute yoga sequence designed to release muscle tension and calm your mind. No experience needed, just move slowly and breathe deeply.',
-     'Link': None, 'Points': 36},
+    {
+        'ID': 65,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Box Breathing',
+        'Description': "Use this proven breathing technique used by Navy SEALs and therapists alike: Inhale for 4 seconds, hold for 4, exhale for 4, hold for 4. Repeat for 4–6 cycles. This regulates your nervous system and creates an immediate sense of calm.",
+        'Link': None,
+        'Points': 12
+    },
 
-    {'ID': 65, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Soothing Nature Sounds & Meditation',
-     'Description': 'Spend 20 minutes listening to calming nature sounds (rain, forest, ocean) paired with a guided meditation to ease anxiety and restore inner balance.',
-     'Link': None, 'Points': 40},
+    {
+        'ID': 66,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Cold Reset',
+        'Description': "Run cold water over your wrists or splash your face. Hold something cold — like a chilled spoon or ice pack. This activates the dive reflex and forces your body to slow down, interrupting panic or overestimation.",
+        'Link': None,
+        'Points': 10
+    },
 
-    {'ID': 66, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Brain Dump & Burn',
-     'Description': 'You’re feeling it. Try a 12-minute two-part combo: 6 minutes of “brain dump” journaling (no filter—just write), then 6 minutes of brisk movement (march in place, jumping jacks, or a short walk).',
-     'Link': None, 'Points': 24},
+    {
+        'ID': 67,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Body Shake-Out',
+        'Description': "Turn on music and shake your limbs — arms, legs, shoulders — like you’re shaking off tension. You can even jump in place or do a few jumping jacks. When your body moves, your stress has somewhere to go.",
+        'Link': None,
+        'Points': 20
+    },
 
-    {'ID': 67, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Nature Microbreak',
-     'Description': 'Step outside or near a window and do a mindful observation of your environment. No phone, no goals—just watch clouds, trees, birds, or light patterns.',
-     'Link': None, 'Points': 14},
+    {
+        'ID': 68,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Quiet Cave',
+        'Description': "Find a quiet, low-stimulation space. Turn off notifications. Dim the lights or close your eyes. Wrap yourself in a blanket or hoodie. For these few minutes, let yourself rest with no demands. Sometimes, doing nothing is the most healing choice.",
+        'Link': None,
+        'Points': 30
+    },
 
-    {'ID': 68, 'Passcode': 'Admin123', 'Created_At': "2025-06-09 16:25:11", 'Title': 'Emergency Calm Kit',
-     'Description': 'You’re in high-stress mode. Start with 5 minutes of guided breathing (try box breathing), followed by 10 minutes of sensory grounding—touch something soft, sip something warm, name 5 things you see. Finish with 5 minutes of calm music or silence. This is your reset button.',
-     'Link': None, 'Points': 40},
+    {
+        'ID': 69,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Emergency Journal Dump',
+        'Description': "Grab paper or open a blank document. Set a timer. Write everything that’s in your head — messy, raw, unfiltered. Don’t worry about grammar or logic. Just get it out. You can burn or delete it afterward if you want.",
+        'Link': None,
+        'Points': 20
+    },
+
+    {
+        'ID': 55,
+        'Passcode': 'Admin123',
+        'Created_At': '2025-06-09 16:25:11',
+        'Title': 'Name 3 Safe Things',
+        'Description': "Aloud or silently, name three things that are safe and stable in your life — a friend who cares, your favorite hoodie, your breath. Say them again. And again. This creates a mental “anchor” when you feel like you're slipping.",
+        'Link': None,
+        'Points': 10
+    }
+
 
 ]
 
@@ -381,7 +475,7 @@ Tags = [
     {'ID': 26, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Gender', 'Category': 'Male', 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 26, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 2, 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 27, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Gender', 'Category': 'Male', 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 27, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10,'Created_At': "2025-06-09 16:25:11"},
+    {'ID': 27, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 28, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Area of Focus', 'Category': 'Work/Career', 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 28, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 29, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Area of Focus', 'Category': 'Work/Career', 'Created_At': "2025-06-09 16:25:11"},
@@ -436,36 +530,34 @@ Tags = [
     {'ID': 53, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 54, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Area of Focus', 'Category': 'Uncertainty & Future Planning', 'Created_At': "2025-06-09 16:25:11"},
     {'ID': 54, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 55, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 0, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 55, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 56, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 1, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 56, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 57, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 57, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 58, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2.5, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 58, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 20, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 59, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 59, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 60, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 60, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 18, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 61, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 0, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 61, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 62, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 1, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 62, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 63, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 63, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 64, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 64, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 18, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 65, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 65, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 20, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 66, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 66, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 12, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 67, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2.5, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 67, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 7, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 68, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': "2025-06-09 16:25:11"},
-    {'ID': 68, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 20, 'Created_At': "2025-06-09 16:25:11"}
-
+    {'ID': 56, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 0, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 57, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 0, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 58, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 0, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 59, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 1, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 60, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 1, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 61, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 1, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 62, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 63, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 64, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 2, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 65, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 66, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 67, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 3, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 68, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 69, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 55, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Stress Level', 'Category': 4, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 56, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 57, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 58, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 59, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 7, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 60, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 61, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 62, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 8, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 63, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 64, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 65, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 6, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 66, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 67, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 68, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 15, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 69, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 10, 'Created_At': '2025-06-09 16:25:11'},
+    {'ID': 55, 'Passcode': 'Admin123', 'Title_Of_Criteria': 'Time Available', 'Category': 5, 'Created_At': '2025-06-09 16:25:11'}
 ]
-
-
-

@@ -3,9 +3,6 @@ from initialise_variables import initialize_variables  # Application Function
 from change_page import open_recommendation  # Database Function
 from make_record import create_history, delete_entry  # Database Function
 
-if 'page' not in st.session_state:
-    st.session_state.page = 1  # Will set the layout the application will open
-
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
@@ -263,3 +260,14 @@ def layout_5():
         else:
 
             st.write("You haven't selected a category")  # It won't create a record with no categories
+
+    else:
+
+        st.session_state.error_status = False
+
+        if user is None and index == -1:
+            st.session_state.error = 'Something went wrong, User not signed in and no Status found'
+        elif user is None:
+            st.session_state.error = 'Something went wrong, no Status found'
+        else:
+            st.session_state.error = 'Something went wrong, User not signed in'

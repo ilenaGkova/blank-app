@@ -97,7 +97,7 @@ def get_limits(level):
     move_down_threshold = min(move_down_threshold,
                               move_up_threshold * 0.95)  # Ensure demotion threshold is at most 95% of the promotion threshold
     if level == 1:
-        return move_up_threshold, None
+        return move_up_threshold, -1
     return move_up_threshold, move_down_threshold
 
 

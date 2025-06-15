@@ -248,7 +248,7 @@ def generate_user_profile(passcode):
 
     my_prompt = (
         f"User between the ages of {user['Age_Category']} has answered various questions about his experience with stress today. The questions and answers are in the table given here: {answers}."
-        f"Based on his answers today we rated their stress level as {stress_level}."
+        f"Based on his answers today we rated their stress level as {stress_level}. The Users gender is defined by him as {user['Gender']}"
         f"The user has identified {user['Focus_Area']} as the area mostly stressing them out, and has {user['Time_Available']} minutes free to do an activity today."
         f"Additionally we also have the user's answers to the stress related questions in the past in this table: {history}"
         f"We are also provided with the user's general thoughts, be aware this might be empty as the user might be new: {confessions}"

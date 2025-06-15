@@ -38,6 +38,17 @@ def layout_8():
 
         confession_list_layout()
 
+    else:
+
+        st.session_state.error_status = False
+
+        if user is None and index == -1:
+            st.session_state.error = 'Something went wrong, User not signed in and no Status found'
+        elif user is None:
+            st.session_state.error = 'Something went wrong, no Status found'
+        else:
+            st.session_state.error = 'Something went wrong, User not signed in'
+
 
 def confession_list_layout():
     # Section 2: The Older Confessions

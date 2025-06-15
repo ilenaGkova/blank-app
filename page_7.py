@@ -52,6 +52,17 @@ def layout_7():
 
         st.write('We hope this helps you navigate the app with ease! Let us know if you need further assistance.')
 
+    else:
+
+        st.session_state.error_status = False
+
+        if user is None and index == -1:
+            st.session_state.error = 'Something went wrong, User not signed in and no Status found'
+        elif user is None:
+            st.session_state.error = 'Something went wrong, no Status found'
+        else:
+            st.session_state.error = 'Something went wrong, User not signed in'
+
 
 def confessions():
     with st.container(border=True):  # Hug each section in a square to seperate them
