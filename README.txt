@@ -886,6 +886,38 @@ Page 9: Datapage management page
 
                                 + init_connection() from mongo_connection.py
 
+                    + Recommendation_Per_Person from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + Tag from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + Favorite_Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + Removed_Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
                 + add_recommendation_here() from page_9.py
 
                     + error from st.session_state

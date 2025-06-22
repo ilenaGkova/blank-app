@@ -1,6 +1,7 @@
 import string
 import random
-from mongo_connection import User, db, Recommendation, Recommendation_Per_Person, Tag
+from mongo_connection import User, db, Recommendation, Recommendation_Per_Person, Tag, Favorite_Recommendation, \
+    Removed_Recommendation
 
 
 # This function generates a unique passcode, a 10-digit number that isn't in any collection to make sure no confusions happen
@@ -72,7 +73,7 @@ def generate_recommendation_id():
 
         generated_id = 1
 
-    while Recommendation.find_one({"ID": generated_id}) or Tag.find_one({"ID": generated_id}) or Recommendation_Per_Person.find_one({"ID": generated_id}):
+    while Recommendation.find_one({"ID": generated_id}) or Tag.find_one({"ID": generated_id}) or Recommendation_Per_Person.find_one({"ID": generated_id}) or Favorite_Recommendation.find_one({"ID": generated_id}) or Removed_Recommendation.find_one({"ID": generated_id}):
         generated_id += 1  # Step 3: Increase by 1 until the new id doesn't exist
 
     return generated_id

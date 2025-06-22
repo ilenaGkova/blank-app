@@ -79,7 +79,7 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions, g
     new_entry_in_score_history_collection(passcode)
 
     new_entry_in_record_collection(passcode,
-                                   f"User {passcode} created their profile: Username {username}, Repeat Preference {1}, Age {age}, focus {focus_area}, suggestions {suggestions}, time available {time_available}",
+                                   f"User {passcode} created their profile: Username {username}, Repeat Preference {1}, Age {age}, focus {focus_area}, suggestions {suggestions}, time available {time_available}, gender {gender}",
                                    "P")  # Make a record of the user setting up their profile
 
     new_entry_in_record_collection(passcode, f"User {passcode} has had their score set to 0",

@@ -124,7 +124,7 @@ def update_user(passcode, username, repeat, age, focus_area, time_available, sug
                     )  # Find the user and update their profile with a new data
 
     new_entry_in_record_collection(passcode,
-                                   f"User {passcode} updated their profile: Username {username}, Repeat Preference {repeat}, Age {age}, focus {focus_area}, suggestions {suggestions}, time available {time_available}",
+                                   f"User {passcode} updated their profile: Username {username}, Repeat Preference {repeat}, Age {age}, focus {focus_area}, suggestions {suggestions}, time available {time_available}, gender {gender}",
                                    "P")
 
     return True, "User Profile Updated"

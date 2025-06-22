@@ -37,7 +37,7 @@ Removed_Recommendation = db[
     "Removed_Recommendation"]  # Will have a record for recommendations a user rejected to avoid giving it to them again
 
 Favorite_Recommendation = db[
-    "Favorite"]  # Will have a record for recommendations a user liked, so they can see them again
+    "Favorite_Recommendation"]  # Will have a record for recommendations a user liked, so they can see them again
 
 Question_Questionnaire = db[
     "Questionnaire"]  # Will have the questioner questions to be shown and a user can rate their stress level
