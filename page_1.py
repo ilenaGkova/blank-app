@@ -123,8 +123,6 @@ def layout():
 
         make_profile = st.checkbox("Make profile") 
 
-        controller.set("previous_user_passcode", str(user_username))
-
         if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
             
             # The Initial Questions Section
@@ -147,6 +145,8 @@ def layout():
 
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                           max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
+
+            controller.set("previous_user_passcode", str(user_username))
 
             # Step 5: User clicks button to create an account
 
