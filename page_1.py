@@ -69,16 +69,15 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
             passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def create_user(user_user_username, user_user_passcode, user_age, user_gender, user_focus_area, user_time_available,
-                user_suggestions, question_username_for_create_user, question_age_for_create_user,
-                question_focus_area_for_create_user, question_time_available_for_create_user,
-                question_suggestions_for_create_user, question_gender_for_create_user,
-                question_passcode_for_create_user):  # Called when a user wants to make a new account
+def create_user(user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
+                            question_username,
+                            question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
+                            question_passcode):  # Called when a user wants to make a new account
 
-    st.session_state.error_status, st.session_state.error = new_user(user_user_username, user_user_passcode, user_age,
-                                                                     user_focus_area,
-                                                                     user_time_available,
-                                                                     user_suggestions, user_gender)  # Will update the session error variables and maybe create new user if appropriate
+    st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
+                                                                     focus_area,
+                                                                     time_available,
+                                                                     suggestions, gender)  # Will update the session error variables and maybe create new user if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
@@ -86,13 +85,13 @@ def create_user(user_user_username, user_user_passcode, user_age, user_gender, u
                        str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
-        record_question(question_gender_for_create_user, user_gender, user_user_passcode)
-        record_question(question_username_for_create_user, user_user_username, user_user_passcode)
-        record_question(question_passcode_for_create_user, user_user_passcode, user_user_passcode)
-        record_question(question_age_for_create_user, user_age, user_user_passcode)
-        record_question(question_focus_area_for_create_user, str(user_focus_area), user_user_passcode)
-        record_question(question_time_available_for_create_user, user_time_available, user_user_passcode)
-        record_question(question_suggestions_for_create_user, user_suggestions, user_user_passcode)
+        record_question(question_gender, gender, user_passcode)
+        record_question(question_username, user_username, user_passcode)
+        record_question(question_passcode, user_passcode, user_passcode)
+        record_question(question_age, age, user_passcode)
+        record_question(question_focus_area, str(focus_area), user_passcode)
+        record_question(question_time_available, time_available, user_passcode)
+        record_question(question_suggestions, suggestions, user_passcode)
 
         set_username(
             user_user_passcode)  # Will call the function to register the user as the current user and move on to the next page
