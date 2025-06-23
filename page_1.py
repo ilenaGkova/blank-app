@@ -118,13 +118,12 @@ def layout():
         generated_username = cookies.get("previous_user_username", "")
         if generated_username == "":
             generated_username = str(generate_animal_username())
-            
 
         user_username = st.text_input(question_username, key="user_username", value=generated_username)
 
-        controller.set("previous_user_passcode", str(user_username))
-
         make_profile = st.checkbox("Make profile") 
+
+        controller.set("previous_user_passcode", str(user_username))
 
         if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
             
