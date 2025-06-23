@@ -90,7 +90,7 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
         set_username(
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
     
- def set_user_name(user_username):
+def set_user_name(user_username):
 
     controller.set("previous_user_username", user_username)
 
