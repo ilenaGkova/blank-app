@@ -106,7 +106,7 @@ def update_user(passcode, username, repeat, age, focus_area, time_available, sug
     if User.find_one({"Username": username}) and username != user['Username']:
         return False, "You need to enter a unique username"  # End early is also the user has submitted a new username that already exists
 
-    if not focus_area or time_available == 0 or suggestions == 0 or repeat == 0 or not age.strip() or not gender.strip():
+    if not focus_area or time_available == 0 or suggestions == 0 or repeat == 0 or not age.strip() or not gender:
         return False, "You need to enter appropriate information"  # End early if any other data is inappropriate, there are safeguards in place to avoid that placed in the application but still
 
     User.update_one({"Passcode": passcode}, {
