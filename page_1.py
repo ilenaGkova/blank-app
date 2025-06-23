@@ -132,7 +132,7 @@ def layout():
         
         if not show:
 
-            st.button('Set Usename', use_container_width=True, on_click=show_form_status, args[user_username], key="set_user_name1")
+            st.button('Set Usename', use_container_width=True, on_click=show_form_status, args=[user_username], key="set_user_name1")
         
         if Recommendation.count_documents({}) >= 1 and show:  # The application won't sign on new users if there are no recommendations to be given
                         
