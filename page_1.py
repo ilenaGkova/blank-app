@@ -121,7 +121,7 @@ def layout():
 
         user_username = st.text_input(question_username, key="user_username", value=generated_username)
 
-        make_profile = st.checkbox("Make profile") 
+        make_profile = st.checkbox("Enter your information") 
 
         if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
             
