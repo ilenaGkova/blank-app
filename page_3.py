@@ -272,7 +272,7 @@ def layout_3():
 
         # For new user, add a message to direct them to the tutorial and give them the rundown of managing the recommendations they are given
 
-        if Status.count_documents({"Passcode": st.session_state.current_passcode}) == 1:
+        if int(user['Days_Summed']) == 1:
             summary(st.session_state.current_passcode)
 
         # Section 3: The daily recommendations
