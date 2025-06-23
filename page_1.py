@@ -124,13 +124,13 @@ def layout():
 
         set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
 
-        show = False
+        show = cookies.get("show_form", False)
         
         if set_user_name:
 
             controller.set("previous_user_username", user_username)
 
-            show = True
+            controller.set("show_form", True)
         
         if Recommendation.count_documents({}) >= 1 and show:  # The application won't sign on new users if there are no recommendations to be given
                         
