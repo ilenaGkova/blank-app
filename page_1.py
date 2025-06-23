@@ -90,6 +90,11 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
         set_username(
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
+def set_user_name(user_username):
+
+    controller.set("previous_user_username", user_username)
+    
+
 
 def layout():
 
@@ -115,11 +120,22 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        generated_username = cookies.get("previous_user_username", "")
-        if generated_username == "":
-            generated_username = str(generate_animal_username())
+        show_username, set_username = st.columns([5, 2])
 
-        user_username = st.text_input(question_username, key="user_username", value=generated_username)
+        with show_username:
+
+            generated_username = cookies.get("previous_user_username", "")
+        
+            if generated_username == "":
+                
+                generated_username = str(generate_animal_username())
+        
+            user_username = st.text_input(question_username, key="user_username", value=generated_username)
+
+        with set_username:
+
+            st.button('Set Usename', use_container_width=True, on_click=set_user_name,
+                      args=[user_username], key="set_user_name")
 
         make_profile = st.checkbox("Enter your information") 
 
@@ -145,8 +161,6 @@ def layout():
 
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                           max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
-
-            controller.set("previous_user_passcode", str(user_username))
 
             # Step 5: User clicks button to create an account
 
