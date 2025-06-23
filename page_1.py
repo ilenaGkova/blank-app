@@ -122,10 +122,12 @@ def layout():
         
         user_username = st.text_input(question_username, key="user_username", value=generated_username)
 
-        set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
-
         show = cookies.get("show_form", False)
         
+        if not show:
+
+            set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
+
         if set_user_name:
 
             controller.set("previous_user_username", user_username)
