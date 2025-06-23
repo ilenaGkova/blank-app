@@ -2,7 +2,6 @@ import streamlit as st  # Streamlit Software
 from initialise_variables import initialize_variables, options  # Application Function
 from check_and_balance import record_question, record_status  # Database Function
 from change_page import change_page  # Application Function
-from application_actions import update_user_streak  # Database Function
 from mongo_connection import Question_Questionnaire  # Database Function
 # Application Function
 
@@ -64,11 +63,6 @@ def layout_2():
     if user is not None:
 
         # The SideBar - User Information
-
-        # User streaks and day connected are only altered once a day, the function has safeguards to avoid altering them a second time
-        # Look into the mongo file for more
-
-        st.sidebar.write(update_user_streak(user['Passcode']))
 
         # Show the user information and preferences
 

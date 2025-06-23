@@ -7,6 +7,7 @@ from initialise_variables import question_passcode, question_username, question_
 from generate_items import generate_unique_passcode, generate_animal_username  # Application Function
 from check_and_balance import record_question, get_status  # Database Function
 from mongo_connection import Recommendation  # Database Function
+from application_actions import update_user_streak  # Database Function
 
 if 'page' not in st.session_state:
     st.session_state.page = 1  # Will set the layout the application will open
@@ -20,6 +21,12 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
+if 'username' not in st.session_state:
+    st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
+
+if 'show_questions' not in st.session_state:
+    st.session_state.show_questions = False
+
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 
 controller = CookieController()
@@ -32,6 +39,8 @@ def set_username(passcode_for_setting_username):  # Called when user signs in or
 
     today_for_setting_username, yesterday_for_setting_username, index_for_setting_username = get_status(
         st.session_state.current_passcode)  # Will see when the user made a last status
+
+    update_user_streak(passcode_for_setting_username)
 
     if index_for_setting_username == -1:
 
@@ -63,38 +72,40 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
             passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def create_user(user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
-                            question_username,
-                            question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
-                            question_passcode):  # Called when a user wants to make a new account
+def create_user(user_user_username, user_user_passcode, user_age, user_gender, user_focus_area, user_time_available,
+                user_suggestions, question_username_for_create_user, question_age_for_create_user,
+                question_focus_area_for_create_user, question_time_available_for_create_user,
+                question_suggestions_for_create_user, question_gender_for_create_user,
+                question_passcode_for_create_user):  # Called when a user wants to make a new account
 
-    st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
-                                                                     focus_area,
-                                                                     time_available,
-                                                                     suggestions, gender)  # Will update the session error variables and maybe create new user if appropriate
+    st.session_state.error_status, st.session_state.error = new_user(user_user_username, user_user_passcode, user_age,
+                                                                     user_focus_area,
+                                                                     user_time_available,
+                                                                     user_suggestions, user_gender)  # Will update the session error variables and maybe create new user if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
-                       str(user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
+                       str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
-        record_question(question_gender, gender, user_passcode)
-        record_question(question_username, user_username, user_passcode)
-        record_question(question_passcode, user_passcode, user_passcode)
-        record_question(question_age, age, user_passcode)
-        record_question(question_focus_area, str(focus_area), user_passcode)
-        record_question(question_time_available, time_available, user_passcode)
-        record_question(question_suggestions, suggestions, user_passcode)
+        record_question(question_gender_for_create_user, user_gender, user_user_passcode)
+        record_question(question_username_for_create_user, user_user_username, user_user_passcode)
+        record_question(question_passcode_for_create_user, user_user_passcode, user_user_passcode)
+        record_question(question_age_for_create_user, user_age, user_user_passcode)
+        record_question(question_focus_area_for_create_user, str(user_focus_area), user_user_passcode)
+        record_question(question_time_available_for_create_user, user_time_available, user_user_passcode)
+        record_question(question_suggestions_for_create_user, user_suggestions, user_user_passcode)
 
         set_username(
-            user_passcode)  # Will call the function to register the user as the current user and move on to the next page
+            user_user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
-def show_form_status(user_username):
-    
-    controller.set("previous_user_username", user_username)
-    
-    controller.set("show_form", True)
+
+def show_profile():
+
+    st.session_state.show_questions = True
+    change_page(st.session_state.page)
+
 
 def layout():
 
@@ -120,47 +131,43 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        generated_username = cookies.get("previous_user_username", "")
-        
-        if generated_username == "":
-                
-            generated_username = str(generate_animal_username())
-        
-        user_username = st.text_input(question_username, key="user_username", value=generated_username)
+        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
 
-        show = cookies.get("show_form", False)
-        
-        if not show:
+        if user_username != st.session_state.username:
+            st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
 
-            st.button('Set Usename', use_container_width=True, on_click=show_form_status, args=[user_username], key="set_user_name1")
-        
-        if Recommendation.count_documents({}) >= 1 and show:  # The application won't sign on new users if there are no recommendations to be given
-                        
+        if not st.session_state.show_questions:
+
+            st.button('Make profile', use_container_width=True, on_click=show_profile, key="make_profile")
+
+        elif Recommendation.count_documents(
+                # The application won't sign on new users if there are no recommendations to be given
+                {}) >= 1:
             # The Initial Questions Section
-            
+
             # Step 2: Generate a password randomly with 10 digits
-            
+
             user_passcode = generate_unique_passcode()
-            
+
             # Step 3: User enters an Age category and focus area to personalise the experience
-            
+
             age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
-            
+
             gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
-            
+
             focus_area = st.multiselect(question_focus_area, focus_areas)
-            
+
             # Step 4: User enters their free time amount and the amount of suggestion they wish to see
-            
+
             time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
-            
+
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
-                                                      max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
-            
+                                          max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
+
             # Step 5: User clicks button to create an account
-            
+
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                                  args=[user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
-                                        question_username,
-                                        question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
-                                        question_passcode], key="create_user")
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions,
+                            question_username,
+                            question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
+                            question_passcode], key="create_user")
