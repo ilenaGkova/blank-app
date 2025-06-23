@@ -37,7 +37,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                 recommendation_generated_id = generate_recommendation_id()  # Generate an ID for a new recommendation in the Recommendation collection, this means that future users will be able to see this generated recommendation
 
                 recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id,
-                                                                                        "OpenAI",
+                                                                                        active_model,
                                                                                         title, description, None,
                                                                                         duration*2, duration)  # We enter OpenAI as the passcode of the creator
                 if recommendation_added:
@@ -78,13 +78,13 @@ def create_prompt(passcode):
 def return_prompt(passcode):
     try:
 
-        if active_model == "groq":
+        if active_model == "Groq":
             if not os.environ.get("GROQ_API_KEY"):
                 os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]
 
             model = init_chat_model("llama3-8b-8192", model_provider="groq").with_structured_output(method="json_mode")
 
-        elif active_model == "gemini":
+        elif active_model == "Gemini":
             if not os.environ.get("GEMINI_API_KEY"):
                 os.environ["GEMINI_API_KEY"] = st.secrets["API"]["geminikey"]
 
