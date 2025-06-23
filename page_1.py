@@ -164,7 +164,7 @@ def layout():
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions,
+                      args=[user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
                             question_username,
                             question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
                             question_passcode], key="create_user")
