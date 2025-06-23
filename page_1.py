@@ -134,6 +134,8 @@ def layout():
 
         with set_username:
 
+            st.write("")
+
             st.button('Set Usename', use_container_width=True, on_click=set_user_name,
                       args=[user_username], key="set_user_name")
 
