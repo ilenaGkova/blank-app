@@ -89,7 +89,13 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
 
         set_username(
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
+
+def show_form_status(user_username):
     
+    controller.set("previous_user_username", user_username)
+    
+    controller.set("show_form", True)
+
 def layout():
 
     # The SideBar - User Signs In With Passcode
@@ -126,13 +132,7 @@ def layout():
         
         if not show:
 
-            set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
-
-            if set_user_name:
-    
-                controller.set("previous_user_username", user_username)
-    
-                controller.set("show_form", True)
+            set_user_name = st.button('Set Usename', use_container_width=True, on_click=show_form_status, args[user_username], key="set_user_name1")
         
         if Recommendation.count_documents({}) >= 1 and show:  # The application won't sign on new users if there are no recommendations to be given
                         
