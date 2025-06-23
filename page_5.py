@@ -65,11 +65,15 @@ def layout_5():
 
             with column_for_recommendation_category:
 
+                recommendation_status = False
+
                 if user['Role'] != 'User':
                     recommendation_status = st.checkbox(
                         "See what tasks you have entered")  # Include Recommendation Collection
 
             with column_for_tag_category:
+
+                tag_status = False
 
                 if user['Role'] != 'User':
                     tag_status = st.checkbox("See what Tags you have added to Tasks")  # Include Tag Collection
