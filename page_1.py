@@ -82,7 +82,7 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
-                       str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
+                       str(ser_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
         record_question(question_gender, gender, user_passcode)
