@@ -114,31 +114,25 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        show_username, set_username = st.columns([5, 2])
-
-        with show_username:
-
-            generated_username = cookies.get("previous_user_username", "")
+        generated_username = cookies.get("previous_user_username", "")
         
-            if generated_username == "":
+        if generated_username == "":
                 
-                generated_username = str(generate_animal_username())
+            generated_username = str(generate_animal_username())
         
-            user_username = st.text_input(question_username, key="user_username", value=generated_username)
+        user_username = st.text_input(question_username, key="user_username", value=generated_username)
 
-        with set_username:
+        set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
 
-            st.write("")
-
-            st.write("")
-
-            set_user_name = st.button('Set Usename', use_container_width=True, key="set_user_name1")
+        show = False
         
         if set_user_name:
 
             controller.set("previous_user_username", user_username)
+
+            show = True
         
-        if Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
+        if Recommendation.count_documents({}) >= 1 and show:  # The application won't sign on new users if there are no recommendations to be given
                         
             # The Initial Questions Section
             
