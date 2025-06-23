@@ -89,10 +89,6 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
 
         set_username(
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
-
-def set_user_name(user_username):
-
-    controller.set("previous_user_username", user_username)
     
 
 
@@ -141,35 +137,37 @@ def layout():
             st.button('Set Usename', use_container_width=True, on_click=set_user_name,
                       args=[user_username], key="set_user_name")
 
-        make_profile = st.checkbox("Enter your information") 
+        def set_user_name(user_username):
 
-        if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
-            
-            # The Initial Questions Section
+            controller.set("previous_user_username", user_username)
 
-            # Step 2: Generate a password randomly with 10 digits
-
-            user_passcode = generate_unique_passcode()
-
-            # Step 3: User enters an Age category and focus area to personalise the experience
-
-            age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
-
-            gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
-
-            focus_area = st.multiselect(question_focus_area, focus_areas)
-
-            # Step 4: User enters their free time amount and the amount of suggestion they wish to see
-
-            time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
-
-            suggestions = st.number_input(question_suggestions, min_value=min_limit,
-                                          max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
-
-            # Step 5: User clicks button to create an account
-
-            st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
-                            question_username,
-                            question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
-                            question_passcode], key="create_user")
+            if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
+                
+                # The Initial Questions Section
+    
+                # Step 2: Generate a password randomly with 10 digits
+    
+                user_passcode = generate_unique_passcode()
+    
+                # Step 3: User enters an Age category and focus area to personalise the experience
+    
+                age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
+    
+                gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
+    
+                focus_area = st.multiselect(question_focus_area, focus_areas)
+    
+                # Step 4: User enters their free time amount and the amount of suggestion they wish to see
+    
+                time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
+    
+                suggestions = st.number_input(question_suggestions, min_value=min_limit,
+                                              max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
+    
+                # Step 5: User clicks button to create an account
+    
+                st.button('Let us get started', use_container_width=True, on_click=create_user,
+                          args=[user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
+                                question_username,
+                                question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
+                                question_passcode], key="create_user")
