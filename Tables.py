@@ -2,7 +2,10 @@ Users = [
     {'Username': 'Admin', 'Passcode': 'Admin123', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Gender': 'Female',
      'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20, 'Level': 1, 'Score': 500, 'Streak': 0,
      'Days_Summed': 0, 'Role': 'Admin', 'Created_At': '2025-01-18 12:00:00'},
-    {'Username': 'OpenAI', 'Passcode': 'OpenAI', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Gender': None,
+    {'Username': 'Groq', 'Passcode': 'Groq', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Gender': None,
+     'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20, 'Level': 1, 'Score': 500, 'Streak': 0,
+     'Days_Summed': 0, 'Role': 'Admin', 'Created_At': '2025-01-18 12:00:00'}
+    {'Username': 'Gemini', 'Passcode': 'Gemini', 'Repeat_Preference': 5, 'Age_Category': '18-25', 'Gender': None,
      'Focus_Area': "Work/Career", 'Suggestions': 3, 'Time_Available': 20, 'Level': 1, 'Score': 500, 'Streak': 0,
      'Days_Summed': 0, 'Role': 'Admin', 'Created_At': '2025-01-18 12:00:00'}
 ]
