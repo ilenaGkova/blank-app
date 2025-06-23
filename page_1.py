@@ -92,34 +92,34 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
     
  def set_user_name(user_username):
 
-            controller.set("previous_user_username", user_username)
+    controller.set("previous_user_username", user_username)
 
-            if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
+    if Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
                 
-                # The Initial Questions Section
+        # The Initial Questions Section
     
-                # Step 2: Generate a password randomly with 10 digits
+        # Step 2: Generate a password randomly with 10 digits
     
-                user_passcode = generate_unique_passcode()
+        user_passcode = generate_unique_passcode()
     
-                # Step 3: User enters an Age category and focus area to personalise the experience
+        # Step 3: User enters an Age category and focus area to personalise the experience
     
-                age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
+        age = st.selectbox(question_age, ages, index=0, placeholder="Select an age category...")
     
-                gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
+        gender = st.selectbox(question_gender, genders, index=3, placeholder="Select an age category...")
     
-                focus_area = st.multiselect(question_focus_area, focus_areas)
+        focus_area = st.multiselect(question_focus_area, focus_areas)
     
-                # Step 4: User enters their free time amount and the amount of suggestion they wish to see
+        # Step 4: User enters their free time amount and the amount of suggestion they wish to see
     
-                time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
+        time_available = st.number_input(question_time_available, min_value=min_time_limit, max_value=max_limit)
     
-                suggestions = st.number_input(question_suggestions, min_value=min_limit,
+        suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                               max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
     
-                # Step 5: User clicks button to create an account
+        # Step 5: User clicks button to create an account
     
-                st.button('Let us get started', use_container_width=True, on_click=create_user,
+        st.button('Let us get started', use_container_width=True, on_click=create_user,
                           args=[user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
                                 question_username,
                                 question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
