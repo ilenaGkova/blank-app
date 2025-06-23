@@ -20,9 +20,6 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'username' not in st.session_state:
-    st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
-
 if 'show_questions' not in st.session_state:
     st.session_state.show_questions = False
 
@@ -127,10 +124,12 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
+        if cookies.get("previous_user_username", "") == "":
+            controller.set("previous_user_passcode", str(generate_animal_username()))
 
-        if user_username != st.session_state.username:
-            st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
+        user_username = st.text_input(question_username, key="user_username", value=cookies.get("previous_user_username", ""))
+
+        controller.set("previous_user_passcode", str(user_username))
 
         if not st.session_state.show_questions:
 
