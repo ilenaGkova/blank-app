@@ -61,7 +61,7 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions, g
             # Not initially available for change by the user. This number will show the number of days the user won't see a recommendation twice
             'Age_Category': age,  # Age is a category ranging between 2 number, not a number specifically
             'Gender': gender,
-            'Focus_Area': [str(item) for item in focus_area],
+            'Focus_Area': focus_area,
             'Suggestions': int(suggestions),
             # The number of suggestions to be picked are dependent of the number of available recommendation
             'Time_Available': time_available,
