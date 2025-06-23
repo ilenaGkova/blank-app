@@ -124,10 +124,12 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        if cookies.get("previous_user_username", "") == "":
-            controller.set("previous_user_passcode", str(generate_animal_username()))
+        generated_username = cookies.get("previous_user_username", "")
+        if generated_username == "":
+            generated_username = str(generate_animal_username())
+            
 
-        user_username = st.text_input(question_username, key="user_username", value=cookies.get("previous_user_username", ""))
+        user_username = st.text_input(question_username, key="user_username", value=generated_username)
 
         controller.set("previous_user_passcode", str(user_username))
 
