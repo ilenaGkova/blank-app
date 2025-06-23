@@ -20,9 +20,6 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'show_questions' not in st.session_state:
-    st.session_state.show_questions = False
-
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 
 controller = CookieController()
@@ -94,12 +91,6 @@ def create_user(user_username, user_passcode, age, gender, focus_area, time_avai
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def show_profile():
-
-    st.session_state.show_questions = True
-    change_page(st.session_state.page)
-
-
 def layout():
 
     # The SideBar - User Signs In With Passcode
@@ -133,13 +124,10 @@ def layout():
 
         controller.set("previous_user_passcode", str(user_username))
 
-        if not st.session_state.show_questions:
+        make_profile = st.checkbox("Make profile") 
 
-            st.button('Make profile', use_container_width=True, on_click=show_profile, key="make_profile")
-
-        elif Recommendation.count_documents(
-                # The application won't sign on new users if there are no recommendations to be given
-                {}) >= 1:
+        if Recommendation.count_documents({}) >= 1 and make_profile :  # The application won't sign on new users if there are no recommendations to be given
+            
             # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
