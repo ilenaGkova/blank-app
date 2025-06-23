@@ -71,7 +71,7 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
 
 def create_user(user_username, user_passcode, age, gender, focus_area, time_available, suggestions,
                             question_username,
-                            question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
+                            question_age, question_focus_area, question_time_available, question_suggestions, question_gender,
                             question_passcode):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
