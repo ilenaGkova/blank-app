@@ -125,11 +125,9 @@ def layout():
 
         user_username = st.text_input(question_username, key="user_username", value=cookies.get("username", str(generate_animal_username())))
 
-        if not cookies.get("username_done", False):
+        st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
 
-            st.button('Make profile', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
-
-        elif Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
+        elif Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
