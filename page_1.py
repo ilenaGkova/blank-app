@@ -154,5 +154,5 @@ def layout():
             st.button('Let us get started', use_container_width=True, on_click=create_user,
                       args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender], key="create_user")
 
-        if cookies.get("username", str(generate_animal_username())) != user_username:
+        if cookies.get("username", "") != user_username:
                 show_profile(user_username)
