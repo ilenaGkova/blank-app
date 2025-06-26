@@ -124,7 +124,10 @@ def layout():
         # Step 1: User enters a username - randomly generated at first
 
         user_username = st.text_input(question_username, key="user_username",
-                                      value=cookies.get("username", str(generate_animal_username())), on_change=show_profile)
+                                      value=cookies.get("username", str(generate_animal_username())))
+
+        st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username],
+                  key="make_profile")
 
         if Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
