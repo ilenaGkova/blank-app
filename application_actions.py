@@ -13,34 +13,45 @@ def update_user_streak(passcode):
 
     latest_change = Record.find_one({"Passcode": passcode, "Type": "C"}, sort=[("Created_At",-1)])
 
-    latest_change_time = datetime.strptime(latest_change['Created_At'],'%Y-%m-%d %H:%M:%S')
-
-    now = datetime.now()
-
-    if now.date() == latest_change_time.date():  # If there was a type C action made for the user we need to make sure it didn't happen today
-
-        return "You have already signed in today, your streak will not change."
-
     User.update_one({"Passcode": passcode},
                     {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
 
-    if (now.date() - latest_change_time.date()).days == 1:
+    if latest_change is not None:
 
-        User.update_one({"Passcode": passcode}, {
-            "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
+        latest_change_time = datetime.strptime(latest_change['Created_At'],'%Y-%m-%d %H:%M:%S')
 
-        message = "Your streak was increased."  # Custom a message for the user
+        now = datetime.now()
 
-        streak_action = f"Streak increased for user {passcode}"  # Custom the action done for the streak
+        if now.date() == latest_change_time.date():  # If there was a type C action made for the user we need to make sure it didn't happen today
+
+            return "You have already signed in today, your streak will not change."
+
+        if (now.date() - latest_change_time.date()).days == 1:
+
+            User.update_one({"Passcode": passcode}, {
+                "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
+
+            message = "Your streak was increased."  # Custom a message for the user
+
+            streak_action = f"Streak increased for user {passcode}"  # Custom the action done for the streak
+
+        else:
+
+            User.update_one({"Passcode": passcode}, {
+                "$set": {"Streak": 1}})  # Since we are here the user wasn't here yesterday so the streak was reset
+
+            message = "You did not check in less than 48 hours ago. Your streak was reset."  # Custom a message for the user
+
+            streak_action = 'Streak reset'  # Custom the action done for the streak
 
     else:
 
         User.update_one({"Passcode": passcode}, {
-            "$set": {"Streak": 1}})  # Since we are here the user wasn't here yesterday so the streak was reset
+            "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
 
-        message = "You did not check in less than 48 hours ago. Your streak was reset."  # Custom a message for the user
-
-        streak_action = 'Streak reset'  # Custom the action done for the streak
+        message = "Your streak was increased."
+        
+        streak_action = f"Streak increased for user {passcode}"
 
     new_entry_in_record_collection(passcode, streak_action, "C")
 
