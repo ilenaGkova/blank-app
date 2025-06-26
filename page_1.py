@@ -127,9 +127,6 @@ def layout():
 
         st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
 
-        if cookies.get("username", str(generate_animal_username())) != user_username:
-                show_profile(user_username)
-
         if Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
 
@@ -156,3 +153,6 @@ def layout():
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
                       args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender], key="create_user")
+
+        if cookies.get("username", str(generate_animal_username())) != user_username:
+                show_profile(user_username)
