@@ -127,7 +127,7 @@ def layout():
 
         st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
 
-        elif Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
+        if Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
@@ -148,6 +148,9 @@ def layout():
 
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                           max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
+
+            if cookies.get("username", str(generate_animal_username())) != user_username:
+                show_profile(user_username)
 
             # Step 5: User clicks button to create an account
 
