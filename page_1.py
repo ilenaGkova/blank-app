@@ -21,12 +21,6 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'username' not in st.session_state:
-    st.session_state.username = generate_animal_username()  # Will store temporary username so user can sign up without generating a new one each time they select an option
-
-if 'show_questions' not in st.session_state:
-    st.session_state.show_questions = False
-
 from streamlit_cookies_controller import CookieController  # Needs to be downloaded
 
 controller = CookieController()
@@ -72,38 +66,36 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
             passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def create_user(user_user_username, user_user_passcode, user_age, user_gender, user_focus_area, user_time_available,
-                user_suggestions, question_username_for_create_user, question_age_for_create_user,
-                question_focus_area_for_create_user, question_time_available_for_create_user,
-                question_suggestions_for_create_user, question_gender_for_create_user,
-                question_passcode_for_create_user):  # Called when a user wants to make a new account
+def create_user(user_username, user_passcode, age, focus_area, time_available, suggestions, gender):  # Called when a user wants to make a new account
 
-    st.session_state.error_status, st.session_state.error = new_user(user_user_username, user_user_passcode, user_age,
-                                                                     user_focus_area,
-                                                                     user_time_available,
-                                                                     user_suggestions, user_gender)  # Will update the session error variables and maybe create new user if appropriate
+    st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
+                                                                     focus_area,
+                                                                     time_available,
+                                                                     suggestions,
+                                                                     gender)  # Will update the session error variables and maybe create new user if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         controller.set("previous_user_passcode",
-                       str(user_user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
+                       str(user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
-        record_question(question_gender_for_create_user, user_gender, user_user_passcode)
-        record_question(question_username_for_create_user, user_user_username, user_user_passcode)
-        record_question(question_passcode_for_create_user, user_user_passcode, user_user_passcode)
-        record_question(question_age_for_create_user, user_age, user_user_passcode)
-        record_question(question_focus_area_for_create_user, str(user_focus_area), user_user_passcode)
-        record_question(question_time_available_for_create_user, user_time_available, user_user_passcode)
-        record_question(question_suggestions_for_create_user, user_suggestions, user_user_passcode)
+        record_question(question_gender, gender, user_passcode)
+        record_question(question_username, user_username, user_passcode)
+        record_question(question_passcode, user_passcode, user_passcode)
+        record_question(question_age, age, user_passcode)
+        record_question(question_focus_area, str(focus_area), user_passcode)
+        record_question(question_time_available, time_available, user_passcode)
+        record_question(question_suggestions, suggestions, user_passcode)
 
         set_username(
-            user_user_passcode)  # Will call the function to register the user as the current user and move on to the next page
+            user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def show_profile():
+def show_profile(username):
 
-    st.session_state.show_questions = True
+    controller.set("username", str(username))
+    controller.set("username_done", True)
     change_page(st.session_state.page)
 
 
@@ -131,18 +123,13 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        user_username = st.text_input(question_username, key="user_username", value=st.session_state.username)
+        user_username = st.text_input(question_username, key="user_username", value=cookies.get("username", str(generate_animal_username())))
 
-        if user_username != st.session_state.username:
-            st.session_state.username = user_username  # Save the username the user gave to avoid generating another later
-
-        if not st.session_state.show_questions:
+        if not cookies.get("username_done", False):
 
             st.button('Make profile', use_container_width=True, on_click=show_profile, key="make_profile")
 
-        elif Recommendation.count_documents(
-                # The application won't sign on new users if there are no recommendations to be given
-                {}) >= 1:
+        elif Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
@@ -167,7 +154,4 @@ def layout():
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions,
-                            question_username,
-                            question_age, gender, question_focus_area, question_time_available, question_suggestions, question_gender,
-                            question_passcode], key="create_user")
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender], key="create_user")

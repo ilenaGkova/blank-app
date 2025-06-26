@@ -226,6 +226,94 @@ Page 5: User record page
 
                         + init_connection() from mongo_connection.py
 
+            + Question from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Record from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Status from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Favorite_Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Removed_Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation_Per_Person from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Question_Questionnaire from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Score_History from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
             + new_entry_in_record_collection() from check_and_balance.py
 
                 + Record from mongo_connection.py

@@ -88,10 +88,8 @@ def return_prompt(passcode):
             if not os.environ.get("GEMINI_API_KEY"):
                 os.environ["GEMINI_API_KEY"] = st.secrets["API"]["geminikey"]
 
-            model = init_chat_model("gemini-2.0-flash", model_provider="google_genai").with_structured_output(method="json_mode")
-
-        else:
-            return False, f"Unsupported active_model: {active_model}"
+            model = init_chat_model("gemini-2.0-flash", model_provider="google_genai").with_structured_output(
+                method="json_mode")
 
         messages = [
             SystemMessage(content=(

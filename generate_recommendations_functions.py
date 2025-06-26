@@ -18,7 +18,7 @@ def generate_valid_index():
 
         if Recommendation.find_one({"ID": potential_recommendation_index}):
 
-            if Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "OpenAI":
+            if Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Gemini" or Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Groq":
 
                 return potential_recommendation_index  # We only return a valid not AI generated recommendation
 
@@ -26,15 +26,18 @@ def generate_valid_index():
 
         potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))  # And we try again
 
-    if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm form going in a look
+    if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
 
-        potential_recommendation_index = Recommendation.find_one({"Passcode": {"$ne": "OpenAI"}}, sort=[('ID', -1)])['ID']  # In this case we pick the first available ID in the collection
-
+        potential_recommendation_index = Recommendation.find_one(
+            {"Passcode": {"$nin": ["Gemini", "Groq"]}},
+            sort=[("ID", -1)],
+            projection={"ID": 1, "_id": 0}
+        )
         if potential_recommendation_index is None:
+            return 1
 
-            return Recommendation.find_one({"Passcode": {"$ne": "OpenAI"}}, sort=[('ID', -1)])['ID']  # In this case we pick the first available ID in the collection
+    return potential_recommendation_index["ID"]
 
-    return potential_recommendation_index
 
 
 # This function gets data to add a recommendation to a user to match it with a user status

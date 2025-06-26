@@ -11,16 +11,20 @@ def update_user_streak(passcode):
     if not User.find_one({"Passcode": passcode}):
         return "Something went wrong, user not registered."  # Make sure the user is registered first - another thing that probably won't happen since this function won't be called then
 
-    today, yesterday, index = get_status(passcode)
+    latest_change = Record.find_one({"Passcode": passcode, "Type": "C"}, sort=[("Created_At",-1)])
 
-    if today:  # If there was a type C action made for the user we need to make sure it didn't happen today
+    latest_change_time = datetime.strptime(latest_change['Created_At'],'%Y-%m-%d %H:%M:%S')
+
+    now = datetime.now()
+
+    if now.date() == latest_change_time.date():  # If there was a type C action made for the user we need to make sure it didn't happen today
 
         return "You have already signed in today, your streak will not change."
 
     User.update_one({"Passcode": passcode},
                     {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
 
-    if yesterday:
+    if (now.date() - latest_change_time.date()).days == 1:
 
         User.update_one({"Passcode": passcode}, {
             "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
@@ -34,13 +38,7 @@ def update_user_streak(passcode):
         User.update_one({"Passcode": passcode}, {
             "$set": {"Streak": 1}})  # Since we are here the user wasn't here yesterday so the streak was reset
 
-        if index == -1:
-
-            message = "Wellcome to your first Status."  # Custom a message for the user
-
-        else:
-
-            message = "You did not check in less than 48 hours ago. Your streak was reset."  # Custom a message for the user
+        message = "You did not check in less than 48 hours ago. Your streak was reset."  # Custom a message for the user
 
         streak_action = 'Streak reset'  # Custom the action done for the streak
 
