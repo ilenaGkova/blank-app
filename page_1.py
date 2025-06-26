@@ -124,7 +124,9 @@ def layout():
         # Step 1: User enters a username - randomly generated at first
 
         user_username = st.text_input(question_username, key="user_username",
-                                      value=cookies.get("username", str(generate_animal_username())))
+                                      value=cookies.get("username", ""))
+
+        st.write(f"Try {str(generate_animal_username())}! We think it would sound fun.")
 
         st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username],
                   key="make_profile")
