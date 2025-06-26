@@ -93,7 +93,7 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def show_profile(username=str(st.session_state["user_username"])):
+def show_profile(username):
     controller.set("username", str(username))
     controller.set("username_done", True)
     change_page(st.session_state.page)
