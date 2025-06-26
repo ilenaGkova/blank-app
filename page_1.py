@@ -127,7 +127,7 @@ def layout():
 
         if not cookies.get("username_done", False):
 
-            st.button('Make profile', use_container_width=True, on_click=show_profile, key="make_profile")
+            st.button('Make profile', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
 
         elif Recommendation.count_documents({}) >= 1:  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
