@@ -66,7 +66,8 @@ def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user)
             passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def create_user(user_username, user_passcode, age, focus_area, time_available, suggestions, gender):  # Called when a user wants to make a new account
+def create_user(user_username, user_passcode, age, focus_area, time_available, suggestions,
+                gender):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
                                                                      focus_area,
@@ -92,20 +93,19 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
             user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def show_profile(username):
-
+def show_profile(username=str(st.session_state["user_username"])):
     controller.set("username", str(username))
     controller.set("username_done", True)
     change_page(st.session_state.page)
 
 
 def layout():
-
     # The SideBar - User Signs In With Passcode
 
     st.sidebar.header('Already have an account? Sign in!')
 
-    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode", ""))  # Save the previous passcode on the session variable
+    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode",
+                                                                                          ""))  # Save the previous passcode on the session variable
 
     st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
                       key="sign_in_user")
@@ -123,9 +123,11 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        user_username = st.text_input(question_username, key="user_username", value=cookies.get("username", str(generate_animal_username())))
+        user_username = st.text_input(question_username, key="user_username",
+                                      value=cookies.get("username", str(generate_animal_username())), on_change=show_profile)
 
-        st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username], key="make_profile")
+        st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username],
+                  key="make_profile")
 
         if Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
@@ -152,5 +154,5 @@ def layout():
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender], key="create_user")
-
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender],
+                      key="create_user")
