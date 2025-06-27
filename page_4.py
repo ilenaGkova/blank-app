@@ -329,7 +329,8 @@ def layout_4():
                                                 entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                               key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
-                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
+                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove'] and entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                        'Outcome'] is None:
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
                                               args=[1, st.session_state.current_passcode,
