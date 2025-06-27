@@ -283,7 +283,7 @@ def layout_4():
                                     st.header(
                                         ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
-                                elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                if entry_for_list_of_recommendations_based_on_filter_given_by_user[
                                         'Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
 
                                     st.header(
