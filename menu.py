@@ -2,10 +2,10 @@ import streamlit as st  # Streamlit Software
 from initialise_variables import initialize_variables  # Application Function
 from change_page import change_page  # Application Function
 
-if "current_passcode" not in st.session_state:
+if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
-if "open_recommendation" not in st.session_state:
+if 'open_recommendation' not in st.session_state:
     st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
 if 'error' not in st.session_state:
