@@ -293,7 +293,7 @@ def layout_4():
                                         'Outcome'] is False:
     
                                         st.header(
-                                            ':material/badge: :material/done_outline:')  # Category given, complete recommendations
+                                            ':material/done_outline:')  # Category given, complete recommendations
 
                             with column_for_timestamp_for_list_of_recommendations_based_on_filter_given_by_user:
 
