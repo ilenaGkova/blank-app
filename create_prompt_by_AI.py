@@ -6,10 +6,11 @@ from add_data_in_collection import add_recommendation
 from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
 from initialise_variables import con_question, min_time_limit, max_limit
 from langchain.schema import HumanMessage, SystemMessage
-import os
 from langchain.chat_models import init_chat_model
 import streamlit as st
 import re
+import os
+import requests
 import json
 
 active_model = st.secrets["API"]["active_model"]
@@ -17,7 +18,6 @@ active_model = st.secrets["API"]["active_model"]
 
 # This function generates a required amount of recommendations by setting a prompt in an openAI machine
 def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
-
     index = 0  # Set to the index to indicate we added a recommendation to the user to keep track of how many
 
     while index < entries_generated_by_AI:
@@ -39,7 +39,8 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                 recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id,
                                                                                         active_model,
                                                                                         title, description, None,
-                                                                                        duration*2, duration)  # We enter OpenAI as the passcode of the creator
+                                                                                        duration * 2,
+                                                                                        duration)  # We enter OpenAI as the passcode of the creator
                 if recommendation_added:
 
                     enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
@@ -57,8 +58,6 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
     return index
 
-
-from langchain.output_parsers import JsonOutputKeyToolsParser
 
 recommendation_schema = {
     "title": "Recommendation",
@@ -100,6 +99,31 @@ def create_prompt(passcode):
     )
 
 
+def call_gemini_api(user_input, api_key):
+    url = api_key
+    headers = {
+        "Content-Type": "application/json",
+    }
+
+    data = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": user_input
+                    }
+                ]
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Gemini API error: {response.status_code} {response.text}")
+
+
 def return_prompt(passcode):
     try:
         if active_model == "Groq":
@@ -111,27 +135,25 @@ def return_prompt(passcode):
                 model_provider="groq"
             )
 
+            messages = [
+                SystemMessage(content=(
+                    "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
+                    "Respond only with a valid JSON object matching the schema. No markdown, no explanations, no code blocks."
+                )),
+                HumanMessage(content=create_prompt(passcode))
+            ]
+
+            result = model.invoke(messages)
+            return True, result
+
         elif active_model == "Gemini":
-            if not os.environ.get("GEMINI_API_KEY"):
-                os.environ["GEMINI_API_KEY"] = st.secrets["API"]["geminikey"]
 
-            model = init_chat_model(
-                "gemini-2.0-flash",
-                model_provider="google_genai"
-            ).with_structured_output(method="function_calling", schema=recommendation_schema)
+            result = call_gemini_api(create_prompt(passcode), st.secrets["API"]["geminikey"])
 
-        messages = [
-            SystemMessage(content=(
-                "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
-                "Respond only with a valid JSON object matching the schema. No markdown, no explanations, no code blocks."
-            )),
-            HumanMessage(content=create_prompt(passcode))
-        ]
+            # 🔵 Extract only the answer text
+            generated_text = result["candidates"][0]["content"]["parts"][0]["text"]
 
-        result = model.invoke(messages)
-
-        # result is already parsed into Recommendation, if .with_structured_output(parser) works correctly
-        return True, result
+            return True, generated_text
 
     except Exception as e:
         print(str(e))
