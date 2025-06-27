@@ -18,11 +18,197 @@ Page 3: Application home page
 
 Page 4: User profile alterations + Recommendation history
 
-    Functions
+    + Run streamlit_app.py file
 
-        + change_recommendation_preference_for_user() from user_information.py
+        + page from st.session_state
 
-        + update_user() from user_information.py
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+        + menu_layout() from menu.py
+
+            + current_passcode from st.session_state
+
+            + open_recommendation from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
+
+    + layout_4() from page_4.py
+
+        + current_passcode from st.session_state
+
+        + open_recommendation from st.session_state
+
+        + initialize_variables() from initialise_variables.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + get_status() from check_and_balance.py
+
+                + Status from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+            + question_username from initialise_variables.py
+
+            + question_age from initialise_variables.py
+
+            + ages from initialise_variables.py
+
+            + question_gender from initialise_variables.py
+
+            + genders from initialise_variables.py
+
+            + question_focus_area from initialise_variables.py
+
+            + focus_areas from initialise_variables.py
+
+            + question_time_available from initialise_variables.py
+
+            + min_time_limit from initialise_variables.py
+
+            + max_limit from initialise_variables.py
+
+            + question_suggestions from initialise_variables.py
+
+            + min_limit from initialise_variables.py
+
+            + max_recommendation_limit from initialise_variables.py
+
+                + get_maximum_entries() from generate_items.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+            + update_user_here() from page_4.py
+
+                + update_user() from user_information.py
+
+                    + User from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + new_entry_in_record_collection() from check_and_balance.py
+
+                        + Record from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                + record_question() from check_and_balance.py
+
+                    + User from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                + change_page() from change_page.py
+
+                    + page from st.session_state
+
+                    + error_status from st.session_state
+
+            + create_recommendation_history() from make_record_recommendations.py
+
+                + add_collection() from make_record_recommendations.py
+
+                    + Recommendation_Per_Person from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + Favorite_Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + Removed_Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                    + create_entry() from make_record_recommendations.py
+
+                        + Recommendation from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                + sort_by_created_by() from make_record_recommendations.py
 
 Page 5: User record page
 
