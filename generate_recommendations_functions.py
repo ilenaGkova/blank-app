@@ -39,7 +39,6 @@ def generate_valid_index():
     return potential_recommendation_index["ID"]
 
 
-
 # This function gets data to add a recommendation to a user to match it with a user status
 def enter_recommendation_for_user(passcode, rec_id, fails, category):
     # Find the last status the user made (look in the function for more) and make sure we enter the right amount if return variables
@@ -84,52 +83,52 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
 
 
 def pass_filter(title, category, user, status, out_early=False):
-
     filters = [
-        # Establish the filters as we are watering down the recommendation we are choosing from into the ones that match the tags
-        {'Title_Of_Criteria': 'Age Variant', 'Category': user['Age_Category']},
-        {'Title_Of_Criteria': 'Stress Level', 'Category': status['Stress_Level']},
-        {'Title_Of_Criteria': 'Time Available', 'Category': user['Time_Available']},
-        {'Title_Of_Criteria': 'Show for levels above', 'Category': user['Level']},
-        {'Title_Of_Criteria': 'Show for levels below', 'Category': user['Level']},
-        {'Title_Of_Criteria': 'Show for levels equal', 'Category': user['Level']},
-        {'Title_Of_Criteria': 'Gender', 'Category': user['Gender']}
+        {'Title': 'Age Variant', 'Category': user['Age_Category']},
+        {'Title': 'Stress Level', 'Category': status['Stress_Level']},
+        {'Title': 'Time Available', 'Category': user['Time_Available']},
+        {'Title': 'Show for levels above', 'Category': user['Level']},
+        {'Title': 'Show for levels below', 'Category': user['Level']},
+        {'Title': 'Show for levels equal', 'Category': user['Level']},
+        {'Title': 'Gender', 'Category': user['Gender']}
     ]
 
-    for entry in user['Focus_Area']:
-        filters.append({'Title_Of_Criteria': 'Focus Area', 'Category': entry})
+    for focus in user.get('Focus_Area', []):
+        filters.append({'Title': 'Focus Area', 'Category': focus})
 
-    condition = True
+    found_title_match = False
 
-    for entry in filters:
+    for filt in filters:
+        if filt['Title'] != title:
+            continue  # Only care about filters that match the title
 
-        if title == entry['Title_Of_Criteria']:
+        found_title_match = True
+        user_val = filt['Category']
 
-            condition = True
+        if title == "Show for levels above":
+            condition = int(category) >= int(user_val)
+        elif title == "Show for levels below":
+            condition = int(category) <= int(user_val)
+        elif title == "Show for levels equal":
+            condition = int(category) == int(user_val)
+        elif title == "Stress Level":
+            condition = int(category) >= int(user_val)
+        elif title == "Time Available":
+            condition = int(category) <= int(user_val)
+        else:
+            condition = category == user_val
 
-            if title == "Time Available" or title == "Show for levels below":
+        if out_early:
+            if not condition:
+                return False  # One failure = reject immediately
+        else:
+            if condition:
+                return True  # One match = accept immediately
 
-                if int(category) > int(entry['Category']):
+    # After looping all filters
+    if out_early:
+        return True  # Passed all matches without failing
+    else:
+        return False  # No matches found
 
-                    condition = False
 
-            elif title == "Show for levels above" or title == "Stress Level":
-
-                if int(category) < int(entry['Category']):
-
-                    condition = False
-
-            elif title == "Show for levels equal":
-
-                if category != entry['Category']:
-
-                    condition = False
-
-            elif category != entry['Category']:
-
-                condition = False
-
-            if (out_early and not condition) or (not out_early and condition):
-                return condition
-
-    return condition

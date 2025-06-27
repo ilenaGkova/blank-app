@@ -27,14 +27,21 @@ def generate_recommendations_chosen_by_tags(passcode, entries_chosen_by_tags):
 
         if pass_filter(tag['Title_Of_Criteria'], tag['Category'], user, status):
 
-            if (Recommendation.find_one({'ID': tag['ID']})
-                    and tag['ID'] not in user_recommendations
-                    and tag['Passcode'] != 'OpenAI'
-                    and Recommendation_Per_Person.find(
-                        {"Passcode": passcode, "Status_Created_At": status['Created_At'], "ID": tag['ID']}) is None):
+            if (
+                    Recommendation.find_one({'ID': tag['ID']})  # 1. The recommendation must actually exist
+                    and tag['ID'] not in user_recommendations  # 2. Avoid duplicates in this run
+                    and tag['Passcode'] != 'Groq'  # 3. Filter out generic AI-generated tags (if intentional)
+                    and tag['Passcode'] != 'Gemini'
+                    and Recommendation_Per_Person.find_one(
+                {  # 4. Make sure this specific rec wasn't already given today
+                    "Passcode": passcode,
+                    "Status_Created_At": status['Created_At'],
+                    "ID": tag['ID']
+                }) is None
+            ):
                 recommendations.append({'ID': tag['ID'], 'Pointer': pointer})
 
-                user_recommendations.add(int(tag['ID']))  # Track recommendations added to avoid duplicates
+                user_recommendations.add(int(tag['ID']))
 
                 pointer += 1
 

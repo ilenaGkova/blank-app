@@ -13,9 +13,6 @@ def update_user_streak(passcode):
 
     latest_change = Record.find_one({"Passcode": passcode, "Type": "C"}, sort=[("Created_At",-1)])
 
-    User.update_one({"Passcode": passcode},
-                    {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
-
     if latest_change is not None:
 
         latest_change_time = datetime.strptime(latest_change['Created_At'],'%Y-%m-%d %H:%M:%S')
@@ -28,6 +25,9 @@ def update_user_streak(passcode):
 
         if (now.date() - latest_change_time.date()).days == 1:
 
+            User.update_one({"Passcode": passcode},
+                            {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
+
             User.update_one({"Passcode": passcode}, {
                 "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
 
@@ -36,6 +36,9 @@ def update_user_streak(passcode):
             streak_action = f"Streak increased for user {passcode}"  # Custom the action done for the streak
 
         else:
+
+            User.update_one({"Passcode": passcode},
+                            {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
 
             User.update_one({"Passcode": passcode}, {
                 "$set": {"Streak": 1}})  # Since we are here the user wasn't here yesterday so the streak was reset
@@ -46,11 +49,14 @@ def update_user_streak(passcode):
 
     else:
 
+        User.update_one({"Passcode": passcode},
+                        {"$inc": {"Days_Summed": 1}})  # We need to increase the days connected for the user anyway
+
         User.update_one({"Passcode": passcode}, {
             "$inc": {"Streak": 1}})  # yesterday means the user was here yesterday, so we increase their streak
 
         message = "Your streak was increased."
-        
+
         streak_action = f"Streak increased for user {passcode}"
 
     new_entry_in_record_collection(passcode, streak_action, "C")

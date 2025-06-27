@@ -1,16 +1,16 @@
-import re
-import json
 from mongo_connection import User, Status, Question_Questionnaire, Question, Favorite_Recommendation, \
     Removed_Recommendation, Recommendation, Recommendation_Per_Person
 from check_and_balance import get_status
 from generate_items import generate_recommendation_id, calculate_fail_count
 from add_data_in_collection import add_recommendation
 from generate_recommendations_functions import enter_recommendation_for_user, generate_valid_index
-from initialise_variables import con_question
+from initialise_variables import con_question, min_time_limit, max_limit
 from langchain.schema import HumanMessage, SystemMessage
 import os
 from langchain.chat_models import init_chat_model
 import streamlit as st
+import re
+import json
 
 active_model = st.secrets["API"]["active_model"]
 
@@ -30,7 +30,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
         if outcome:
 
-            description, title, duration = extract_json(new_recommendation, create_prompt(passcode))
+            title, description, duration = extract_json(new_recommendation, create_prompt(passcode))
 
             while fail_count <= calculate_fail_count() and not recommendation_added:  # We have a maximum of 100 attempts to enter the recommendations
 
@@ -58,6 +58,30 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
     return index
 
 
+from langchain.output_parsers import JsonOutputKeyToolsParser
+
+recommendation_schema = {
+    "title": "Recommendation",
+    "description": "A stress-relief recommendation for the user",
+    "type": "object",
+    "properties": {
+        "Title": {
+            "type": "string",
+            "description": "The title of the activity"
+        },
+        "Description": {
+            "type": "string",
+            "description": "Explanation of the activity"
+        },
+        "Duration": {
+            "type": "integer",
+            "description": "Duration in minutes"
+        }
+    },
+    "required": ["Title", "Description", "Duration"]
+}
+
+
 def create_prompt(passcode):
     return (
         f"We have a user in an application. We require one (1) recommendation for the user to release stress today. "
@@ -65,93 +89,103 @@ def create_prompt(passcode):
         f"\n----------------\n"
         f"{generate_user_profile(passcode)}"
         f"\n----------------\n"
-        f"Please return your  answer exclusively in one (1) JSON request containing a title, a description and a duration."
+        f"Please return your  answer exclusively in one (1) JSON request containing a title, a description and a duration between {min_time_limit} - {max_limit} minutes."
         f"A sample answer would look like this:\n"
         f"{{\n"
-        f"    'Title': 'This is a title',\n"
-        f"    'Description': 'This is a description'\n"
-        f"    'Duration': int(<Duration in minutes>)"
+        f'    "Title": "This is a title",\n'
+        f'    "Description": "This is a description",\n'
+        f'    "Duration": 10\n'
         f"}}"
+
     )
 
 
 def return_prompt(passcode):
     try:
-
         if active_model == "Groq":
             if not os.environ.get("GROQ_API_KEY"):
                 os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]
 
-            model = init_chat_model("llama3-8b-8192", model_provider="groq").with_structured_output(method="json_mode")
+            model = init_chat_model(
+                "llama3-8b-8192",
+                model_provider="groq"
+            )
 
         elif active_model == "Gemini":
             if not os.environ.get("GEMINI_API_KEY"):
                 os.environ["GEMINI_API_KEY"] = st.secrets["API"]["geminikey"]
 
-            model = init_chat_model("gemini-2.0-flash", model_provider="google_genai").with_structured_output(
-                method="json_mode")
+            model = init_chat_model(
+                "gemini-2.0-flash",
+                model_provider="google_genai"
+            ).with_structured_output(method=recommendation_schema)
 
         messages = [
             SystemMessage(content=(
                 "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
-                "Always return exactly one (1) JSON object with a 'Title' and a 'Description' field. "
-                "Do not include anything outside of the JSON structure. Please escape all special characters, and wrap the JSON in a code block so it is valid."
+                "Respond only with a valid JSON object matching the schema. No markdown, no explanations, no code blocks."
             )),
             HumanMessage(content=create_prompt(passcode))
         ]
 
-        new_recommendation = model.invoke(messages)
+        result = model.invoke(messages)
 
-        return True, new_recommendation
+        # result is already parsed into Recommendation, if .with_structured_output(parser) works correctly
+        return True, result
 
     except Exception as e:
+        print(str(e))
         return False, str(e)
 
 
 def extract_json(new_recommendation, prompt):
     try:
-        # Handle groq (object with content) and gemini (string) cases
-        if hasattr(new_recommendation, "content"):
-            text = new_recommendation.content
-        else:
-            text = str(new_recommendation)
+        text = getattr(new_recommendation, "content", str(new_recommendation)).strip()
 
-        # Remove prompt from start if present
         if text.startswith(prompt):
-            text = text[len(prompt):]
+            text = text[len(prompt):].strip()
 
-        # Extract JSON block (non-greedy match between first { and last })
-        match = re.search(r'\{.*?\}', text, re.DOTALL)
+        match = re.search(r'\{[\s\S]*?\}', text)
 
-        if match:
-            json_str = match.group(0)
+        if not match:
+            return "No JSON Found", text.strip(), 5
 
-            # Replace single quotes with double quotes for JSON parsing
-            json_str_cleaned = json_str.replace("'", '"')
+        json_str = match.group(0)
 
+        # Attempt regular JSON parse first
+        try:
+            response_json = json.loads(json_str)
+        except json.JSONDecodeError:
             try:
-                response_json = json.loads(json_str_cleaned)
+                # Targeted replacement: only keys, not all single quotes
+                json_str_fixed = json_str
 
-                title = response_json.get("Title", "Untitled")
-                description = response_json.get("Description", text)
-                duration = response_json.get("Duration", 5)
-                duration = int(duration)
+                # Replace 'Title': with "Title":
+                json_str_fixed = re.sub(r"'Title'\s*:", r'"Title":', json_str_fixed)
+                json_str_fixed = re.sub(r"'Description'\s*:", r'"Description":', json_str_fixed)
+                json_str_fixed = re.sub(r"'Duration'\s*:", r'"Duration":', json_str_fixed)
 
-            except json.JSONDecodeError:
-                title = "Invalid Format"
-                description = json_str_cleaned
-                duration = 5
+                # Also replace ': int(' with ': '
+                json_str_fixed = re.sub(r": int\(", r": ", json_str_fixed)
+                json_str_fixed = json_str_fixed.replace(")", "")
 
-        else:
-            title = "No JSON Found"
-            description = text
+                response_json = json.loads(json_str_fixed)
+            except Exception:
+                return "Invalid Format", json_str.strip(), 5
+
+        title = response_json.get("Title", "Untitled")
+        description = response_json.get("Description", text.strip())
+        duration = response_json.get("Duration", 5)
+
+        try:
+            duration = int(duration)
+        except (ValueError, TypeError):
             duration = 5
 
-    except Exception as e:
-        return "Error", str(e)
+        return title, description, duration
 
-    # Return title and description consistently
-    return description, title, duration
+    except Exception as e:
+        return "Error", f"{str(e)}\n\nRaw Output:\n{str(new_recommendation)}", 5
 
 
 # This function generates a user profile to be added to a prompt to an AI, and a condition to indicate if it did it correctly

@@ -94,6 +94,8 @@ def layout_5():
 
             with column_for_Questionnaire:
 
+                Questionnaire_status = False
+
                 if user['Role'] != 'User':
                     Questionnaire_status = st.checkbox(
                         "See what questions have entered in the Daily Stress Questionnaire")  # Include Questionnaire Collection
