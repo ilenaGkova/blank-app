@@ -284,15 +284,16 @@ def layout_4():
                                         ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
                                 elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Outcome']:  # The below are in the Recommendation_per_person Collection
+                                        'Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
 
                                     st.header(
                                         ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
 
-                                else:
-
-                                    st.header(
-                                        ':material/badge: :material/done_outline:')  # Category given, complete recommendations
+                                    if entry_for_list_of_recommendations_based_on_filter_given_by_user[
+                                        'Outcome'] is False:
+    
+                                        st.header(
+                                            ':material/badge: :material/done_outline:')  # Category given, complete recommendations
 
                             with column_for_timestamp_for_list_of_recommendations_based_on_filter_given_by_user:
 
