@@ -118,7 +118,7 @@ def return_prompt(passcode):
             model = init_chat_model(
                 "gemini-2.0-flash",
                 model_provider="google_genai"
-            ).with_structured_output(method=recommendation_schema)
+            ).with_structured_output(method="function_calling", schema=recommendation_schema)
 
         messages = [
             SystemMessage(content=(
