@@ -19,7 +19,7 @@ def initialize_variables(current_passcode, open_recommendation):
 min_time_limit = 3  # The minimum time limit a user will enter as time available
 min_limit = 1  # The general minimum limit a user can enter
 max_limit = 20  # The general maximum limit a user can enter
-stress_max_limit = 10  # The general maximum limit a user can enter when rating stress
+stress_max_limit = 4  # The general maximum limit a user can enter when rating stress
 max_recommendation_limit, max_additional_recommendations = get_maximum_entries()  # The amount te recommendations the user can ask
 
 # Inputs for questions
