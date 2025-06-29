@@ -20,42 +20,35 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
 
+def update_user_here(update_username, update_passcode, update_age, update_gender, update_focus_area,
+                     update_time_available, update_suggestions,
+                     update_repeat, repeat_question):  # Called when the user wants to update their profile information
 
-def update_user_here(new_username, passcode_for_update_employee, new_age, new_gender, new_focus_area,
-                     new_time_available,
-                     new_suggestions, new_repeat, question_username_for_update_user, question_age_for_update_user,
-                     question_focus_area_for_update_user, question_time_available_for_update_user,
-                     question_suggestions_for_update_user,
-                     repeat_question,
-                     question_gender_for_update_user):  # Called when the user wants to update their profile information
-
-    st.session_state.error_status, st.session_state.error = update_user(passcode_for_update_employee, new_username,
-                                                                        new_repeat, new_age,
-                                                                        new_focus_area,
-                                                                        new_time_available,
-                                                                        new_suggestions,
-                                                                        new_gender)  # Will update the session error variables and maybe change user information if appropriate
+    st.session_state.error_status, st.session_state.error = update_user(update_passcode, update_username,
+                                                                        update_repeat, update_age,
+                                                                        update_focus_area,
+                                                                        update_time_available,
+                                                                        update_suggestions,
+                                                                        update_gender)  # Will update the session error variables and maybe change user information if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
-        record_question(question_gender_for_update_user, new_gender, passcode_for_update_employee)
-        record_question(question_username_for_update_user, new_username, passcode_for_update_employee)
-        record_question(question_age_for_update_user, new_age, passcode_for_update_employee)
-        record_question(question_focus_area_for_update_user, new_focus_area, passcode_for_update_employee)
-        record_question(question_time_available_for_update_user, new_time_available, passcode_for_update_employee)
-        record_question(question_suggestions_for_update_user, new_suggestions, passcode_for_update_employee)
-        record_question(repeat_question, new_repeat, passcode_for_update_employee)
+        record_question(question_gender, update_gender, update_passcode)
+        record_question(question_username, update_username, update_passcode)
+        record_question(question_age, update_age, update_passcode)
+        record_question(question_focus_area, update_focus_area, update_passcode)
+        record_question(question_time_available, update_time_available, update_passcode)
+        record_question(question_suggestions, update_suggestions, update_passcode)
+        record_question(repeat_question, update_repeat, update_passcode)
 
         change_page(st.session_state.page)  # Will change the page to itself to reload and see the result
 
 
 def layout_4():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
     if user is not None and index != -1:
 
         # Section 1: The User Profile and Update Profile Function
@@ -147,10 +140,7 @@ def layout_4():
             st.button("Save Changes", icon=":material/save_as:", use_container_width=True,
                       on_click=update_user_here,
                       args=[update_username, update_passcode, update_age, update_gender, update_focus_area,
-                            update_time_available, update_suggestions, update_repeat,
-                            question_username,
-                            question_age, question_focus_area, question_time_available, question_suggestions,
-                            question, question_gender],
+                            update_time_available, update_suggestions, update_repeat, question],
                       key="update_user_button")  # When user clicks here the information they have entered will update every field of theo user profile
 
         # Section 2: User Preferences for Tasks
@@ -273,25 +263,24 @@ def layout_4():
                             with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
 
                                 if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Type'] == "Favorite_Recommendation":
+                                    'Type'] == "Favorite_Recommendation":
 
                                     st.header(':material/thumb_up:')  # Category Favorites and Favorite Collection
 
                                 elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Type'] == "Removed_Recommendation":
+                                    'Type'] == "Removed_Recommendation":
 
                                     st.header(
                                         ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
                                 if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
+                                    'Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
 
                                     st.header(
                                         ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
 
                                     if entry_for_list_of_recommendations_based_on_filter_given_by_user[
                                         'Outcome'] is False:
-    
                                         st.header(
                                             ':material/done_outline:')  # Category given, complete recommendations
 
@@ -326,11 +315,10 @@ def layout_4():
                                 if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                     st.button("", icon=":material/open_in_full:", use_container_width=True,
                                               on_click=open_recommendation, args=[
-                                                entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                            entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                               key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
-                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove'] and entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                        'Outcome'] is None:
+                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
                                     st.button("", icon=":material/delete:", use_container_width=True,
                                               on_click=change_recommendation_preference_for_user,
                                               args=[1, st.session_state.current_passcode,

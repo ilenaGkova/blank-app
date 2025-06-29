@@ -20,9 +20,6 @@ if 'error_status' not in st.session_state:
 if 'answers' not in st.session_state:
     st.session_state.answers = {}  # Will store answers to the Daily Stress Questioner
 
-if "open_recommendation" not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 
 def submit_questionnaire():  # Called when the user completes the questioner
     # Create a list of question-answer pairs
@@ -58,7 +55,7 @@ def make_status(
 def layout_2():
 
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None:
 

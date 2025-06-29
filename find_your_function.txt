@@ -1,926 +1,216 @@
+This is a list of all the functions and variables that are called outside of their function in alphabetical order
+Use control F to find the entry you want
+Use this file in collaboration with the README.txt file
 
-------------------
-add_question_to_Questionnaire
+-----------------------------------------------------------------------------------------------------------------------
+ add_a_question_layout
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: add_question_to_Questionnaire(ID, passcode, question_input)
-Function IN add_data_in_collection.py
+To call/use enter:  add_a_question_layout()
+Function IN page_9.py
 
-Function: Add a new entry in the Question_Questionnaire Collection
-Intakes: ID (Integer): The ID number of a new Question
-Passcode (String): The Passcode of a user who wants to add a question
-Question Input (String): A new question to add
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The user exists
-The ID number isn't in the Question_Questionnaire Collection and an ID
-The question added is unique in the Question_Questionnaire Collection
-The information is appropriate
-------------------
-------------------
-add_recommendation
+Function: 
+Adds the form to enter a new question in the Daily Stress Questionnaire
 
-To call/use enter: add_recommendation(ID, passcode, title, description, link, points, duration)
-Function IN add_data_in_collection.py
+Intakes: 
+No content in this category
 
-Function: Add a recommendation to the Recommendation mongo collection, so a user can be assigned the recommendation
-Also convert the ID into an integer before entering the new Recommendation
-Also adds a tag for the duration of the recommendation
-Intakes: ID (String): The ID number for the new Recommendation
-Passcode (String): The Passcode of a user who wants to add a recommendation
-Title (String): The Title of the new Recommendation
-Description (String): The Description of the new Recommendation
-Link (String): The link of the new recommendation - optional
-Points (Integer): The Points assigned to the completion of the new Recommendation
-Duration (Integer): The Duration of the recommendation in minutes
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The user exists
-The ID number isn't in the Tag / Recommendation / Recommendation_Per_Person Collection
-The information is appropriate
-------------------
-------------------
-add_tag
+Outtakes: 
+No content in this category
 
-To call/use enter: add_tag(ID, passcode, title, category)
-Function IN add_data_in_collection.py
+Safeguards Included: 
+No content in this category
 
-Function: Add a new Tag in the mongo Tag Collection, so a recommendation will be given to an appropriate user
-Also convert the ID into an integer before entering the new Tag
-While some categories will be a number they are added as strings
-Intakes: ID (Integer): The ID number of the Recommendation the user wants to add the Tag in
-Passcode (String): The Passcode of the user who wants to add the Tag in the Collection
-Title (String): The Kind of Criteria of the Tag
-Category (String): The Category in the Criteria to identify the right user for the Recommendation
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The user exists
-The ID number is an actual existing Recommendation in the Recommendation Collection
-The specific Tag doesn't already exist
-------------------
-------------------
-change_page
+-----------------------------------------------------------------------------------------------------------------------
+add_a_recommendation_layout
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: change_page(new_page)
-Function IN change_page.py
+To call/use enter: add_a_recommendation_layout()
+Function IN page_9.py
 
-Function: Change the designation of the page number, 1 through 9 to change or reload a page
-Intakes: New Page (Integer): A Page number 1 through 9
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-get_status
+Function: 
+Adds the form to enter a recommendation in the Recommendation mongo Collection
 
-To call/use enter: get_status(passcode)
-Function IN check_and_balance.py
+Intakes: 
+No content in this category
 
-Function: Get the passcode of a user and return if that user has answered the Daily Stress Questionnaire (aka Status) today, yesterday and the identifier of the last status made by the user
-Intakes: Passcode (String): The Passcode of a user who might or might now have made an entry in the Daily Stress Questionnaire
-Outtakes: Today (Boolean): Whether the user has answered the Daily Stress Questionnaire today
-Yesterday (Boolean): Whether the user has answered the Daily Stress Questionnaire yesterday
-Index (String): The identifier of the last Daily Stress Questionnaire by the user, -1 of there is none
-Safeguards Included: No content in this category
-------------------
-------------------
-new_entry_in_record_collection
+Outtakes: 
+No content in this category
 
-To call/use enter: new_entry_in_record_collection(passcode, action, letter)
-Function IN check_and_balance.py
+Safeguards Included: 
+No content in this category
 
-Function: Adds a record of an action as defined by a description given under a user's Passcode
-It usually has a letter grouping actions together: C, P, Q and S
-Type C is data for the user's commitment to the application
-Type P is for profile data, look here for profile creations, log ins and profile updates
-Type Q is for query in database, look here for queries to gather record data and delete entries
-Type S is for Score. Includes changes in the level or score of a user
-Intakes: Passcode (String): The Passcode of a user whom the action is recorded of
-Action (String): A description of the action recorded
-Letter (String): The action's letter C, P, Q or S
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-new_entry_in_score_history_collection
+-----------------------------------------------------------------------------------------------------------------------
+add_collection
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: new_entry_in_score_history_collection(passcode)
-Function IN check_and_balance.py
+To call/use enter: add_collection(passcode, status, collection_name, collection, completed)
+Function IN make_record_recommendations.py
 
-Function: When called will enter he user's current score and a timestamp in the score_history collection. 
-Helps form the score history graph in page 3
-Intakes: Passcode (string): The Passcode of the user 
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: No content in this category
-------------------
-------------------
-record_question
+Function: 
+When getting a collection and create a table of entries for the user's passcode
+Can exclude entries based in whether or not the recommendation was completed
 
-To call/use enter: record_question(question, answer, passcode, function=True)
-Function IN check_and_balance.py
+Intakes: 
+Passcode(String): The Passcode of the user
+Status(Boolean): True if the collection needs to be added
+Collection Name(String): The name of the collection
+Collection(Variable): The variable of the collection needed
+Completed(Boolean): True when to include incomplete recommendations, False for only completed and None to include both  
 
-Function: Enter a question the user answered with the answer and a timestamp to the mongo Question collection
-Intakes: Question (String): The Question given to a User
-Answer (String): The Answer a User gave
-Passcode (String): The Passcode of a user
-Function (Boolean): Whether a user clicked on the warning before submitting the question
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The information is appropriate
-The user has clicked on the disclaimer that comes with some questions
-------------------
-------------------
-generate_recommendation_id
+Outtakes: 
+User_History(Dictionary List): A dictionary list of the User's record in any collection required, with key attributes to identify it later if needed and a message to sum up the entry of the collection 
 
-To call/use enter: generate_recommendation_id()
-Function IN generate_items.py
+Safeguards Included: 
+The collection is to be added
 
-Function: Generate an integer number of an ID for a new entry in the Question mongo Collection
-Intakes: No content in this category
-Outtakes: Generated ID (Integer): An number not found in the ID field of a Question entry
-Safeguards Included: The ID number isn't in the Tag / Recommendation / Recommendation_Per_Person Collection
-------------------
-------------------
-get_limits
-
-To call/use enter: get_limits(level)
-Function IN generate_items.py
-
-Function: Get a user's level and return the limits to their score
-Intakes: Level (Integer): The lever of a user
-Outtakes: Move Up Threshold (Integer): The score the user needs to ascend to the next level
-Move Down Threshold (Integer): The score that gets the user demoted to the level before
-Safeguards Included: No content in this category
-------------------
-------------------
-ages
-
-To call/use enter: ages
-Variable IN initialise_variables.py
-
-Function: The age categories of which the user can choose to make/ update their profile
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-con_question
-
-To call/use enter: con_question
-Variable IN initialise_variables.py
-
-Function: The question that identifies a confession
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-focus_areas
-
-To call/use enter: focus_areas
-Variable IN initialise_variables.py
-
-Function: The focus area categories of which the user can choose to make/ update their profile
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-genders
-
-To call/use enter: genders
-Variable IN initialise_variables.py
-
-Function: The options for the user to choose their gender
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-initialize_variables
-
-To call/use enter: initialize_variables(current_passcode, open_recommendation)
-Function IN initialise_variables.py
-
-Function: Get a passcode and a number and run 2 searches and 1 function. Return the results.
-Intakes: Current Passcode (String): The Passcode of a user who might or might now have made an entry in the Daily Stress Questionnaire
-Open Recommendation (Integer): The ID number if a recommendation
-Outtakes: User (Collection Item): The Item of the User in the mongo Collection User
-Today (Boolean): Whether the user has answered the Daily Stress Questionnaire today
-Yesterday (Boolean): Whether the user has answered the Daily Stress Questionnaire yesterday
-Index (String): The identifier of the last Daily Stress Questionnaire by the user, -1 of there is none
-Recommendation (Collection Item): The Item of the Recommendation in the mongo Collection Recommendation
-Safeguards Included: No content in this category
-------------------
-------------------
-max_limit
-
-To call/use enter: max_limit
-Variable IN initialise_variables.py
-
-Function: The MAXIMUM number a user can enter to an integer input field 
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-min_limit
-
-To call/use enter: min_limit
-Variable IN initialise_variables.py
-
-Function: The MINIMUM number a user can enter to an integer input field 
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_duration
-
-To call/use enter: question_about_duration
-Variable IN initialise_variables.py
-
-Function: Question about the duration of a recommendation
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_link
-
-To call/use enter: question_about_link
-Variable IN initialise_variables.py
-
-Function: Question about the link connected with a recommendation
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_passcode
-
-To call/use enter: question_about_passcode
-Variable IN initialise_variables.py
-
-Function: Question that asks the user of their passcode
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_points
-
-To call/use enter: question_about_points
-Variable IN initialise_variables.py
-
-Function: Question about the points a recommendation carries
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_recommendation_id
-
-To call/use enter: question_about_recommendation_id
-Variable IN initialise_variables.py
-
-Function: Question about the ID of a recommendation that will be added
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_about_title
-
-To call/use enter: question_about_title
-Variable IN initialise_variables.py
-
-Function: Question about the title of a recommendation
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_age
-
-To call/use enter: question_age
-Variable IN initialise_variables.py
-
-Function: Question about a user's age range
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_focus_area
-
-To call/use enter: question_focus_area
-Variable IN initialise_variables.py
-
-Function: Question  about the user's focus area
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_gender
-
-To call/use enter: question_gender
-Variable IN initialise_variables.py
-
-Function: Question about the user's gender
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Question_ID
-
-To call/use enter: Question_ID
-Variable IN initialise_variables.py
-
-Function: Question about the ID of aquestion that will be added in the daily stress questionnaire
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-question_input
-
-To call/use enter: question_input
-Variable IN initialise_variables.py
-
-Function: Input label for a question in the daily stress questionnaire
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-stress_max_limit
-
-To call/use enter: stress_max_limit
-Variable IN initialise_variables.py
-
-Function: The MAXIMUM number the stress level of a user can be
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
+-----------------------------------------------------------------------------------------------------------------------
 add_history_entries
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: add_history_entries(passcode, user_history, collection_name, collection, key, key2=None)
 Function IN make_record.py
 
-Function: With the name of a collection and at most 2 attributes, gets a existing table and makes entries for each entry for a given passcode in the form of a customised message
-Intakes: Passcode(String): The Passcode of the User
+Function: 
+With the name of a collection and at most 2 attributes, gets a existing table and makes entries for each entry for a given passcode in the form of a customised message
+
+Intakes: 
+Passcode(String): The Passcode of the User
 User_History(Dictionary List): The already existing list of entries in a table to be returned to the user
 Collection_Name(String): The name of the collection to find the entry in
 Collection(Variable): The variable of the collection needed
 Key(Unknown): Key attribute value of the entry to be identified from - could be either string or integer based on the collection
 Key2(Unknown): Optional, Key attribute value of the entry to be identified from - could be either string or integer based on the collection - usually found in collections with combinations of values as keys
-Outtakes: User_History(Dictionary List): The updated list of entries in a table to be returned to the user
-Safeguards Included: No content in this category
-------------------
-------------------
-create_history
 
-To call/use enter: create_history(passcode, priority, order, include_user, include_question, include_record, include_status, include_recommendation, include_Tag, include_favorite, include_removed, include_recommendation_per_person, include_question_Questionnaire, include_score, this_user_passcode)
-Function IN make_record.py
+Outtakes: 
+User_History(Dictionary List): The updated list of entries in a table to be returned to the user
 
-Function: Gets a request to build a user's record or entries in any collection. 
-Request includes sorting method and separate Boolean values for each collection, True if needing to be added
-Result is a dictionary list that includes the name of the collection, The user's passcode, the timestamp created for each entry pulled, a massage explaining the meaning of the entries in the collection and 2 key attributes to identify the entry in the collection
-Will make record of the request from the user under the passcode of the one requesting it.
-Intakes: Passcode(String): The Passcode of a user of which the record is made for
-Priority(String): Either 'Time' or 'Substance'- the sorting method to arrange the created record by
-Order(Integer): Either 1 or -1, -1 if the user wants the record arranged in reverse 
-Include_User(Boolean): Whether or not the user wants to see the User collection
-Include_Question(Boolean): Whether or not the user wants to see the Question collection
-Include_Record(Boolean): Whether or not the user wants to see the Record collection
-Include_Status(Boolean): Whether or not the user wants to see the Status collection
-Include_Recommendation(Boolean): Whether or not the user wants to see the Recommendation collection
-Include_Tag(Boolean): Whether or not the user wants to see the Tag collection
-Include_Favorite(Boolean): Whether or not the user wants to see the Favorite_Recommendation collection
-Include_Removed(Boolean):Whether or not the user wants to see the Removed_Recommendation collection
-Include_Recommendation_per_person(Boolean): Whether or not the user wants to see the Recommendation_Per_Person collection
-Include_Question_Questionnaire(Boolean): Whether or not the user wants to see the Questionnair collection
-Include_Score(Boolean):Whether or not the user wants to see the Score_History collection
-This_User_Passcode(String): The Passcode of a user who requested the record be made
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-User_History(Dictionary List): A dictionary list of the User's record in any collection required, with key attributes to identify it later if needed and a message to sum up the entry of the collection 
-Message (String): Specialises error message / Message for user if accomplished correctly
-Safeguards Included: Both Users existBoth Users exist
-------------------
-------------------
-delete_entry
+Safeguards Included: 
+No content in this category
 
-To call/use enter: delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
-Function IN make_record.py
+-----------------------------------------------------------------------------------------------------------------------
+add_points
+-----------------------------------------------------------------------------------------------------------------------
 
-Function: Take a set of information and delete an entry from any collection
-Use the collection's name, 2 key attributes, a creation timestamp and a user's passcode 
-Depending on the collection requested creates a query for the entry using the 2 key attributes, the user's passcode and the creation datetime
-Makes a record of the request to delete an entry and the outcome under the user who requested the deletion's passcode
-Intakes: Passcode (String): The Passcode of a user whose data the user wants to delete
-Key (String or Integer): Attribute value of entry in a collection, depending on the collection it could be a String or an Integer
-Key2 (String or Integer): Additional attribute value of entry in a collection, depending on the collection it could be a String or an Integer
-Created (String): When the entry was created
-Collection Name (String): The collection the entry will be deleted from
-This User Passcode (String): The Passcode of the user signed in, might not be the user whose data is being deleted
-Outtakes: Outcome (Boolean): The condition of whether the entry requested was deleted
+To call/use enter: add_points(index, passcode, status)
+Function IN user_information.py
+
+Function: 
+Marks a recommendation as completed by a user. if the user was assigned the recommendation more than once it marks all recommendation entries with the ID as completed
+Awards the user points for completing the recommendation
+Makes a record that the user completed the recommendation
+Adds another entry in the user's score history
+
+Intakes: 
+Index (Integer): The ID of the recommendation completed
+Passcode (string): The Passcode of the user who completed the recommendation
+Status (Timestamp): The Timestamp of the status the recommendation was generated for.
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
 Message (String): Specialises error message
-Safeguards Included: The User signed in exists
-The User requested exists
-The collection requested exists
-------------------
-------------------
-delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
 
-To call/use enter: delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
-Function IN make_record.py
-
-Function: Deletes an entry form any collection in the database 
-Using the user passcode, the timestamp of creation and at most 2 key attributes makes a query to the database to delete the entry to that collection
-Will make record of the query and the outcome of said query in the passcode of the user requesting the delete action 
-Intakes: Passcode(String): The Passcode of the user whose entry is getting deleted
-Key(Unknown): Attribute value of the entry deleted - could be either string or integer based on the collection
-Key2(Unknown): Attribute value of the entry deleted - could be either string or integer based on the collection
-Created(DateTime Stamp): Moment of creation of entry
-This_User_Passcode(String): The Passcode of the user requesting the deletion of the entry
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: Both Users existBoth Users exist
-The Collection requested can be found
-------------------
-------------------
-sort_by_message
-
-To call/use enter: sort_by_message(entry)
-Function IN make_record.py
-
-Function: Sort a table based on the message being carried and then the  time of creation
-Intakes: Entry(dictionary - list entry): The entry of the table being sorted
-Outtakes: Key(String): The message attribute of the entry given
-Key1(DateTime Stamp): The timestamp of creation of the entry
-Safeguards Included: No content in this category
-------------------
-------------------
-sort_by_time
-
-To call/use enter: sort_by_time(entry)
-Function IN make_record.py
-
-Function: Sort a table based on the time of creation and then the message being carried
-Intakes: Entry(dictionary - list entry): The entry of the table being sorted
-Outtakes: Key(DateTime Stamp): The timestamp of creation of the entry
-Key1(String): The message attribute of the entry given
-Safeguards Included: No content in this category
-------------------
-------------------
-sort_by_type
-
-To call/use enter: sort_by_type(entry)
-Function IN make_record.py
-
-Function: Sort a table based on thecollections the entries come from, then time of creation and then finally the message being carried
-Intakes: Entry(dictionary - list entry): The entry of the table being sorted
-Outtakes: Key(String): The collection the entry os from, as found in the entry
-Key1(DateTime Stamp): The timestamp of creation of the entry
-Key2(String): The message attribute of the entry given
-Safeguards Included: No content in this category
-------------------
-------------------
-menu_layout
-
-To call/use enter: menu_layout()
-Function IN menu.py
-
-Function: Adds a menu in the side bar to be shown for pages 3 and up
-Handles navigation in the application
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-client
-
-To call/use enter: client
-Variable IN mongo_connection.py
-
-Function: Get connection to mongo database server
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-db
-
-To call/use enter: db
-Variable IN mongo_connection.py
-
-Function: User connection to server to isolate Stress Test Database
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Favorite_Recommendation
-
-To call/use enter: Favorite_Recommendation
-Variable IN mongo_connection.py
-
-Function: The Favorite_Recommendation collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-init_connection()
-
-To call/use enter: init_connection
-Function IN mongo_connection.py
-
-Function: Establish connection to mongo database server
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-insert_data
-
-To call/use enter: insert_data()
-Function IN mongo_connection.py
-
-Function: Add default data in mongo collections User, Recommendation and Tag
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Question
-
-To call/use enter: Question
-Variable IN mongo_connection.py
-
-Function: The Question collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Question_Questionnaire
-
-To call/use enter: Question_Questionnaire
-Variable IN mongo_connection.py
-
-Function: The Question_Questionnaire collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Recommendation
-
-To call/use enter: Recommendation
-Variable IN mongo_connection.py
-
-Function: The Recommendation collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Recommendation_Per_Person
-
-To call/use enter: Recommendation_Per_Person
-Variable IN mongo_connection.py
-
-Function: The Recommendation_Per_Person collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Record
-
-To call/use enter: Record
-Variable IN mongo_connection.py
-
-Function: The Record collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Removed_Recommendation
-
-To call/use enter: Removed_Recommendation
-Variable IN mongo_connection.py
-
-Function: The Removed_Recommendation collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Score_History
-
-To call/use enter: Score_History
-Variable IN mongo_connection.py
-
-Function: The Score_History collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Status
-
-To call/use enter: Status
-Variable IN mongo_connection.py
-
-Function: The Status collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-Tag
-
-To call/use enter: Tag
-Variable IN mongo_connection.py
-
-Function: The Tag collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-User
-
-To call/use enter: User
-Variable IN mongo_connection.py
-
-Function: The User collection in Stress Test mongo database
-Used for queries in a collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-layout_5
-
-To call/use enter: layout_5()
-Function IN page_5.py
-
-Function: Built page 5, includes buttons, forms and others
-The user can make a request to see their record in any collection (or see another user's record)
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: The user exists
-The user has answered the Daily Stress Questioner
-------------------
-------------------
-change_recommendation_status
-
-To call/use enter: change_recommendation_status(preference, index_for_change_recommendation_status, function=None)
-Function IN page_6.py
-
-Function: Call another function and passed the data of a recommendation that a user has completed
-Will reload the same using the page function 
-Update the error log in case something stops the called function
-Intakes: Preference (Integer): 1 if the user wants to add the recommendation to the Favorite category and -1 if the Removed category of the recommendations
-Index for recommendation (Integer): The ID number of the recommendation the user wants to add / remove from a category
-Function (Boolean): If False the recommendation will be added to the referenced category. If True it will be just removed from it's current category. 
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-completed_recommendation
-
-To call/use enter: completed_recommendation(index_for_completed_recommendation, status)
-Function IN page_6.py
-
-Function: Call another function and passed the data of a recommendation that a user has completed
-Will return user to full recommendations page, page 3 
-Update the error log in case something stops the addition function
-Intakes: Index Of Completed Recommendation (Integer): The ID number of the recommendation
-Status (Timestamp): The Timestamp of the status the recommendation was generated for. This will be used to identify the recommendation amongst the ones who have been assigned to the user
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-layout_6
-
-To call/use enter: layout_6()
-Function IN page_6.py
-
-Function: Built page 6, includes buttons and text
-The user can complete and recommendation, and send it to either the Favorite or removed category
-User can see tags related to recommendation
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: The user exists
+Safeguards Included: 
+The user exists
 The recommendation exists
-The user has answered the Daily Stress Questioner
-------------------
-------------------
-answering_the_questionnaire()
+The recommendation was assigned to the user today
 
-To call/use enter: answering_the_questionnaire()
-Function IN page_7.py
-
-Function: Show section of turorial that explains the need of a user to answer questionnaire daily
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-confessions()
-
-To call/use enter: confessions()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user can make a confession
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-layout_7
-
-To call/use enter: layout_7()
-Function IN page_7.py
-
-Function: Built page 7, consisting of various functions who are sections of the tutorial
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: The user exists
-The user has answered the Daily Stress Questioner
-------------------
-------------------
-preferencies()
-
-To call/use enter: preferencies()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user can manage their preferencies when it comes to recommendations
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-recommendations()
-
-To call/use enter: recommendations()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user can manage their recommandations daily
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-record()
-
-To call/use enter: record()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user can look up their record and customise their result
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-score()
-
-To call/use enter: score()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user's score will effect their level
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-score_history()
-
-To call/use enter: score_history()
-Function IN page_7.py
-
-Function: Show section of turorial that explains how a user can see their score progression
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-signing_in()
-
-To call/use enter: signing_in()
-Function IN page_7.py
-
-Function: Shows section of tutorial that explains signing in to a user
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-confession_form_layout
-
-To call/use enter: confession_form_layout()
-Function IN page_8.py
-
-Function: Create the form the user can enter a confession for themselves
-Includes a disclaimer about personal data
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-confession_list_layout
-
-To call/use enter: confession_list_layout()
-Function IN page_8.py
-
-Function: Show the list of all previous confessions the user has made
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-layout_8
-
-To call/use enter: layout_8()
-Function IN page_8.py
-
-Function: Built page 8, including a form to make add a user can use to make a confession and show all previous confessions.
-Splits the form and the previous confessions in separate functions
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: The user exists
-The user has answered the Daily Stress Questioner
-------------------
-------------------
- add_a_question_layout
-
-To call/use enter:  add_a_question_layout()
-Function IN page_9.py
-
-Function: Adds the form to enter a new question in the Dailly Stress Questionnaire
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-add_a_recommendation_layout
-
-To call/use enter: add_a_recommendation_layout()
-Function IN page_9.py
-
-Function: Adds the form to enter a recommendation in the Recommendation mongo Collection
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
+-----------------------------------------------------------------------------------------------------------------------
 add_question
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: add_question(ID, passcode_for_question, question_input_here, question_for_question_input, question_for_id)
 Function IN page_9.py
 
-Function: Call a function to add a Tag of a Question in the Question_Questionnaire Collection
+Function: 
+Call a function to add a Tag of a Question in the Question_Questionnaire Collection
 For each field the user answered correctly call a function to record the answer
 Update the error log in case something stops the addition function
-Intakes: Passcode For Question (String): The Passcode of a user who is signed in and wants to add a question
+
+Intakes: 
+Passcode For Question (String): The Passcode of a user who is signed in and wants to add a question
 Question+Answer Pair 1
 Question For ID (String): Description given for information provided by the user
 ID (Integer): The ID number of the new question the user wants to add
 Question+Answer Pair 2
 Question For Question Input (String): Description given for information provided by the user
 Question Input Here (String): The question the user wants to add
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+add_question_to_Questionnaire
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: add_question_to_Questionnaire(ID, passcode, question_input)
+Function IN add_data_in_collection.py
+
+Function: 
+Add a new entry in the Question_Questionnaire Collection
+
+Intakes: 
+ID (Integer): The ID number of a new Question
+Passcode (String): The Passcode of a user who wants to add a question
+Question Input (String): A new question to add
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+The user exists
+The ID number isn't in the Question_Questionnaire Collection and an ID
+The question added is unique in the Question_Questionnaire Collection
+The information is appropriate
+
+-----------------------------------------------------------------------------------------------------------------------
+add_recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: add_recommendation(ID, passcode, title, description, link, points, duration)
+Function IN add_data_in_collection.py
+
+Function: 
+Add a recommendation to the Recommendation mongo collection, so a user can be assigned the recommendation
+Also convert the ID into an integer before entering the new Recommendation
+Also adds a tag for the duration of the recommendation
+
+Intakes: 
+ID (String): The ID number for the new Recommendation
+Passcode (String): The Passcode of a user who wants to add a recommendation
+Title (String): The Title of the new Recommendation
+Description (String): The Description of the new Recommendation
+Link (String): The link of the new recommendation - optional
+Points (Integer): The Points assigned to the completion of the new Recommendation
+Duration (Integer): The Duration of the recommendation in minutes
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+The user exists
+The ID number isn't in the Tag / Recommendation / Recommendation_Per_Person Collection
+The information is appropriate
+
+-----------------------------------------------------------------------------------------------------------------------
 add_recommendation_here
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: add_recommendation_here(your_passcode_here, this_generated_id_here, points_here, title_here, description_here, link_here, question_about_recommendation_id_here, question_about_points_here, question_about_title_here, question_about_description_here, question_about_link_here)
 Function IN page_9.py
 
-Function: Call a function to add a recommendation in the Recommendation Collection
+Function: 
+Call a function to add a recommendation in the Recommendation Collection
 For each field the user answered correctly call a function to record the answer
 Update the error log in case something stops the addition function Record the questions answered by the user with the answers given
-Intakes: Your Passcode Here (String): The Passcode of a user who is signed in and wants to add a recommendation
+
+Intakes: 
+Your Passcode Here (String): The Passcode of a user who is signed in and wants to add a recommendation
 Question+Answer Pair 1
 Question About Recommendation ID Here (String): Description given for information provided by the User
 This Generated ID Here (String): The ID number for the new Recommendation
@@ -936,212 +226,1888 @@ Description Here (String): The Description of the new Recommendation
 Question+Answer Pair 5
 Question About Link Here (String): Description given for information provided by the user
 Link Here (String): The link of the new recommendation - optional
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+add_tag
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: add_tag(ID, passcode, title, category)
+Function IN add_data_in_collection.py
+
+Function: 
+Add a new Tag in the mongo Tag Collection, so a recommendation will be given to an appropriate user
+Also convert the ID into an integer before entering the new Tag
+While some categories will be a number they are added as strings
+
+Intakes: 
+ID (Integer): The ID number of the Recommendation the user wants to add the Tag in
+Passcode (String): The Passcode of the user who wants to add the Tag in the Collection
+Title (String): The Kind of Criteria of the Tag
+Category (String): The Category in the Criteria to identify the right user for the Recommendation
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+The user exists
+The ID number is an actual existing Recommendation in the Recommendation Collection
+The specific Tag doesn't already exist
+
+-----------------------------------------------------------------------------------------------------------------------
 add_tag_here
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: add_tag_here(recommendation_id_here, passcode_here, title_here, category, question_about_recommendation_id_here)
 Function IN Page_9.py
 
-Function: Call a function to add a Tag of a Recommendation in the Tag Collection
+Function: 
+Call a function to add a Tag of a Recommendation in the Tag Collection
 For each field the user answered correctly call a function to record the answer
 Update the error log in case something stops the addition function
-Intakes: Passcode Here (String): The Passcode of a user who is signed in and wants to add a recommendation
+
+Intakes: 
+Passcode Here (String): The Passcode of a user who is signed in and wants to add a recommendation
 Question+Answer Pair 1
 Question About Recommendation ID Here (String): Description given for information provided by the user
 Recommendation ID Here (Integer): The ID number of the recommendation the user needs to add a Tag in
 Question+Answer Pair 2
 Title Here (String): Title of Criteria the Tag is for
 Category (String): Category in the Criteria
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
 add_tags_layout
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: add_tags_layout()
 Function IN page_9.py
 
-Function: Adds the forms to enter a new Tag for a recommendation
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-generate_question_id
+Function: 
+Adds the forms to enter a new Tag for a recommendation
 
-To call/use enter: generate_question_id()
-Function IN page_9.py
+Intakes: 
+No content in this category
 
-Function: Generate an integer number of an ID for a new entry in the Question_Questionnaire mongo Collection
-Intakes: No content in this category
-Outtakes: Generated ID (Integer): An number not found in the ID field of a Question_Questionnaire entry
-Safeguards Included: No content in this category
-------------------
-------------------
-layout_9
+Outtakes: 
+No content in this category
 
-To call/use enter: layout_9()
-Function IN page_9.py
+Safeguards Included: 
+No content in this category
 
-Function: Built page 9, includes buttons, text inputs and other
-Add a recommendation, a tag or a question in the Daily Stress Questionnaire using 3 separate functions
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: The user exists
-The user is an administrator
-The user has answered the Daily Stress Questioner
-------------------
-------------------
-current_passcode
+-----------------------------------------------------------------------------------------------------------------------
+ages
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: st.session_state.current_passcode
-Variable IN st.session_state
+To call/use enter: ages
+Variable IN initialise_variables.py
 
-Function: A global variable that saves the passcode of a user signed in to remember it and givet them access to the rest of the pages
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-error
+Function: 
+The age categories of which the user can choose to make/ update their profile
 
-To call/use enter: st.session_state.error
-Variable IN st.session_state
+Intakes: 
+No content in this category
 
-Function: A global variable that holds the description of an error happening to show to a user
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-error_status
+Outtakes: 
+No content in this category
 
-To call/use enter: st.session_state.error_status
-Variable IN st.session_state
+Safeguards Included: 
+No content in this category
 
-Function: A globa variable that is True / False asin whether to show the global error variable's value
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-open_recommendation
+-----------------------------------------------------------------------------------------------------------------------
+answering_the_questionnaire
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: st.session_state.open_recommendation
-Variable IN st.session_state
+To call/use enter: answering_the_questionnaire()
+Function IN page_7.py
 
-Function: A global variable that saves the ID number of a recommendation in order to open it in another page
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-page
+Function: 
+Show section of tutorial that explains the need of a user to answer questionnaire daily
 
-To call/use enter: st.session_state.page
-Variable IN st.session_state
+Intakes: 
+No content in this category
 
-Function: A global variable keeping track if which page we are on to call the right layout
-Intakes: No content in this category
-Outtakes: No content in this category
-Safeguards Included: No content in this category
-------------------
-------------------
-get_time
+Outtakes: 
+No content in this category
 
-To call/use enter: get_time(timestamp)
-Function IN structure_recommendation_table.py
+Safeguards Included: 
+No content in this category
 
-Function: Finds the time difference between now and a timestamp provided
-Intakes: Timestamp (Datetime): A date+time an recommendation was completed
-Outtakes: Message (String): A very descriptive message of the time difference between now and the Timestamp
-Safeguards Included: No content in this category
-------------------
-------------------
-make_recommendation_table
+-----------------------------------------------------------------------------------------------------------------------
+change_page
+-----------------------------------------------------------------------------------------------------------------------
 
-To call/use enter: make_recommendation_table(recommendations, passcode)
-Function IN structure_recommendation_table.py
+To call/use enter: change_page(new_page)
+Function IN change_page.py
 
-Function: Get a list of recommendations and make a hybrid list between the Recommendation Collection and the Recommendation_Per_Person Collection
-Intakes: Recommendations (Dictionary List): The recommendations assigned to a user. Probably referenced by ID only
-Passcode (String): The Passcode of a user who was assigned the recommendations
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Table (Dictionary List): If the function completed it will return the new table created
-Safeguards Included: The user exists
-------------------
-------------------
-add_points
+Function: 
+Change the designation of the page number, 1 through 9 to change or reload a page
 
-To call/use enter: add_points(index, passcode, status)
-Function IN user_information.py
+Intakes: 
+New Page (Integer): A Page number 1 through 9
 
-Function: Get a recommendation and increase the user's score by the assigned points depending on the user's level
-Intakes: Index (Integer): The ID number of a recommendation the user completed
-Passcode (String): The Passcode of a user who completed a recommendation
-Status (DateTime Stamp): Each recommendation is given with others for a status the user made, so this is the time of creation
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The user exists
-The recommendation exists
- The user was given the recommendation
-------------------
-------------------
-add_points
+Outtakes: 
+No content in this category
 
-To call/use enter: add_points(index, passcode, status)
-Function IN user_information.py
+Safeguards Included: 
+No content in this category
 
-Function: Marks a recommendation as completed by a user. if the user was assigned the recommendation more than once it marks all recommendation entries with the ID as completed
-Awards the user points for completing the recommendation
-Makes a record that the user completed the recommendation
-Adds another entry in the user's score history
-Intakes: Index (Integer): The ID of the recommendation completed
-Passcode (string): The Passcode of the user who completed the recommendation
-Status (Timestamp): The Timestamp of the status the recommendation was generated for.
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
-Message (String): Specialises error message
-Safeguards Included: The user exists
-The recommendation exists
-The recommendation was assigned to the user today
-------------------
-------------------
+-----------------------------------------------------------------------------------------------------------------------
 change_recommendation_preference_for_user
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: change_recommendation_preference_for_user(preference, passcode, index, just_remove=False)
 Function IN user_information.py
 
-Function: Get a recommendation and remove it from the Favorite or Removed category
+Function: 
+Get a recommendation and remove it from the Favorite or Removed category
 Optionally will add the recommendation to the other category it just removed it from
-Intakes: Preference (Integer): 1 if the user wants to add the recommendation to the Favorite category or -1 for the Removed category
+
+Intakes: 
+Preference (Integer): 1 if the user wants to add the recommendation to the Favorite category or -1 for the Removed category
 Passcode (String): The Passcode of a user who completed a recommendation
 Index (Integer): The ID number of a recommendation the user wants to remove from a category and potentially add to the other
 Just Remove (Boolean): True if the user wants to JUST remove the recommendation from the category it is in
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
 Message (String): Specialises error message
-Safeguards Included: The user exists
+
+Safeguards Included: 
+The user exists
 The recommendation exists
-------------------
-------------------
+
+-----------------------------------------------------------------------------------------------------------------------
+change_recommendation_status
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: change_recommendation_status(preference, index_for_change_recommendation_status, function=None)
+Function IN page_6.py
+
+Function: 
+Call another function and passed the data of a recommendation that a user has completed
+Will reload the same using the page function 
+Update the error log in case something stops the called function
+
+Intakes: 
+Preference (Integer): 1 if the user wants to add the recommendation to the Favorite category and -1 if the Removed category of the recommendations
+Index for recommendation (Integer): The ID number of the recommendation the user wants to add / remove from a category
+Function (Boolean): If False the recommendation will be added to the referenced category. If True it will be just removed from it's current category. 
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+client
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: client
+Variable IN mongo_connection.py
+
+Function: 
+Get connection to mongo database server
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+completed_recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: completed_recommendation(index_for_completed_recommendation, status)
+Function IN page_6.py
+
+Function: 
+Call another function and passed the data of a recommendation that a user has completed
+Will return user to full recommendations page, page 3 
+Update the error log in case something stops the addition function
+
+Intakes: 
+Index Of Completed Recommendation (Integer): The ID number of the recommendation
+Status (Timestamp): The Timestamp of the status the recommendation was generated for. This will be used to identify the recommendation amongst the ones who have been assigned to the user
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+con_question
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: con_question
+Variable IN initialise_variables.py
+
+Function: 
+The question that identifies a confession
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+confession_form_layout
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: confession_form_layout()
+Function IN page_8.py
+
+Function: 
+Create the form the user can enter a confession for themselves
+Includes a disclaimer about personal data
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+confession_list_layout
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: confession_list_layout()
+Function IN page_8.py
+
+Function: 
+Show the list of all previous confessions the user has made
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+confessions
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: confessions()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user can make a confession
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+create_entry
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: create_entry(index, passcode, collection, outcome, created)
+Function IN make_record_recommendations.py
+
+Function: 
+Creates entry for table that includes the ID number of a recommendation, the title of the recommendation, the body of the recommendation, the collection name, the timestamp created for each entry pulled, whether the recommendation exists and whether it is an a favorite or removed category
+
+Intakes: 
+Index(Integer): The ID number of a recommendation
+Passcode(String): The Passcode of the user
+Collection(String): Collection name
+Outcome(Boolean): True if recommendation incomplete, False if complete and None if information about this not found
+Created(String): When the entry was created
+
+Outtakes: 
+Entry(Dictionary List Entry):  entry for table that includes the ID number of a recommendation, the title of the recommendation, the body of the recommendation, the collection name, the timestamp created for each entry pulled, whether the recommendation exists and whether it is an a favorite or removed category
+
+Safeguards Included: 
+The recommendation exists
+
+-----------------------------------------------------------------------------------------------------------------------
+create_history
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: create_history(passcode, priority, order, include_user, include_question, include_record, include_status, include_recommendation, include_Tag, include_favorite, include_removed, include_recommendation_per_person, include_question_Questionnaire, include_score, this_user_passcode)
+Function IN make_record.py
+
+Function: 
+Gets a request to build a user's record or entries in any collection. 
+Request includes sorting method and separate Boolean values for each collection, True if needing to be added
+Result is a dictionary list that includes the name of the collection, The user's passcode, the timestamp created for each entry pulled, a massage explaining the meaning of the entries in the collection and 2 key attributes to identify the entry in the collection
+Will make record of the request from the user under the passcode of the one requesting it.
+
+Intakes: 
+Passcode(String): The Passcode of a user of which the record is made for
+Priority(String): Either 'Time' or 'Substance'- the sorting method to arrange the created record by
+Order(Integer): Either 1 or -1, -1 if the user wants the record arranged in reverse 
+Include_User(Boolean): Whether or not the user wants to see the User collection
+Include_Question(Boolean): Whether or not the user wants to see the Question collection
+Include_Record(Boolean): Whether or not the user wants to see the Record collection
+Include_Status(Boolean): Whether or not the user wants to see the Status collection
+Include_Recommendation(Boolean): Whether or not the user wants to see the Recommendation collection
+Include_Tag(Boolean): Whether or not the user wants to see the Tag collection
+Include_Favorite(Boolean): Whether or not the user wants to see the Favorite_Recommendation collection
+Include_Removed(Boolean):Whether or not the user wants to see the Removed_Recommendation collection
+Include_Recommendation_per_person(Boolean): Whether or not the user wants to see the Recommendation_Per_Person collection
+Include_Question_Questionnaire(Boolean): Whether or not the user wants to see the Questionnaire collection
+Include_Score(Boolean):Whether or not the user wants to see the Score_History collection
+This_User_Passcode(String): The Passcode of a user who requested the record be made
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+User_History(Dictionary List): A dictionary list of the User's record in any collection required, with key attributes to identify it later if needed and a message to sum up the entry of the collection 
+Message (String): Specialises error message / Message for user if accomplished correctly
+
+Safeguards Included: 
+Both Users existBoth Users exist
+
+-----------------------------------------------------------------------------------------------------------------------
+create_recommendation_history
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: create_recommendation_history(passcode, order, include_favorite, include_removed, include_Recommendations, completed)
+Function IN make_record_recommendations.py
+
+Function: 
+Gets a request to build a user's record or entries in any collection. 
+Request includes sorting method and separate Boolean values for each collection, True if needing to be added
+Result is a dictionary list that includes the ID number of a recommendation, the title of the recommendation, the body of the recommendation, the collection name, the timestamp created for each entry pulled, whether the recommendation exists and whether it is an a favorite or removed category
+Will make record of the request from the user
+
+Intakes: 
+Passcode(String): The Passcode of the user
+Order(String): Either 'From A to Z' for ascending oder or 'From Z to A' for descending
+Include Favorite(Boolean): Whether the include the Favorite_Recommendation Collection
+Include Removed(Boolean): Whether the include the Removed_Recommendation Collection
+Include Recommendations(Boolean): Whether the include the Recommendation_Per_Person Collection
+Completed(Boolean): True when to include incomplete recommendations, False for only completed and None to include both  
+
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+User_History(Dictionary List): A dictionary list of the User's record in any collection required, with key attributes to identify it later if needed and a message to sum up the entry of the collection 
+Message (String): Specialises error message
+
+Safeguards Included: 
+The user exists
+
+-----------------------------------------------------------------------------------------------------------------------
+current_passcode
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: st.session_state.current_passcode
+Variable IN st.session_state
+
+Function: 
+A global variable that saves the passcode of a user signed in to remember it and gives them access to the rest of the pages
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+db
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: db
+Variable IN mongo_connection.py
+
+Function: 
+User connection to server to isolate Stress Test Database
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+delete_entry
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
+Function IN make_record.py
+
+Function: 
+Take a set of information and delete an entry from any collection
+Use the collection's name, 2 key attributes, a creation timestamp and a user's passcode 
+Depending on the collection requested creates a query for the entry using the 2 key attributes, the user's passcode and the creation datetime
+Makes a record of the request to delete an entry and the outcome under the user who requested the deletion's passcode
+
+Intakes: 
+Passcode (String): The Passcode of a user whose data the user wants to delete
+Key (String or Integer): Attribute value of entry in a collection, depending on the collection it could be a String or an Integer
+Key2 (String or Integer): Additional attribute value of entry in a collection, depending on the collection it could be a String or an Integer
+Created (String): When the entry was created
+Collection Name (String): The collection the entry will be deleted from
+This User Passcode (String): The Passcode of the user signed in, might not be the user whose data is being deleted
+
+Outtakes: 
+Outcome (Boolean): The condition of whether the entry requested was deleted
+Message (String): Specialises error message
+
+Safeguards Included: 
+The User signed in exists
+The User requested exists
+The collection requested exists
+
+-----------------------------------------------------------------------------------------------------------------------
+delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: delete_entry(passcode, key, key2, created, collection_name, this_user_passcode)
+Function IN make_record.py
+
+Function: 
+Deletes an entry form any collection in the database 
+Using the user passcode, the timestamp of creation and at most 2 key attributes makes a query to the database to delete the entry to that collection
+Will make record of the query and the outcome of said query in the passcode of the user requesting the delete action 
+
+Intakes: 
+Passcode(String): The Passcode of the user whose entry is getting deleted
+Key(Unknown): Attribute value of the entry deleted - could be either string or integer based on the collection
+Key2(Unknown): Attribute value of the entry deleted - could be either string or integer based on the collection
+Created(DateTime Stamp): Moment of creation of entry
+This_User_Passcode(String): The Passcode of the user requesting the deletion of the entry
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+Both Users existBoth Users exist
+The Collection requested can be found
+
+-----------------------------------------------------------------------------------------------------------------------
+error
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: st.session_state.error
+Variable IN st.session_state
+
+Function: 
+A global variable that holds the description of an error happening to show to a user
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+error_status
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: st.session_state.error_status
+Variable IN st.session_state
+
+Function: 
+A global variable that is True / False as in whether to show the global error variable's value
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Favorite_Recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Favorite_Recommendation
+Variable IN mongo_connection.py
+
+Function: 
+The Favorite_Recommendation collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+focus_areas
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: focus_areas
+Variable IN initialise_variables.py
+
+Function: 
+The focus area categories of which the user can choose to make/ update their profile
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+genders
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: genders
+Variable IN initialise_variables.py
+
+Function: 
+The options for the user to choose their gender
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+generate_question_id
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: generate_question_id()
+Function IN page_9.py
+
+Function: 
+Generate an integer number of an ID for a new entry in the Question_Questionnaire mongo Collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+Generated ID (Integer): An number not found in the ID field of a Question_Questionnaire entry
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+generate_recommendation_id
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: generate_recommendation_id()
+Function IN generate_items.py
+
+Function: 
+Generate an integer number of an ID for a new entry in the Question mongo Collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+Generated ID (Integer): An number not found in the ID field of a Question entry
+
+Safeguards Included: 
+The ID number isn't in the Tag / Recommendation / Recommendation_Per_Person Collection
+
+-----------------------------------------------------------------------------------------------------------------------
+get_limits
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: get_limits(level)
+Function IN generate_items.py
+
+Function: 
+Get a user's level and return the limits to their score
+
+Intakes: 
+Level (Integer): The lever of a user
+
+Outtakes: 
+Move Up Threshold (Integer): The score the user needs to ascend to the next level
+Move Down Threshold (Integer): The score that gets the user demoted to the level before
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+get_maximum_entries
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: get_maximum_entries()
+Function IN generate_items.py
+
+Function: 
+Calculates the number of recommendations a user can ask for
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+Maximum Requested: The maximum amount of entries the user can ask for when registering - at best 5
+Maximum Added: The maximum amount of entries the user can request later - at best 3
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+get_status
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: get_status(passcode)
+Function IN check_and_balance.py
+
+Function: 
+Get the passcode of a user and return if that user has answered the Daily Stress Questionnaire (aka Status) today, yesterday and the identifier of the last status made by the user
+
+Intakes: 
+Passcode (String): The Passcode of a user who might or might now have made an entry in the Daily Stress Questionnaire
+
+Outtakes: 
+Today (Boolean): Whether the user has answered the Daily Stress Questionnaire today
+Yesterday (Boolean): Whether the user has answered the Daily Stress Questionnaire yesterday
+Index (String): The identifier of the last Daily Stress Questionnaire by the user, -1 of there is none
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+get_time
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: get_time(timestamp)
+Function IN structure_recommendation_table.py
+
+Function: 
+Finds the time difference between now and a timestamp provided
+
+Intakes: 
+Timestamp (Datetime): A date+time an recommendation was completed
+
+Outtakes: 
+Message (String): A very descriptive message of the time difference between now and the Timestamp
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+init_connection
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: init_connection()
+Function IN mongo_connection.py
+
+Function: 
+Establish connection to mongo database server
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+initialize_variables
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: initialize_variables(current_passcode, open_recommendation)
+Function IN initialise_variables.py
+
+Function: 
+Get a passcode and a number and run 2 searches and 1 function. Return the results.
+
+Intakes: 
+Current Passcode (String): The Passcode of a user who might or might now have made an entry in the Daily Stress Questionnaire
+Open Recommendation (Integer): The ID number if a recommendation
+
+Outtakes: 
+User (Collection Item): The Item of the User in the mongo Collection User
+Today (Boolean): Whether the user has answered the Daily Stress Questionnaire today
+Yesterday (Boolean): Whether the user has answered the Daily Stress Questionnaire yesterday
+Index (String): The identifier of the last Daily Stress Questionnaire by the user, -1 of there is none
+Recommendation (Collection Item): The Item of the Recommendation in the mongo Collection Recommendation
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+insert_data
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: insert_data()
+Function IN mongo_connection.py
+
+Function: 
+Add default data in mongo collections User, Recommendation and Tag
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_4
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_4()
+Function IN page_4.py
+
+Function: 
+Built page 4, consisting of the update user form and the recommendation history form
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_5
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_5()
+Function IN page_5.py
+
+Function: 
+Built page 5, includes buttons, forms and others
+The user can make a request to see their record in any collection (or see another user's record)
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+The user exists
+The user has answered the Daily Stress Questioner
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_6
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_6()
+Function IN page_6.py
+
+Function: 
+Built page 6, includes buttons and text
+The user can complete and recommendation, and send it to either the Favorite or removed category
+User can see tags related to recommendation
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+The user exists
+The recommendation exists
+The user has answered the Daily Stress Questioner
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_7
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_7()
+Function IN page_7.py
+
+Function: 
+Built page 7, consisting of various functions who are sections of the tutorial
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+The user exists
+The user has answered the Daily Stress Questioner
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_8
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_8()
+Function IN page_8.py
+
+Function: 
+Built page 8, including a form to make add a user can use to make a confession and show all previous confessions.
+Splits the form and the previous confessions in separate functions
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+The user exists
+The user has answered the Daily Stress Questioner
+
+-----------------------------------------------------------------------------------------------------------------------
+layout_9
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: layout_9()
+Function IN page_9.py
+
+Function: 
+Built page 9, includes buttons, text inputs and other
+Add a recommendation, a tag or a question in the Daily Stress Questionnaire using 3 separate functions
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+The user exists
+The user is an administrator
+The user has answered the Daily Stress Questioner
+
+-----------------------------------------------------------------------------------------------------------------------
+make_recommendation_table
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: make_recommendation_table(recommendations, passcode)
+Function IN structure_recommendation_table.py
+
+Function: 
+Get a list of recommendations and make a hybrid list between the Recommendation Collection and the Recommendation_Per_Person Collection
+
+Intakes: 
+Recommendations (Dictionary List): The recommendations assigned to a user. Probably referenced by ID only
+Passcode (String): The Passcode of a user who was assigned the recommendations
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Table (Dictionary List): If the function completed it will return the new table created
+
+Safeguards Included: 
+The user exists
+
+-----------------------------------------------------------------------------------------------------------------------
+max_limit
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: max_limit
+Variable IN initialise_variables.py
+
+Function: 
+The MAXIMUM number a user can enter to an integer input field 
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+max_recommendation_limit
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: max_recommendation_limit
+Variable IN initialise_variables.py
+
+Function: 
+The MAXIMUM number of recommendations  a user can ask for
+Depends on the number of recommendation available
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+menu_layout
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: menu_layout()
+Function IN menu.py
+
+Function: 
+Adds a menu in the side bar to be shown for pages 3 and up
+Handles navigation in the application
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+min_limit
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: min_limit
+Variable IN initialise_variables.py
+
+Function: 
+The MINIMUM number a user can enter to an integer input field 
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+min_time_limit
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: min_time_limit
+Variable IN initialise_variables.py
+
+Function: 
+The MINIMUM number a user can enter for time available daily
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+new_entry_in_record_collection
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: new_entry_in_record_collection(passcode, action, letter)
+Function IN check_and_balance.py
+
+Function: 
+Adds a record of an action as defined by a description given under a user's Passcode
+It usually has a letter grouping actions together: C, P, Q and S
+Type C is data for the user's commitment to the application
+Type P is for profile data, look here for profile creations, log ins and profile updates
+Type Q is for query in database, look here for queries to gather record data and delete entries
+Type S is for Score. Includes changes in the level or score of a user
+
+Intakes: 
+Passcode (String): The Passcode of a user whom the action is recorded of
+Action (String): A description of the action recorded
+Letter (String): The action's letter C, P, Q or S
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+new_entry_in_score_history_collection
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: new_entry_in_score_history_collection(passcode)
+Function IN check_and_balance.py
+
+Function: 
+When called will enter he user's current score and a timestamp in the score_history collection. 
+Helps form the score history graph in page 3
+
+Intakes: 
+Passcode (string): The Passcode of the user 
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+open_recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: st.session_state.open_recommendation
+Variable IN st.session_state
+
+Function: 
+A global variable that saves the ID number of a recommendation in order to open it in another page
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+page
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: st.session_state.page
+Variable IN st.session_state
+
+Function: 
+A global variable keeping track if which page we are on to call the right layout
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+preferencies
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: preferencies()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user can manage their preferencies when it comes to recommendations
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Question
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Question
+Variable IN mongo_connection.py
+
+Function: 
+The Question collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_duration
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_duration
+Variable IN initialise_variables.py
+
+Function: 
+Question about the duration of a recommendation
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_link
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_link
+Variable IN initialise_variables.py
+
+Function: 
+Question about the link connected with a recommendation
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_passcode
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_passcode
+Variable IN initialise_variables.py
+
+Function: 
+Question that asks the user of their passcode
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_points
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_points
+Variable IN initialise_variables.py
+
+Function: 
+Question about the points a recommendation carries
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_recommendation_id
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_recommendation_id
+Variable IN initialise_variables.py
+
+Function: 
+Question about the ID of a recommendation that will be added
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_about_title
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_about_title
+Variable IN initialise_variables.py
+
+Function: 
+Question about the title of a recommendation
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_age
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_age
+Variable IN initialise_variables.py
+
+Function: 
+Question about a user's age range
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_focus_area
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_focus_area
+Variable IN initialise_variables.py
+
+Function: 
+Question  about the user's focus area
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_gender
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_gender
+Variable IN initialise_variables.py
+
+Function: 
+Question about the user's gender
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Question_ID
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Question_ID
+Variable IN initialise_variables.py
+
+Function: 
+Question about the ID of a question that will be added in the daily stress questionnaire
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_input
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_input
+Variable IN initialise_variables.py
+
+Function: 
+Input label for a question in the daily stress questionnaire
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Question_Questionnaire
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Question_Questionnaire
+Variable IN mongo_connection.py
+
+Function: 
+The Question_Questionnaire collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_suggestions
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_suggestions
+Variable IN initialise_variables.py
+
+Function: 
+Question about the number of suggestions a user wants to see daily
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_time_available
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_time_available
+Variable IN initialise_variables.py
+
+Function: 
+Question about the user's time available
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+question_username
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: question_username
+Variable IN initialise_variables.py
+
+Function: 
+Question about the user's username
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Recommendation
+Variable IN mongo_connection.py
+
+Function: 
+The Recommendation collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Recommendation_Per_Person
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Recommendation_Per_Person
+Variable IN mongo_connection.py
+
+Function: 
+The Recommendation_Per_Person collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+recommendations
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: recommendations()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user can manage their recommendations daily
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Record
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Record
+Variable IN mongo_connection.py
+
+Function: 
+The Record collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+record
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: record()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user can look up their record and customise their result
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+record_question
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: record_question(question, answer, passcode, function=True)
+Function IN check_and_balance.py
+
+Function: 
+Enter a question the user answered with the answer and a timestamp to the mongo Question collection
+
+Intakes: 
+Question (String): The Question given to a User
+Answer (String): The Answer a User gave
+Passcode (String): The Passcode of a user
+Function (Boolean): Whether a user clicked on the warning before submitting the question
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+The information is appropriate
+The user has clicked on the disclaimer that comes with some questions
+
+-----------------------------------------------------------------------------------------------------------------------
+Removed_Recommendation
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Removed_Recommendation
+Variable IN mongo_connection.py
+
+Function: 
+The Removed_Recommendation collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+score
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: score()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user's score will effect their level
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Score_History
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Score_History
+Variable IN mongo_connection.py
+
+Function: 
+The Score_History collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+score_history
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: score_history()
+Function IN page_7.py
+
+Function: 
+Show section of tutorial that explains how a user can see their score progression
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+signing_in
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: signing_in()
+Function IN page_7.py
+
+Function: 
+Shows section of tutorial that explains signing in to a user
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+sort_by_created_by
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: sort_by_created_by(entry)
+Function IN make_record_recommendations.py
+
+Function: 
+Sort a table based on the time of creation and then the ID number of the recommendation
+
+Intakes: 
+Entry(dictionary - list entry): The entry of the table being sorted
+
+Outtakes: 
+Key(DateTime Stamp): The timestamp of creation of the entry
+Key1(Integer): ID or recommendation in entry
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+sort_by_message
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: sort_by_message(entry)
+Function IN make_record.py
+
+Function: 
+Sort a table based on the message being carried and then the  time of creation
+
+Intakes: 
+Entry(dictionary - list entry): The entry of the table being sorted
+
+Outtakes: 
+Key(String): The message attribute of the entry given
+Key1(DateTime Stamp): The timestamp of creation of the entry
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+sort_by_time
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: sort_by_time(entry)
+Function IN make_record.py
+
+Function: 
+Sort a table based on the time of creation and then the message being carried
+
+Intakes: 
+Entry(dictionary - list entry): The entry of the table being sorted
+
+Outtakes: 
+Key(DateTime Stamp): The timestamp of creation of the entry
+Key1(String): The message attribute of the entry given
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+sort_by_type
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: sort_by_type(entry)
+Function IN make_record.py
+
+Function: 
+Sort a table based on collections the entries come from, then time of creation and then finally the message being carried
+
+Intakes: 
+Entry(dictionary - list entry): The entry of the table being sorted
+
+Outtakes: 
+Key(String): The collection the entry is from, as found in the entry
+Key1(DateTime Stamp): The timestamp of creation of the entry
+Key2(String): The message attribute of the entry given
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Status
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Status
+Variable IN mongo_connection.py
+
+Function: 
+The Status collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+stress_max_limit
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: stress_max_limit
+Variable IN initialise_variables.py
+
+Function: 
+The MAXIMUM number the stress level of a user can be
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+Tag
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: Tag
+Variable IN mongo_connection.py
+
+Function: 
+The Tag collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
 update_user
+-----------------------------------------------------------------------------------------------------------------------
 
 To call/use enter: update_user(passcode, username, repeat, age, focus_area, time_available, suggestions)
 Function IN user_information.py
 
-Function: Gets the information a user wants on their profile and updates their profile
-Intakes: Passcode (String): The Passcode of the user who wants to update their profile
+Function: 
+Gets the information a user wants on their profile and updates their profile
+
+Intakes: 
+Passcode (String): The Passcode of the user who wants to update their profile
 Username (String): The - maybe new - username of the user
 Repeat (Integer): The amount of days between the user seeing a recommendation
 Age (String): The Age category the user is in
 Focus Area (String): The focus area for the user
 Time Available (Integer): The time the user has available to spend in a recommendation
 Suggestions (Integer): The amount of suggestions the user wants to see
-Outtakes: Outcome (Boolean): Indicates that the function has been completed without complications
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
 Message (String): Specialises error message
-Safeguards Included: The user exists
+
+Safeguards Included: 
+The user exists
 A new username is unique for all user's, past and present
 The information is appropriate
-------------------
+
+-----------------------------------------------------------------------------------------------------------------------
+update_user
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: update_user(passcode, username, repeat, age, focus_area, time_available, suggestions, gender)
+Function IN user_information.py
+
+Function: 
+Update the user's information
+Use another function to record of the action 
+
+Intakes: 
+Passcode(String): The Passcode of the user looking to update their user information - always the same 
+Username(String): The Username of the user - could be the same or changed
+Repeat(Integer): The number of days between a recommendation reappearing - could be the same or changed
+Age(String): The Age Category of the user - could be the same or changed
+Focus Area(Array): The focus Areas of the user - could be the same or changed
+Time Available(Integer): The time the user has available - could be the same or changed
+Suggestions(Integer): The number of suggestions the users wants to see daily - could be the same or changed
+Gender(String): The Gender of the user - could be the same or changed
+
+Outtakes: 
+Outcome (Boolean): Indicates that the function has been completed without complications
+Message (String): Specialises error message
+
+Safeguards Included: 
+The user exists
+The Username given is either the same as it was or new and unique
+The Rest of the information given is valid
+
+-----------------------------------------------------------------------------------------------------------------------
+update_user_here
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: update_user_here(update_username, update_passcode, update_age, update_gender, update_focus_area, update_time_available, update_suggestions, update_repeat, repeat_question) 
+Function IN page_4.py
+
+Function: 
+Uses function to update the user's information
+For each field the user answered correctly call a function to record the answer
+Update the error log in case something stops the addition function Record the questions answered by the user with the answers given
+Reloads the page
+
+Intakes: 
+Update Username(String): The Username of the user - could be the same or changed
+Update Passcode(String): The Passcode of the user looking to update their user information - always the same 
+Update Age(String): The Age Category of the user - could be the same or changed
+Update Gender(String): The Gender of the user - could be the same or changed
+Update Focus Area(Array): The focus Areas of the user - could be the same or changed
+Update Time Available(Integer): The time the user has available - could be the same or changed
+Update Suggestions(Integer): The number of suggestions the users wants to see daily - could be the same or changed
+Repeat Question(String): Question about the user's preferences in the number of days between a recommendation reappearing
+Update Repeat(Integer): The number of days between a recommendation reappearing - could be the same or changed
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category
+
+-----------------------------------------------------------------------------------------------------------------------
+User
+-----------------------------------------------------------------------------------------------------------------------
+
+To call/use enter: User
+Variable IN mongo_connection.py
+
+Function: 
+The User collection in Stress Test mongo database
+Used for queries in a collection
+
+Intakes: 
+No content in this category
+
+Outtakes: 
+No content in this category
+
+Safeguards Included: 
+No content in this category

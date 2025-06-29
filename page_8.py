@@ -8,9 +8,6 @@ from make_record import delete_entry  # Database Function
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
 
@@ -21,7 +18,7 @@ if 'error_status' not in st.session_state:
 def layout_8():
 
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None and index != -1:
 

@@ -154,6 +154,18 @@ Page 4: User profile alterations + Recommendation history
 
                                     + init_connection() from mongo_connection.py
 
+                + question_username from initialise_variables.py
+
+                + question_age from initialise_variables.py
+
+                + question_gender from initialise_variables.py
+
+                + question_focus_area from initialise_variables.py
+
+                + question_time_available from initialise_variables.py
+
+                + question_suggestions from initialise_variables.py
+
                 + record_question() from check_and_balance.py
 
                     + User from mongo_connection.py
@@ -172,31 +184,31 @@ Page 4: User profile alterations + Recommendation history
 
             + create_recommendation_history() from make_record_recommendations.py
 
+                + Recommendation_Per_Person from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                + Favorite_Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                + Removed_Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
                 + add_collection() from make_record_recommendations.py
-
-                    + Recommendation_Per_Person from mongo_connection.py
-
-                        + db from mongo_connection.py
-
-                            + client from mongo_connection.py
-
-                                + init_connection() from mongo_connection.py
-
-                    + Favorite_Recommendation from mongo_connection.py
-
-                        + db from mongo_connection.py
-
-                            + client from mongo_connection.py
-
-                                + init_connection() from mongo_connection.py
-
-                    + Removed_Recommendation from mongo_connection.py
-
-                        + db from mongo_connection.py
-
-                            + client from mongo_connection.py
-
-                                + init_connection() from mongo_connection.py
 
                     + create_entry() from make_record_recommendations.py
 

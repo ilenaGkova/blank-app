@@ -4,9 +4,6 @@ from initialise_variables import initialize_variables  # Application Function
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
 
@@ -17,7 +14,7 @@ if 'error_status' not in st.session_state:
 def layout_7():
 
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None and index != -1:
         # Below is the tutorial, broken in small chapters.
@@ -140,15 +137,17 @@ def recommendations():
 
         st.write(
             'Based on your Stress Questionnaire answers and the number of suggestions you choose, you will receive tasks on the Home page.')
-        st.write('To see a task in detail click the :material/open_in_full: button next to it. For there:')
         st.write(
-            'To complete a task and earn points click the button with the :material/done_outline: icon.')
+            'To complete a task and earn points click the button with the :material/done_outline: icon next to it.')
         st.write(
-            'To mark your favorites click the button with the :material/thumb_up: icon for the task you like.')
+            'To mark your favorites click the button with the :material/thumb_up: icon next to the task you like.')
         st.write(
-            'To avoid future suggestions click the button with the :material/thumb_down: icon for the task you don’t want to see again.')
+            'To avoid future suggestions click the button with the :material/thumb_down: icon next to the task you don’t want to see again.')
         st.write(
             'To remove any of the :material/thumb_up: or :material/thumb_down: registration click the button with the :material/delete: icon.')
+        st.write(
+            'That option is available at the Home page or the ‘Profile and Preferences’ page at the navigation menu.')
+        st.write('To see a task in detail click the :material/open_in_full: button next to it.')
         st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
         st.write(
             'If you want new tasks all together? To the Daily Stress Questionnaire again by clicking on the ‘Daily Stress Questionnaire’. You will locate it in our navigation menu on your left.')
@@ -168,7 +167,7 @@ def signing_in(user):
 
         st.header('Signing In')
 
-        st.write('To sign in, enter your unique 8-digit code ', user['Passcode'],
+        st.write('To sign in, enter your unique 10-digit code ', user['Passcode'],
                  ' into the Passcode field on the login section on the initial page.')
 
 
@@ -178,13 +177,13 @@ def summary(passcode):
 
         st.write('Remember the number ', passcode,
                  ' to sign in again after you close the application')
-        st.write('Start by clicking the :material/open_in_full: to see a recommendation in detail')
-        
+
         st.write('Click :material/done_outline: to complete a task')
         st.write('Click :material/thumb_up: to mark your favorites')
         st.write('Click :material/thumb_down: to avoid future tasks')
         st.write(
             'Click :material/delete: to remove any of the :material/thumb_up: or :material/thumb_down: registration of a task')
+        st.write('Click the :material/open_in_full: to see a recommendation in detail')
 
         st.write("Want another task? Click on the 'Get another task' button under the tasks given to you")
 

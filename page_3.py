@@ -25,9 +25,6 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 
 def create_custom_slider(min_value, max_value, down_barrier, up_barrier,
                          score):  # Called with the home page, will visualise the user's score to make it easy to track progress
@@ -178,7 +175,7 @@ def add_recommendation_to_user():  # Called when the user wants to see another r
 
 def layout_3():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None and index != -1:
 

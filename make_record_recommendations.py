@@ -88,7 +88,7 @@ def create_recommendation_history(passcode, order, include_favorite, include_rem
 
     user = User.find_one({"Passcode": passcode})  # Find the user using their Passcode
 
-    query = f"Order: {order} - Favorite {include_favorite} - Removed {include_removed} - Per Person {include_Recommendations} / {completed}"  # Describe the query so the record can be made
+    query = f"Order: {order} - Favorite {include_removed} - Per Person {include_Recommendations} / {completed}"  # Describe the query so the record can be made
 
     if not user:  # End early if user not found
         return False, None, "Something went wrong, user not registered"

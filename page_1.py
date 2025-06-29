@@ -27,9 +27,14 @@ controller = CookieController()
 cookies = controller.getAll()
 
 
-def set_username(passcode_for_setting_username):  # Called when user signs in or makes a new account
+def set_username(passcode_for_setting_username, disclaimer):  # Called when user signs in or makes a new account
 
     st.session_state.current_passcode = passcode_for_setting_username  # Will register the user as the current user for this session
+
+    print(disclaimer)
+    if disclaimer:
+        controller.set("previous_user_passcode",
+                       str(passcode_for_setting_username))  # Will remember the passcode for the future so the user won't have to enter it
 
     today_for_setting_username, yesterday_for_setting_username, index_for_setting_username = get_status(
         st.session_state.current_passcode)  # Will see when the user made a last status
@@ -49,25 +54,22 @@ def set_username(passcode_for_setting_username):  # Called when user signs in or
         change_page(2)  # If the user hasn't made a status today the need to make one
 
 
-def log_in_user(passcode_for_signing_in_user, question_passcode_for_log_in_user):  # Called when user tries to long in
+def log_in_user(passcode_for_signing_in_user, disclaimer):  # Called when user tries to long in
 
     st.session_state.error_status, st.session_state.error = validate_user(
         passcode_for_signing_in_user)  # Will update the session error variables
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
 
-        controller.set("previous_user_passcode",
-                       str(passcode_for_signing_in_user))  # Will remember the passcode for the future so the user won't have to enter it
-
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
-        record_question(question_passcode_for_log_in_user, passcode_for_signing_in_user, passcode_for_signing_in_user)
+        record_question(question_passcode, passcode_for_signing_in_user, passcode_for_signing_in_user)
 
         set_username(
-            passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
+            passcode_for_signing_in_user, disclaimer)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def create_user(user_username, user_passcode, age, focus_area, time_available, suggestions,
-                gender):  # Called when a user wants to make a new account
+                gender, disclaimer):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
                                                                      focus_area,
@@ -76,9 +78,6 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
                                                                      gender)  # Will update the session error variables and maybe create new user if appropriate
 
     if st.session_state.error_status:  # Warning: The status variable is in reverse
-
-        controller.set("previous_user_passcode",
-                       str(user_passcode))  # Will remember the passcode for the future so the user won't have to enter it
 
         # We need record the answer the user gave to a question everytime the user enters something in a field or selects an answer out of a radio button
         record_question(question_gender, gender, user_passcode)
@@ -90,7 +89,7 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
         record_question(question_suggestions, suggestions, user_passcode)
 
         set_username(
-            user_passcode)  # Will call the function to register the user as the current user and move on to the next page
+            user_passcode, disclaimer)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def show_profile(username):
@@ -107,7 +106,9 @@ def layout():
     passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode",
                                                                                           ""))  # Save the previous passcode on the session variable
 
-    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, question_passcode],
+    disclaimer1 = st.sidebar.checkbox("Save my Passcode")
+
+    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, disclaimer1],
                       key="sign_in_user")
 
     # The Title
@@ -153,8 +154,15 @@ def layout():
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                           max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
 
+            disclaimer2 = st.checkbox(f"Your Passcode has been generated. Click here to see it")
+
+            if disclaimer2:
+                st.write(f"Your Passcode is {user_passcode}")
+
+            disclaimer3 = st.checkbox("Save my Passcode", key="Save_passcode")
+
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender],
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender, disclaimer3],
                       key="create_user")

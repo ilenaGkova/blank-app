@@ -16,7 +16,6 @@ if 'error_status' not in st.session_state:
 
 
 def menu_layout():
-
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          st.session_state.open_recommendation)
 
@@ -41,7 +40,6 @@ def menu_layout():
     if user is not None and index != -1:  # Users have a more limited menu than an admin
 
         if user['Role'] != 'User':
-
             st.sidebar.button('Add Data to Stress Test Database', icon=":material/add_circle:",
                               use_container_width=True,
                               on_click=change_page,

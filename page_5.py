@@ -12,13 +12,10 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 
 def layout_5():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None and index != -1:
 

@@ -16,9 +16,6 @@ if 'page' not in st.session_state:
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
 
@@ -97,7 +94,7 @@ def add_tag_here(recommendation_id_here, passcode_here, title_here, category,
 
 def layout_9():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     if user is not None and index != -1 and user['Role'] != 'User':
 

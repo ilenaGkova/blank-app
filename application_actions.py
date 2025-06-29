@@ -97,7 +97,7 @@ def determine_level_change(passcode):
     message_for_user = f"You have remained at level {user['Level']}."
     message_for_system = f"User remained at level {user['Level']}."
 
-    if user["Score"] > move_up_threshold:
+    if user["Score"] > move_up_threshold and user['Level'] < 25:
 
         User.update_one({"Passcode": passcode}, {"$inc": {"Level": 1}})  # The user moves up a level
         user = User.find_one({"Passcode": passcode})  # Find the user using their Passcode
@@ -126,10 +126,30 @@ def determine_level_change(passcode):
     new_entry_in_record_collection(passcode, message_for_system, "S")
 
     User.update_one({"Passcode": passcode},
-                    {"$set": {"Score": 0}})  # We reset the user's score to 0 to start over on this level
+                    {"$set": {"Score": get_reset_score(user["Score"], ["Level"])}})  # We reset the user's score to 0 to start over on this level
 
     new_entry_in_score_history_collection(passcode)
 
     new_entry_in_record_collection(f"User {passcode} has had their score set to 0", message_for_system, "S")
 
     return message_for_user
+
+
+def get_reset_score(current_score, new_level, task_base=25, max_weekly_tasks=50):
+    move_up_threshold, move_down_threshold = get_limits(new_level)
+    points_per_task = task_base * new_level
+    max_weekly_points = points_per_task * max_weekly_tasks
+
+    target_score = max(move_up_threshold - max_weekly_points, 0)
+
+    # Calculate carryover percentage
+    carryover_percentage = min(5 + new_level, 35) / 100
+    carryover_points = (current_score - move_up_threshold) * carryover_percentage if current_score > move_up_threshold else 0
+
+    target_score += max(carryover_points, 0)
+
+    # Ensure under demotion threshold
+    if target_score >= move_down_threshold:
+        target_score = move_down_threshold - 1
+
+    return max(int(target_score), 0)
