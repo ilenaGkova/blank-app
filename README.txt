@@ -10,11 +10,49 @@ Page 2: Submitting the Daily stress questionnaire
 
 Page 3: Application home page
 
-    Functions
++ Run streamlit_app.py file
 
-        + make_recommendation_table() from structure_recommendation_table.py
+        + page from st.session_state
 
-            + get_time() from structure_recommendation_table.py
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                     + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+        + menu_layout() from menu.py
+
+            + current_passcode from st.session_state
+
+            + open_recommendation from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
 
 Page 4: User profile alterations + Recommendation history
 

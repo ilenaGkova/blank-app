@@ -96,14 +96,11 @@ def pass_filter(title, category, user, status, out_early=False):
     for focus in user.get('Focus_Area', []):
         filters.append({'Title': 'Focus Area', 'Category': focus})
 
-    found_title_match = False
-
-    for filt in filters:
-        if filt['Title'] != title:
+    for entry in filters:
+        if entry['Title'] != title:
             continue  # Only care about filters that match the title
 
-        found_title_match = True
-        user_val = filt['Category']
+        user_val = entry['Category']
 
         if title == "Show for levels above":
             condition = int(category) >= int(user_val)
@@ -112,7 +109,7 @@ def pass_filter(title, category, user, status, out_early=False):
         elif title == "Show for levels equal":
             condition = int(category) == int(user_val)
         elif title == "Stress Level":
-            condition = int(category) >= int(user_val)
+            condition = float(category) >= float(user_val)
         elif title == "Time Available":
             condition = int(category) <= int(user_val)
         else:

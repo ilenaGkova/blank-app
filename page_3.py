@@ -272,6 +272,12 @@ def layout_3():
         if int(user['Days_Summed']) == 1:
             summary(st.session_state.current_passcode)
 
+        with st.container(border=True):
+            if Status.find_one({"_id": index})['Stress_Level']>3:
+                st.markdown(
+                    f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {Status.find_one({"_id": index})['Stress_Level']}. This application might not be suitable for your needs and advises visiting a professional if similar patterns persist.</div>",
+                    unsafe_allow_html=True)
+
         # Section 3: The daily recommendations
 
         st.subheader('Our task list for you today')

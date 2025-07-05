@@ -31,7 +31,7 @@ def submit_questionnaire():  # Called when the user completes the questioner
         stress_level += catalog_question(question, answer,
                                          st.session_state.current_passcode)  # Record the question-answer pairs and increase the stress level
 
-    make_status(int(stress_level/len(question_answer_pairs)))  # Submit to final stress level to move on
+    make_status(float(stress_level/len(question_answer_pairs)))  # Submit to final stress level to move on
 
 
 def catalog_question(question, answer, passcode):  # Called for each question in the Daily Stress Questionnaire
