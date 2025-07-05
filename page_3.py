@@ -274,8 +274,9 @@ def layout_3():
 
         with st.container(border=True):
             if Status.find_one({"_id": index})['Stress_Level']>3:
+                number = Status.find_one({"_id": index})['Stress_Level']
                 st.markdown(
-                    f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {Status.find_one({"_id": index})['Stress_Level']}. This application might not be suitable for your needs and advises visiting a professional if similar patterns persist.</div>",
+                    f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {number}. You may seek help from an health professional too.</div>",
                     unsafe_allow_html=True)
 
         # Section 3: The daily recommendations
