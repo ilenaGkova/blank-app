@@ -5,9 +5,6 @@ from change_page import change_page  # Application Function
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
 
-if 'open_recommendation' not in st.session_state:
-    st.session_state.open_recommendation = -1  # Will select a recommendation to open in full
-
 if 'error' not in st.session_state:
     st.session_state.error = ''  # Will store error logs for functions called
 
@@ -17,7 +14,7 @@ if 'error_status' not in st.session_state:
 
 def menu_layout():
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
-                                                                         st.session_state.open_recommendation)
+                                                                         1)
 
     # After the point the user sees the same menu in each of the next pages
 
