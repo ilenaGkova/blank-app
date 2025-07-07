@@ -21,20 +21,10 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-from streamlit_cookies_controller import CookieController  # Needs to be downloaded
-
-controller = CookieController()
-cookies = controller.getAll()
-
 
 def set_username(passcode_for_setting_username, disclaimer):  # Called when user signs in or makes a new account
 
     st.session_state.current_passcode = passcode_for_setting_username  # Will register the user as the current user for this session
-
-    print(disclaimer)
-    if disclaimer:
-        controller.set("previous_user_passcode",
-                       str(passcode_for_setting_username))  # Will remember the passcode for the future so the user won't have to enter it
 
     today_for_setting_username, yesterday_for_setting_username, index_for_setting_username = get_status(
         st.session_state.current_passcode)  # Will see when the user made a last status
@@ -92,23 +82,14 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
             user_passcode, disclaimer)  # Will call the function to register the user as the current user and move on to the next page
 
 
-def show_profile(username):
-    controller.set("username", str(username))
-    controller.set("username_done", True)
-    change_page(st.session_state.page)
-
-
 def layout():
     # The SideBar - User Signs In With Passcode
 
     st.sidebar.header('Already have an account? Sign in!')
 
-    passcode = st.sidebar.text_input(question_passcode, key="passcode", value=cookies.get("previous_user_passcode",
-                                                                                          ""))  # Save the previous passcode on the session variable
+    passcode = st.sidebar.text_input(question_passcode, key="passcode", type="password")  # Save the previous passcode on the session variable
 
-    disclaimer1 = st.sidebar.checkbox("Save my Passcode")
-
-    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, disclaimer1],
+    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, False],
                       key="sign_in_user")
 
     # The Title
@@ -124,15 +105,11 @@ def layout():
 
         # Step 1: User enters a username - randomly generated at first
 
-        user_username = st.text_input(question_username, key="user_username",
-                                      value=cookies.get("username", ""))
+        user_username = st.text_input(question_username, key="user_username")
 
         st.write(f"Try {str(generate_animal_username())}! We think it would sound fun.")
 
-        st.button('Claim Username', use_container_width=True, on_click=show_profile, args=[user_username],
-                  key="make_profile")
-
-        if Recommendation.count_documents({}) >= 1 and cookies.get("username_done", False):  # The application won't sign on new users if there are no recommendations to be given
+        if Recommendation.count_documents({}) >= 1 and user_username != "":  # The application won't sign on new users if there are no recommendations to be given
             # The Initial Questions Section
 
             # Step 2: Generate a password randomly with 10 digits
@@ -154,15 +131,8 @@ def layout():
             suggestions = st.number_input(question_suggestions, min_value=min_limit,
                                           max_value=max_recommendation_limit)  # Set maximum at the amount of suggestions available
 
-            disclaimer2 = st.checkbox(f"Your Passcode has been generated. Click here to see it")
-
-            if disclaimer2:
-                st.write(f"Your Passcode is {user_passcode}")
-
-            disclaimer3 = st.checkbox("Save my Passcode", key="Save_passcode")
-
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender, disclaimer3],
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender, False],
                       key="create_user")
