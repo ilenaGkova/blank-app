@@ -1,4 +1,7 @@
 from datetime import datetime
+
+import pytz
+
 from mongo_connection import Status, User, Record, Score_History, Question
 from generate_items import get_limits, get_now
 
@@ -14,7 +17,11 @@ def get_status(passcode):
     last_status_time = datetime.strptime(latest_status['Created_At'],
                                          '%Y-%m-%d %H:%M:%S')  # Format the timestamp of the last user entry to compare
 
-    now = datetime.now()
+    # convert to Greece timezone by assuming it was stored in Greece time
+    greece_tz = pytz.timezone('Europe/Athens')
+    last_status_time = greece_tz.localize(last_status_time)
+
+    now = datetime.now(greece_tz)
 
     # We return 3 results
     # First whether this last entry was done today - that means the user won't need to reenter the Daily Stress Questioner
