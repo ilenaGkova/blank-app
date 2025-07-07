@@ -13,7 +13,7 @@ import os
 import requests
 import json
 
-active_model = st.secrets["API"]["active_model"]
+active_model = st.secrets["API"]["active_model"]  # Find active model in secrets
 
 
 # This function generates a required amount of recommendations by setting a prompt in an openAI machine
@@ -59,28 +59,6 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
     return index
 
 
-recommendation_schema = {
-    "title": "Recommendation",
-    "description": "A stress-relief recommendation for the user",
-    "type": "object",
-    "properties": {
-        "Title": {
-            "type": "string",
-            "description": "The title of the activity"
-        },
-        "Description": {
-            "type": "string",
-            "description": "Explanation of the activity"
-        },
-        "Duration": {
-            "type": "integer",
-            "description": "Duration in minutes"
-        }
-    },
-    "required": ["Title", "Description", "Duration"]
-}
-
-
 def create_prompt(passcode):
     return (
         f"We have a user in an application. We require one (1) recommendation for the user to release stress today. "
@@ -99,8 +77,8 @@ def create_prompt(passcode):
     )
 
 
-def call_gemini_api(user_input, api_key):
-    url = api_key
+def call_gemini_api(passcode):
+    url = st.secrets["API"]["geminikey"] # Find gemini key in secret file
     headers = {
         "Content-Type": "application/json",
     }
@@ -110,7 +88,7 @@ def call_gemini_api(user_input, api_key):
             {
                 "parts": [
                     {
-                        "text": user_input
+                        "text": create_prompt(passcode)
                     }
                 ]
             }
@@ -121,43 +99,44 @@ def call_gemini_api(user_input, api_key):
     if response.status_code == 200:
         return response.json()
     else:
-        raise Exception(f"Gemini API error: {response.status_code} {response.text}")
+        raise Exception(f"Gemini API error: {response.status_code} {response.text}")  # Return error if happens
 
 
 def return_prompt(passcode):
     try:
-        if active_model == "Groq":
+
+        if active_model == "Groq":  # Seperate by active model
             if not os.environ.get("GROQ_API_KEY"):
-                os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]
+                os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]  # Find groq key in secret file
 
             model = init_chat_model(
-                "llama3-8b-8192",
+                "llama3-8b-8192",  # Specify model
                 model_provider="groq"
             )
 
-            messages = [
+            messages = [  # Structure model messages
                 SystemMessage(content=(
                     "You are an assistant that helps users reduce stress with actionable, personalized recommendations. "
                     "Respond only with a valid JSON object matching the schema. No markdown, no explanations, no code blocks."
-                )),
-                HumanMessage(content=create_prompt(passcode))
+                )),  # Work on tone and model role
+                HumanMessage(content=create_prompt(passcode))  # Add generated prompt
             ]
 
-            result = model.invoke(messages)
-            return True, result
+            result = model.invoke(messages)  # Call model to generate recommendation
 
-        elif active_model == "Gemini":
+            return True, result  # Return new recommendation
 
-            result = call_gemini_api(create_prompt(passcode), st.secrets["API"]["geminikey"])
+        elif active_model == "Gemini":  # Seperate by active model
 
-            # 🔵 Extract only the answer text
-            generated_text = result["candidates"][0]["content"]["parts"][0]["text"]
+            result = call_gemini_api(passcode)  # Call model to generate recommendation
 
-            return True, generated_text
+            generated_text = result["candidates"][0]["content"]["parts"][0]["text"]  # Extract only the answer text
+
+            return True, generated_text  # Return new recommendation
 
     except Exception as e:
-        print(str(e))
-        return False, str(e)
+        print(str(e))  # Print problem with recommendation generation
+        return False, str(e)  # Return problem with recommendation generation
 
 
 def extract_json(new_recommendation, prompt):

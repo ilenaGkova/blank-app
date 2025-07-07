@@ -26,6 +26,7 @@ def calculate_entries(passcode):
     # Set initial numbers
 
     entries_generated_by_AI = 0
+
     entries_chosen_by_Tags = 0
 
     entries_chosen_by_algorithm = 0

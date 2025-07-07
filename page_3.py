@@ -187,177 +187,196 @@ def layout_3():
 
         # Section 1: Streak and Days Connected
 
-        show_streak, show_days_connected = st.columns([2, 2])  # Show the information side by side
-
-        with show_streak:
-
-            with st.container(border=True):  # Add a square around the section to seperate them
-
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Streak']}</div>",
-                    unsafe_allow_html=True)
-
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Consecutive Days connected</div>",
-                    unsafe_allow_html=True)
-
-        with show_days_connected:
-
-            with st.container(border=True):  # Add a square around the section to seperate them
-
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Days_Summed']}</div>",
-                    unsafe_allow_html=True)
-
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Days connected</div>",
-                    unsafe_allow_html=True)
+        section_1(user)
 
         # Section 2: User Score and Level
 
-        st.subheader('Your Level / Score')
-
-        with st.container(border=True):
-
-            # Step 1: Check if the level or score need to be altered
-
-            if get_record(st.session_state.current_passcode):  # Levels and scores are altered 1 a week
-                st.header(determine_level_change(st.session_state.current_passcode))  # Will do the alteration
-                user = User.find_one(
-                    {"Passcode": st.session_state.current_passcode})  # Will update the user after the alteration
-
-            # Step 2: Show level and score
-
-            show_level, show_score = st.columns([1, 5])  # Show the information side by side
-
-            with show_level:
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 20px;'>Level</div>",
-                    unsafe_allow_html=True)
-
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Level']}</div>",
-                    unsafe_allow_html=True)
-
-            with show_score:
-                # Depending on the lever the promotion/demotion points are different
-                # See the mongo file for more
-
-                up, down = get_limits(user['Level'])
-
-                # Create the slider to show the user score, promotion and demotion points
-
-                fig = create_custom_slider(0, up + 50, down, up, user['Score'])
-                st.plotly_chart(fig, use_container_width=True)
-
-            # Step 3: Show message
-
-            st.markdown(
-                f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>",
-                unsafe_allow_html=True)
-
-        if Score_History.count_documents(
-                {"Passcode": st.session_state.current_passcode}) >= 1:  # Only make graph when you have data
-
-            see_score_history = st.checkbox(
-                "See your Score history")  # See score history graph, only show she when there are data to show
-
-            if see_score_history:  # and the user want to see it
-
-                st.altair_chart(create_store_history_graph(),
-                                use_container_width=True)  # Display the score history graph when the user has results and wants it
+        section_2(user)
 
         # For new user, add a message to direct them to the tutorial and give them the rundown of managing the recommendations they are given
 
-        if int(user['Days_Summed']) == 1:
-            summary(st.session_state.current_passcode)
-
-        with st.container(border=True):
-            if Status.find_one({"_id": index})['Stress_Level']>3:
-                number = Status.find_one({"_id": index})['Stress_Level']
-                st.markdown(
-                    f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {number}. You may seek help from an health professional too.</div>",
-                    unsafe_allow_html=True)
+        section_2_5(index, user)
 
         # Section 3: The daily recommendations
 
-        st.subheader('Our task list for you today')
+        section_3(user)
 
-        user_recommendation_generated_list_build, user_recommendation_generated_list, user_recommendation_generated_list_message = get_recommendations(
-            st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
+    else:
 
-        st.write(
-            user_recommendation_generated_list_message)  # Write the result of the function above, see mongo file for more
+        st.session_state.error_status = False
 
-        if user_recommendation_generated_list_build:  # This will tell us if the list was made or not
+        if user is None and index == -1:
+            st.session_state.error = 'Something went wrong, User not signed in and no Status found'
+        elif user is None:
+            st.session_state.error = 'Something went wrong, no Status found'
+        else:
+            st.session_state.error = 'Something went wrong, User not signed in'
 
-            user_recommendation_generated_list_with_recommendations_built, user_recommendation_generated_list_with_recommendations = make_recommendation_table(
-                user_recommendation_generated_list,
-                st.session_state.current_passcode)  # Step 2: Structure the recommendation table in a way that is helpful
 
-            if user_recommendation_generated_list_with_recommendations_built:
+def section_3(user):
+    st.subheader('Our task list for you today')
+    user_recommendation_generated_list_build, user_recommendation_generated_list, user_recommendation_generated_list_message = get_recommendations(
+        st.session_state.current_passcode)  # Step 1: Create the recommendation table based on the user's information
+    st.write(
+        user_recommendation_generated_list_message)  # Write the result of the function above, see mongo file for more
+    if user_recommendation_generated_list_build:  # This will tell us if the list was made or not
 
-                # Step 3: Assuming nothing went wrong we can show the table
+        user_recommendation_generated_list_with_recommendations_built, user_recommendation_generated_list_with_recommendations = make_recommendation_table(
+            user_recommendation_generated_list,
+            st.session_state.current_passcode)  # Step 2: Structure the recommendation table in a way that is helpful
 
-                pointer_for_user_recommendation_generated_list_with_recommendations = 1  # Serves as unique identifier for the buttons
+        if user_recommendation_generated_list_with_recommendations_built:
 
-                for entry_for_user_recommendation_generated_list_with_recommendations in user_recommendation_generated_list_with_recommendations:
+            # Step 3: Assuming nothing went wrong we can show the table
 
-                    with (st.container(border=True)):  # Puts a border around each entry to seperate
+            pointer_for_user_recommendation_generated_list_with_recommendations = 1  # Serves as unique identifier for the buttons
 
-                        # Each column is named after the content it shows
+            for entry_for_user_recommendation_generated_list_with_recommendations in user_recommendation_generated_list_with_recommendations:
 
-                        column_for_pointer, column_for_title_or_description = st.columns([0.2, 5])
+                with (st.container(border=True)):  # Puts a border around each entry to seperate
 
-                        with column_for_pointer:
+                    # Each column is named after the content it shows
+
+                    column_for_pointer, column_for_title_or_description = st.columns([0.2, 5])
+
+                    with column_for_pointer:
+
+                        st.markdown(
+                            f"<div style='text-align: center;'>{pointer_for_user_recommendation_generated_list_with_recommendations}</div>",
+                            unsafe_allow_html=True)
+
+                    with column_for_title_or_description:
+
+                        st.markdown(
+                            f"<div style='text-align: center; font-weight: bold;'>{entry_for_user_recommendation_generated_list_with_recommendations['Title']}</div>",
+                            unsafe_allow_html=True)
+
+                        if len(entry_for_user_recommendation_generated_list_with_recommendations[
+                                   'Description']) > 150:  # If description is big enough it won't show. It can be shown by extending the recommendation to full screen
 
                             st.markdown(
-                                f"<div style='text-align: center;'>{pointer_for_user_recommendation_generated_list_with_recommendations}</div>",
+                                "<div style='text-align: center;'>Open Task to see description</div>",
                                 unsafe_allow_html=True)
-
-                        with column_for_title_or_description:
+                        else:
 
                             st.markdown(
-                                f"<div style='text-align: center; font-weight: bold;'>{entry_for_user_recommendation_generated_list_with_recommendations['Title']}</div>",
+                                f"<div style='text-align: center;'>{entry_for_user_recommendation_generated_list_with_recommendations['Description']}</div>",
                                 unsafe_allow_html=True)
 
-                            if len(entry_for_user_recommendation_generated_list_with_recommendations[
-                                       'Description']) > 150:  # If description is big enough it won't show. It can be shown by extending the recommendation to full screen
+                        # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
 
-                                st.markdown(
-                                    "<div style='text-align: center;'>Open Task to see description</div>",
-                                    unsafe_allow_html=True)
-                            else:
+                        if entry_for_user_recommendation_generated_list_with_recommendations[
+                            'Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
 
-                                st.markdown(
-                                    f"<div style='text-align: center;'>{entry_for_user_recommendation_generated_list_with_recommendations['Description']}</div>",
-                                    unsafe_allow_html=True)
+                            st.markdown(
+                                f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
+                                unsafe_allow_html=True)
 
-                            # Depending on the outcome the user either sees the points the recommendation curies or what they completed it
+                        else:
 
-                            if entry_for_user_recommendation_generated_list_with_recommendations['Outcome']:  # Mirrors how the recommendation_per_person stores recommendation outcomes as boolean values with True being default
+                            st.markdown(
+                                f"<div style='text-align: center;'>Task completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
+                                unsafe_allow_html=True)
 
-                                st.markdown(
-                                    f"<div style='text-align: center;'>Complete this and gain {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
-                                    unsafe_allow_html=True)
+                    st.button("", icon=":material/open_in_full:", use_container_width=True,
+                              on_click=open_recommendation,
+                              args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
+                              key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
 
-                            else:
+                pointer_for_user_recommendation_generated_list_with_recommendations += 1
 
-                                st.markdown(
-                                    f"<div style='text-align: center;'>Task completed for {user['Level'] * entry_for_user_recommendation_generated_list_with_recommendations['Points']} points!</div>",
-                                    unsafe_allow_html=True)
+            # Users are ask initially for up to 1/4 of the number of recommendations in the Recommendation collection
+            # After the get their initial recommendations they can request 1/10 more of the number of recommendations in the Recommendation collection
 
-                        st.button("", icon=":material/open_in_full:", use_container_width=True,
-                                  on_click=open_recommendation, args=[entry_for_user_recommendation_generated_list_with_recommendations['ID']],
-                                  key=f"open_user_recommendation_generated_list_with_recommendations_{pointer_for_user_recommendation_generated_list_with_recommendations}")
+            if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit + max_additional_recommendations:
+                st.button("", icon=":material/add_task:", use_container_width=True,
+                          on_click=add_recommendation_to_user,
+                          args=[],
+                          key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation
 
-                    pointer_for_user_recommendation_generated_list_with_recommendations += 1
 
-                # Users are ask initially for up to 1/4 of the number of recommendations in the Recommendation collection
-                # After the get their initial recommendations they can request 1/10 more of the number of recommendations in the Recommendation collection
+def section_2_5(index, user):
+    if int(user['Days_Summed']) == 1:
+        summary(st.session_state.current_passcode)
+    with st.container(border=True):
+        if Status.find_one({"_id": index})['Stress_Level'] > 3:
+            number = Status.find_one({"_id": index})['Stress_Level']
+            st.markdown(
+                f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {number}. You may seek help from an health professional too.</div>",
+                unsafe_allow_html=True)
 
-                if len(user_recommendation_generated_list_with_recommendations) < max_recommendation_limit + max_additional_recommendations:
-                    st.button("", icon=":material/add_task:", use_container_width=True,
-                              on_click=add_recommendation_to_user,
-                              args=[],
-                              key="add_a_recommendation_to_user")  # User clicks here to get a new additional recommendation
+
+def section_2(user):
+    st.subheader('Your Level / Score')
+    with st.container(border=True):
+
+        # Step 1: Check if the level or score need to be altered
+
+        if get_record(st.session_state.current_passcode):  # Levels and scores are altered 1 a week
+            st.header(determine_level_change(st.session_state.current_passcode))  # Will do the alteration
+            user = User.find_one(
+                {"Passcode": st.session_state.current_passcode})  # Will update the user after the alteration
+
+        # Step 2: Show level and score
+
+        show_level, show_score = st.columns([1, 5])  # Show the information side by side
+
+        with show_level:
+            st.markdown(
+                f"<div style='text-align: center;font-size: 20px;'>Level</div>",
+                unsafe_allow_html=True)
+
+            st.markdown(
+                f"<div style='text-align: center;font-size: 60px;font-weight: bold;'>{user['Level']}</div>",
+                unsafe_allow_html=True)
+
+        with show_score:
+            # Depending on the lever the promotion/demotion points are different
+            # See the mongo file for more
+
+            up, down = get_limits(user['Level'])
+
+            # Create the slider to show the user score, promotion and demotion points
+
+            fig = create_custom_slider(0, up + 50, down, up, user['Score'])
+            st.plotly_chart(fig, use_container_width=True)
+
+        # Step 3: Show message
+
+        st.markdown(
+            f"<div style='text-align: left;'>Next level assessments in {get_time()}. Stay above the demotion score to remain to this level or reach the advancement score to move up!</div>",
+            unsafe_allow_html=True)
+    if Score_History.count_documents(
+            {"Passcode": st.session_state.current_passcode}) >= 1:  # Only make graph when you have data
+
+        see_score_history = st.checkbox(
+            "See your Score history")  # See score history graph, only show she when there are data to show
+
+        if see_score_history:  # and the user want to see it
+
+            st.altair_chart(create_store_history_graph(),
+                            use_container_width=True)  # Display the score history graph when the user has results and wants it
+
+
+def section_1(user):
+    show_streak, show_days_connected = st.columns([2, 2])  # Show the information side by side
+    with show_streak:
+        with st.container(border=True):  # Add a square around the section to seperate them
+
+            st.markdown(
+                f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Streak']}</div>",
+                unsafe_allow_html=True)
+
+            st.markdown(
+                f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Consecutive Days connected</div>",
+                unsafe_allow_html=True)
+    with show_days_connected:
+        with st.container(border=True):  # Add a square around the section to seperate them
+
+            st.markdown(
+                f"<div style='text-align: center;font-size: 40px;font-weight: bold; margin-top: 0'>{user['Days_Summed']}</div>",
+                unsafe_allow_html=True)
+
+            st.markdown(
+                f"<div style='text-align: center;font-size: 20px; margin-bottom: 30px'>Days connected</div>",
+                unsafe_allow_html=True)

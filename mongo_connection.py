@@ -5,8 +5,7 @@ from Tables import Users, Tags, Recommendations
 
 @st.cache_resource
 def init_connection():
-    return pymongo.MongoClient(st.secrets["mongo"][
-                                   "uri"])  # Establish Connection with database using the url given by the server in the secrets file
+    return pymongo.MongoClient(st.secrets["mongo"]["uri"])  # Establish Connection with database using the url given by the server in the secrets file
 
 
 client = init_connection()  # Establish Connection with database using the url given by the server in the secrets file
