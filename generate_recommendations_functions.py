@@ -1,7 +1,6 @@
-from datetime import datetime
 import random
 from mongo_connection import Recommendation, Status, Recommendation_Per_Person
-from generate_items import calculate_fail_count
+from generate_items import calculate_fail_count, get_now
 from check_and_balance import get_status
 
 
@@ -77,7 +76,7 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
             'Completed_At': None,
             'Status_Created_At': status['Created_At'],
             'Category': category,
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': get_now()
         }
     )
 

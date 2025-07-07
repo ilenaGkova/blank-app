@@ -159,15 +159,3 @@ def generate_recommendation(passcode):
         generate_recommendations_by_algorithm(passcode, 1)
 
     return True, "Recommendation added"
-
-
-
-
-
-
-
-
-
-
-
-

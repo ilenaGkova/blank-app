@@ -1,8 +1,7 @@
 from datetime import datetime
 from mongo_connection import User, Recommendation, Tag, Question_Questionnaire, Recommendation_Per_Person
+from generate_items import get_now
 
-
-# This function adds a recommendation in the Recommendation collection, it returns an indicator that shows whether the function completed and a message
 def add_recommendation(ID, passcode, title, description, link, points, duration):
     ID = int(ID)  # Convert any possible IDs in text into numbers
 
@@ -28,7 +27,7 @@ def add_recommendation(ID, passcode, title, description, link, points, duration)
         {
             'ID': ID,
             'Passcode': passcode,
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'Created_At': get_now(),
             'Title': title,
             'Description': description,
             'Link': link,
@@ -96,7 +95,7 @@ def add_question_to_Questionnaire(ID, passcode, question_input):
             'ID': ID,  # The collection has multable attributes, use ID it identify the entries
             'Passcode': passcode,  # Save the creator of the question
             'Question': question_input,  # Use the question as another key of the entry
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),  # Timestamp of creation
+            'Created_At': get_now(),  # Timestamp of creation
         }
     )
     return True, "Question added"

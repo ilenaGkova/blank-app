@@ -1,6 +1,6 @@
 from datetime import datetime
 from mongo_connection import Status, User, Record, Score_History, Question
-from generate_items import get_limits
+from generate_items import get_limits, get_now
 
 
 # This function finds the latest entry the user made to the Daily Stress Questioner and return several results
@@ -47,7 +47,7 @@ def record_status(passcode, stress_level):
             {
                 'Passcode': passcode,
                 'Stress_Level': stress_level,
-                'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                'Created_At': get_now()
             }
         )
 
@@ -74,7 +74,7 @@ def new_entry_in_record_collection(passcode, action, letter):
             'Passcode': passcode,  # The user passcode to find the user if needed
             'Action': action,  # Describing the action done in words
             'Type': letter,
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': get_now()
         }
     )
 
@@ -107,7 +107,7 @@ def new_entry_in_score_history_collection(passcode):
             'Score': user['Score'],
             'Level': user['Level'],
             'Outcome': outcome,
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': get_now()
         }
     )
 
@@ -139,7 +139,7 @@ def record_question(question, answer, passcode, function=True):
             'Passcode': passcode,
             'Question': question,
             'Answer': answer,
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': get_now()
         }
     )
 

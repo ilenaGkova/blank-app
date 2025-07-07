@@ -1,6 +1,6 @@
-from datetime import datetime
 from mongo_connection import User
 from check_and_balance import new_entry_in_record_collection, new_entry_in_score_history_collection
+from generate_items import get_now
 
 
 # This function gets a passcode given and finds if it is attached to user, if so it will sign them in
@@ -71,7 +71,7 @@ def new_user(username, passcode, age, focus_area, time_available, suggestions, g
             'Days_Summed': 0,  # Not initially available for change by the user
             'Role': 'User',
             # Not initially available for change by the user. This opens up certain privileges for the right roles
-            'Created_At': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            'Created_At': get_now()
         }
 
     )

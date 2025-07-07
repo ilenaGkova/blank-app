@@ -1,5 +1,9 @@
 import string
 import random
+from datetime import datetime
+
+import pytz
+
 from mongo_connection import User, db, Recommendation, Recommendation_Per_Person, Tag, Favorite_Recommendation, \
     Removed_Recommendation
 
@@ -122,3 +126,10 @@ def calculate_fail_count():
 
     return (int(total_possible_IDs / (
             max(number_of_recommendations_in_total - number_of_recommendation_after_removing_deleted_entries, 2)))) + 2
+
+
+def get_now():
+    # Define Greece timezone
+    greece_tz = pytz.timezone('Europe/Athens')
+    # Get current time in Greece timezone
+    return datetime.now(greece_tz).strftime("%Y-%m-%d %H:%M:%S")
