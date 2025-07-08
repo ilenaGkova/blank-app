@@ -17,21 +17,28 @@ if 'error' not in st.session_state:
 if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
-if 'answers' not in st.session_state:
-    st.session_state.answers = {}  # Will store answers to the Daily Stress Questioner
 
+def submit_questionnaire(q1, q2, q3, q4, q5, a1, a2, a3, a4, a5):
+    """
+    Called when the user completes the questionnaire.
+    Calculates total stress level from q1-q5 questions and answers and submits the averaged stress level.
+    """
 
-def submit_questionnaire():  # Called when the user completes the questioner
-    # Create a list of question-answer pairs
-    question_answer_pairs = [(question, answer) for question, answer in st.session_state.answers.items()]
+    # List of (question, answer) pairs directly from input
+    question_answer_pairs = [(q1, a1), (q2, a2), (q3, a3), (q4, a4), (q5, a5)]
 
-    stress_level = 0  # Set Stress Level as 0, so we can add to it
+    stress_level = 0  # Initialize stress level to 0
 
+    # Process each question-answer pair
     for question, answer in question_answer_pairs:
-        stress_level += catalog_question(question, answer,
-                                         st.session_state.current_passcode)  # Record the question-answer pairs and increase the stress level
+        # catalog_question records and returns the numeric stress value
+        stress_level += catalog_question(question, answer, st.session_state.current_passcode)
 
-    make_status(float(stress_level/len(question_answer_pairs)))  # Submit to final stress level to move on
+    # Calculate average stress level
+    average_stress = float(stress_level) / len(question_answer_pairs)
+
+    # Submit the final stress level
+    make_status(average_stress)
 
 
 def catalog_question(question, answer, passcode):  # Called for each question in the Daily Stress Questionnaire
@@ -77,18 +84,19 @@ def layout_2():
         """Please answer the Daily Stress Questioner"""
 
         # The Daily Question Section
+        # For each question we will have a slider for the user to answer
 
-        questionnaire_list = Question_Questionnaire.find()  # Get the questioner questions
+        a1 = st.select_slider(f"Today I felt that I couldn't cope with the important things I had to do", list(options.keys()), key="question_1")
 
-        for entry in questionnaire_list:
-            key = f"Question_{entry['ID']}"  # Make a unique key for each input field.
+        a2 = st.select_slider(f"Today I felt anxious and worried without a specific reason", list(options.keys()), key="question_2")
 
-            # For each question we will have a slider for the user to answer
-            st.select_slider(entry['Question'], list(options.keys()), key=key)
+        a3 = st.select_slider(f"Today I had physical symptoms such as rapid heartbeat, chest or stomach pain, sweating", list(options.keys()), key="question_3")
 
-            st.session_state.answers[entry['Question']] = st.session_state[key]  # Store the answer to the question via the key
+        a4 = st.select_slider(f"Today I had difficulty taking care of my daily needs (food, hygiene)", list(options.keys()), key="question_4")
 
-        st.button("Submit", on_click=submit_questionnaire, args=[], use_container_width=True, key="make_status")  # Step 2: Click button to submit answers
+        a5 = st.select_slider(f"Today I felt anger, fear, or a lack of self-confidence", list(options.keys()), key="question_5")
+
+        st.button("Submit", on_click=submit_questionnaire, args=[f"Today I felt that I couldn't cope with the important things I had to do", f"Today I felt anxious and worried without a specific reason", f"Today I had physical symptoms such as rapid heartbeat, chest or stomach pain, sweating", f"Today I had difficulty taking care of my daily needs (food, hygiene)", f"Today I felt anger, fear, or a lack of self-confidence", a1, a2, a3, a4, a5], use_container_width=True, key="make_status")  # Step 2: Click button to submit answers
 
     else:
 
