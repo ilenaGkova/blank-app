@@ -30,9 +30,9 @@ def submit_questionnaire(q1, q2, q3, q4, q5, a1, a2, a3, a4, a5):
     stress_level = 0  # Initialize stress level to 0
 
     # Process each question-answer pair
-    for question, answer in question_answer_pairs:
+    for q, a in question_answer_pairs:
         # catalog_question records and returns the numeric stress value
-        stress_level += catalog_question(question, answer, st.session_state.current_passcode)
+        stress_level += catalog_question(q, a, st.session_state.current_passcode)
 
     # Calculate average stress level
     average_stress = float(stress_level) / len(question_answer_pairs)
