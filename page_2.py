@@ -82,6 +82,9 @@ def layout_2():
 
         st.title(f"Hello {user['Username']}")
 
+        if int(user['Days_Summed']) <= 5:
+            st.header(f"Your Passcode is {st.session_state.current_passcode}.")
+
         st.header("""Please answer the Daily Stress Questioner""")
 
         # The Daily Question Section
