@@ -12,6 +12,7 @@ import re
 import os
 import requests
 import json
+from evaluation import evaluate_output
 
 active_model = st.secrets["API"]["active_model"]  # Find active model in secrets
 
@@ -30,6 +31,8 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
         if outcome:
 
+            evaluation = evaluate_output(prompt, new_recommendation)
+
             title, description, duration = extract_json(new_recommendation, create_prompt(passcode))
 
             while fail_count <= calculate_fail_count() and not recommendation_added:  # We have a maximum of 100 attempts to enter the recommendations
@@ -40,7 +43,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                                                                                         active_model,
                                                                                         title, description, None,
                                                                                         duration * 2,
-                                                                                        duration, prompt)  # We enter OpenAI as the passcode of the creator
+                                                                                        duration, prompt, evaluation)  # We enter OpenAI as the passcode of the creator
                 if recommendation_added:
 
                     enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
