@@ -1206,6 +1206,28 @@ Page 4: User profile alterations + Recommendation history
 
                                     + Database_Connection from st.secrets
 
+                    + Status from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + Question from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + get_now() from generate_items.py
+
                 + change_page() from change_page.py
 
                     + page from st.session_state
@@ -2230,6 +2252,18 @@ Page 8: Confession page
 
                                     + Database_Connection from st.secrets
 
+                    + Question from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + get_now() from generate_items.py
+
             + confession_list_layout() from page_8.py
 
                 + delete_entry() from make_record.py
@@ -2466,6 +2500,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                             + add_tag() from add_data_in_collection.py
 
                                 + User from mongo_connection.py
@@ -2497,6 +2533,8 @@ Page 9: Datapage management page
                                             + init_connection() from mongo_connection.py
 
                                                 + Database_Connection from st.secrets
+
+                                + get_now() from generate_items.py
 
                     + error_status from st.session_state
 
@@ -2542,6 +2580,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                             + add_tag() from add_data_in_collection.py
 
                                 + User from mongo_connection.py
@@ -2574,6 +2614,8 @@ Page 9: Datapage management page
 
                                                 + Database_Connection from st.secrets
 
+                                + get_now() from generate_items.py
+
                     + record_question() from check_and_balance.py
 
                         + User from mongo_connection.py
@@ -2605,6 +2647,8 @@ Page 9: Datapage management page
                                     + init_connection() from mongo_connection.py
 
                                         + Database_Connection from st.secrets
+
+                        + get_now() from generate_items.py
 
                     + change_page() from change_page.py
 
@@ -2676,6 +2720,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                     + error_status from st.session_state
 
                         + add_tag() from add_data_in_collection.py
@@ -2710,6 +2756,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                     + record_question() from check_and_balance.py
 
                         + User from mongo_connection.py
@@ -2731,6 +2779,18 @@ Page 9: Datapage management page
                                     + init_connection() from mongo_connection.py
 
                                         + Database_Connection from st.secrets
+
+                        + Question from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + get_now() from generate_items.py
 
                     + change_page() from change_page.py
 
@@ -2784,6 +2844,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                     + error_status from st.session_state
 
                         + add_question_to_Questionnaire() from add_data_in_collection.py
@@ -2808,6 +2870,8 @@ Page 9: Datapage management page
 
                                             + Database_Connection from st.secrets
 
+                            + get_now() from generate_items.py
+
                     + record_question() from check_and_balance.py
 
                         + User from mongo_connection.py
@@ -2830,6 +2894,17 @@ Page 9: Datapage management page
 
                                         + Database_Connection from st.secrets
 
+                        + Question from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + get_now() from generate_items.py
 
                     + change_page() from change_page.py
 

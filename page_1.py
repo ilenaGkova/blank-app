@@ -97,9 +97,9 @@ def layout():
     st.title('Wellcome to Stressless Living!')
 
     st.header(
-        'If you have an account sign in on the left - find the :material/arrow_forward_ios: icon to find the sign in form.')
+        'If you have an account log in on the left - find the :material/arrow_forward_ios: icon to find the sign in form.')
 
-    st.write("New here? Please answer the following questions and we'll create your account.")
+    st.header("New here? Please answer the following questions and we'll create your account. Start with your username and we will move on.")
 
     with st.container(border=True):  # Add a square around the section to seperate
 
@@ -133,6 +133,6 @@ def layout():
 
             # Step 5: User clicks button to create an account
 
-            st.button('Let us get started', use_container_width=True, on_click=create_user,
+            st.button('Let us get started with your first daily stress questionnaire', use_container_width=True, on_click=create_user,
                       args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender, False],
                       key="create_user")

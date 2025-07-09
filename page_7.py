@@ -173,10 +173,9 @@ def signing_in(user):
 
 def summary(passcode):
     with st.container(border=True):
-        st.header('New here? Here is how you can navigate our task table!')
+        st.header('Remember the passcode ', passcode, ' to sign in again after you close the application')
 
-        st.write('Remember the number ', passcode,
-                 ' to sign in again after you close the application')
+        st.header('New here? Here is how you can navigate our task table!')
 
         st.write('Click :material/done_outline: to complete a task')
         st.write('Click :material/thumb_up: to mark your favorites')

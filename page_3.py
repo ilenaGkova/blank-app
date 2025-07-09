@@ -296,7 +296,7 @@ def section_3(user):
 
 
 def section_2_5(index, user):
-    if int(user['Days_Summed']) == 1:
+    if int(user['Days_Summed']) <= 5:
         summary(st.session_state.current_passcode)
     with st.container(border=True):
         if Status.find_one({"_id": index})['Stress_Level'] > 3:

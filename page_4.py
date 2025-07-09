@@ -175,25 +175,21 @@ def make_record():
 
                         with column_for_collection_and_status_in_list_of_recommendations_based_on_filter_given_by_user:  # Shows the category each entry is
 
-                            if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                'Type'] == "Favorite_Recommendation":
+                            if entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Favorite_Recommendation":
 
                                 st.header(':material/thumb_up:')  # Category Favorites and Favorite Collection
 
-                            elif entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                'Type'] == "Removed_Recommendation":
+                            elif entry_for_list_of_recommendations_based_on_filter_given_by_user['Type'] == "Removed_Recommendation":
 
                                 st.header(
                                     ':material/thumb_down:')  # Category Removed and Removed_Recommendation Collection
 
-                            if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                'Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
+                            if entry_for_list_of_recommendations_based_on_filter_given_by_user['Outcome'] is not None:  # The below are in the Recommendation_per_person Collection
 
                                 st.header(
                                     ':material/badge:')  # Category given, mirrors how the recommendation_per_person stores recommendation outcomes, default for incomplete recommendations is True
 
-                                if entry_for_list_of_recommendations_based_on_filter_given_by_user[
-                                    'Outcome'] is False:
+                                if entry_for_list_of_recommendations_based_on_filter_given_by_user['Outcome'] is False:
                                     st.header(
                                         ':material/done_outline:')  # Category given, complete recommendations
 
@@ -228,7 +224,7 @@ def make_record():
                             if entry_for_list_of_recommendations_based_on_filter_given_by_user['Extend']:
                                 st.button("", icon=":material/open_in_full:", use_container_width=True,
                                           on_click=open_recommendation, args=[
-                                        entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
+                                            entry_for_list_of_recommendations_based_on_filter_given_by_user['ID']],
                                           key=f"open_recommendation_for_list_of_recommendations_based_on_filter_given_by_user_{list_of_recommendations_based_on_filter_given_by_user_pointer}")
 
                             if entry_for_list_of_recommendations_based_on_filter_given_by_user['Remove']:
