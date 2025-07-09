@@ -7,8 +7,5 @@ altair==5.0.1 # Data structuring
 # LangChain and model providers
 langchain[groq,google-genai]>=0.0.148
 groq>=0.2.0
-# For evaluation
-torch==2.1.0
-transformers==4.22.1
-detoxify==0.5.1
+
 
