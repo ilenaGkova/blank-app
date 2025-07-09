@@ -420,6 +420,8 @@ Page 3: Application home page
 
                                                 + Database_Connection from st.secrets
 
+                    + evaluate_output(prompt, model_output) from evaluation.py
+
                     + extract_json(new_recommendation, prompt)
 
                     + generate_recommendation_id() from generate_items.py
