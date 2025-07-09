@@ -40,7 +40,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                                                                                         active_model,
                                                                                         title, description, None,
                                                                                         duration * 2,
-                                                                                        duration, prompt)  # We enter OpenAI as the passcode of the creator
+                                                                                        duration, prompt, new_recommendation)  # We enter OpenAI as the passcode of the creator
                 if recommendation_added:
 
                     enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
