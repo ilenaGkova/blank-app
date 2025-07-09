@@ -173,7 +173,8 @@ def signing_in(user):
 
 def summary(passcode):
     with st.container(border=True):
-        st.header(f"Remember the passcode {passcode} to sign in again after you close the application")
+        head = f"Remember the passcode {passcode} to sign in again after you close the application"
+        st.header(head)
 
         st.header('New here? Here is how you can navigate our task table!')
 
