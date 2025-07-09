@@ -3,7 +3,7 @@ from mongo_connection import User, Recommendation, Tag, Question_Questionnaire, 
 from generate_items import get_now
 
 
-def add_recommendation(ID, passcode, title, description, link, points, duration, prompt=None, evaluation=None):
+def add_recommendation(ID, passcode, title, description, link, points, duration, prompt=None):
     ID = int(ID)  # Convert any possible IDs in text into numbers
 
     if not User.find_one(
@@ -33,8 +33,7 @@ def add_recommendation(ID, passcode, title, description, link, points, duration,
             'Description': description,
             'Link': link,
             'Points': points,
-            'Prompt': prompt,
-            'Evaluation': evaluation
+            'Prompt': prompt
         }
     )
 
