@@ -173,7 +173,7 @@ def signing_in(user):
 def summary(passcode):
     with st.container(border=True):
         st.header(f"See your passcode here:")
-        st.text_input(question_passcode, value=st.session_state.current_passcode, key="passcode", type="password")
+        st.text_input("", value=st.session_state.current_passcode, key="passcode", type="password")
 
     with st.container(border=True):
         st.header('New here? Here is how you can navigate our task table!')

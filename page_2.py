@@ -85,7 +85,7 @@ def layout_2():
         if int(user['Days_Summed']) <= 5:
             with st.container(border=True):
                 st.header(f"See your passcode here:")
-                st.text_input(question_passcode, value=st.session_state.current_passcode, key="passcode", type="password")
+                st.text_input("", value=st.session_state.current_passcode, key="passcode", type="password")
                 st.write(f"Message will be available for the following {5-user['Days_Summed']} day(s) you visit this page")
 
         st.header("""Please answer the Daily Stress Questioner""")
