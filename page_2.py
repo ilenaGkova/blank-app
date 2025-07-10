@@ -1,5 +1,5 @@
 import streamlit as st  # Streamlit Software
-from initialise_variables import initialize_variables, options  # Application Function
+from initialise_variables import initialize_variables, options, question_passcode  # Application Function
 from check_and_balance import record_question, record_status  # Database Function
 from change_page import change_page  # Application Function
 from mongo_connection import Question_Questionnaire  # Database Function
@@ -83,22 +83,30 @@ def layout_2():
         st.title(f"Hello {user['Username']}")
 
         if int(user['Days_Summed']) <= 5:
-            st.header(f"Your Passcode is {st.session_state.current_passcode}.")
+            with st.container(border=True):
+                st.header(f"See your passcode here:")
+                st.text_input(question_passcode, value=st.session_state.current_passcode, key="passcode", type="password")
+                st.write(f"Message will be available for the following {5-user['Days_Summed']} day(s) you visit this page")
 
         st.header("""Please answer the Daily Stress Questioner""")
 
         # The Daily Question Section
         # For each question we will have a slider for the user to answer
 
-        a1 = st.select_slider(f"Today I felt that I couldn't cope with the important things I had to do", list(options.keys()), key="question_1")
+        with st.container(border=True):
+            a1 = st.select_slider(f"Today I felt that I couldn't cope with the important things I had to do", list(options.keys()), key="question_1")
 
-        a2 = st.select_slider(f"Today I felt anxious and worried without a specific reason", list(options.keys()), key="question_2")
+        with st.container(border=True):
+            a2 = st.select_slider(f"Today I felt anxious and worried without a specific reason", list(options.keys()), key="question_2")
 
-        a3 = st.select_slider(f"Today I had physical symptoms such as rapid heartbeat, chest or stomach pain, sweating", list(options.keys()), key="question_3")
+        with st.container(border=True):
+            a3 = st.select_slider(f"Today I had physical symptoms such as rapid heartbeat, chest or stomach pain, sweating", list(options.keys()), key="question_3")
 
-        a4 = st.select_slider(f"Today I had difficulty taking care of my daily needs (food, hygiene)", list(options.keys()), key="question_4")
+        with st.container(border=True):
+            a4 = st.select_slider(f"Today I had difficulty taking care of my daily needs (food, hygiene)", list(options.keys()), key="question_4")
 
-        a5 = st.select_slider(f"Today I felt anger, fear, or a lack of self-confidence", list(options.keys()), key="question_5")
+        with st.container(border=True):
+            a5 = st.select_slider(f"Today I felt anger, fear, or a lack of self-confidence", list(options.keys()), key="question_5")
 
         st.button("Submit", on_click=submit_questionnaire, args=[f"Today I felt that I couldn't cope with the important things I had to do", f"Today I felt anxious and worried without a specific reason", f"Today I had physical symptoms such as rapid heartbeat, chest or stomach pain, sweating", f"Today I had difficulty taking care of my daily needs (food, hygiene)", f"Today I felt anger, fear, or a lack of self-confidence", a1, a2, a3, a4, a5], use_container_width=True, key="make_status")  # Step 2: Click button to submit answers
 

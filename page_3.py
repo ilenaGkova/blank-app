@@ -297,7 +297,9 @@ def section_3(user):
 
 def section_2_5(index, user):
     if int(user['Days_Summed']) <= 5:
-        summary(st.session_state.current_passcode)
+        with st.container(border=True):
+            summary(st.session_state.current_passcode)
+            st.write(f"Message will be available for the following {5 - user['Days_Summed']} day(s) you visit this page")
     with st.container(border=True):
         if Status.find_one({"_id": index})['Stress_Level'] > 3:
             number = Status.find_one({"_id": index})['Stress_Level']

@@ -16,7 +16,7 @@ def add_recommendation(ID, passcode, title, description, link, points, duration,
 
         return False, "Please try again, it look like the ID generated has already been added."
 
-    if not title.strip() or not description.strip() or points < 10 or points > 150 or (
+    if not title.strip() or not description.strip() or points <= 0 or points > 150 or (
             link is not None and not link.strip()) or duration <= 0:
         return False, "You need to fill in all mandatory fields"  # Make sure the data entered are appropriate to be added
 

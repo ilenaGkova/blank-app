@@ -1,5 +1,5 @@
 import streamlit as st  # Streamlit Software
-from initialise_variables import initialize_variables  # Application Function
+from initialise_variables import initialize_variables, question_passcode  # Application Function
 
 if 'current_passcode' not in st.session_state:
     st.session_state.current_passcode = 1  # Will register the user operating the application
@@ -12,7 +12,6 @@ if 'error_status' not in st.session_state:
 
 
 def layout_7():
-
     user, today, yesterday, index, recommendation = initialize_variables(st.session_state.current_passcode,
                                                                          1)
 
@@ -173,9 +172,10 @@ def signing_in(user):
 
 def summary(passcode):
     with st.container(border=True):
-        head = f"Remember the passcode {passcode} to sign in again after you close the application"
-        st.header(head)
+        st.header(f"See your passcode here:")
+        st.text_input(question_passcode, value=st.session_state.current_passcode, key="passcode", type="password")
 
+    with st.container(border=True):
         st.header('New here? Here is how you can navigate our task table!')
 
         st.write('Click :material/done_outline: to complete a task')
