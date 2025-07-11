@@ -86,7 +86,7 @@ def layout_2():
             with st.container(border=True):
                 st.header(f"See your passcode here:")
                 st.text_input("", value=st.session_state.current_passcode, key="passcode", type="password")
-                st.write(f"This message will only appear today")
+                st.write(f"This message will only appear today. Please remember your passcode to log in next time!")
 
         st.header("""Please answer the Daily Stress Questioner""")
 
