@@ -97,7 +97,8 @@ def layout():
     st.title('Wellcome to Stressless Living!')
 
     st.header(
-        'If you have an account log in on the left - find the :material/arrow_forward_ios: icon to find the sign in form.')
+        'If you have an account log in on the left side of the page'
+        'If the log in form is not visible click the :material/arrow_forward_ios::material/arrow_forward_ios: icon')
 
     st.header("New here? Please answer the following questions and we'll create your account. Start with your username and we will move on.")
 

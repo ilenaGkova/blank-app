@@ -170,10 +170,7 @@ def signing_in(user):
                  ' into the Passcode field on the login section on the initial page.')
 
 
-def summary(passcode):
-    with st.container(border=True):
-        st.header(f"See your passcode here:")
-        st.text_input("", value=st.session_state.current_passcode, key="passcode", type="password")
+def summary():
 
     with st.container(border=True):
         st.header('New here? Here is how you can navigate our task table!')
