@@ -85,7 +85,6 @@ def pass_filter(title, category, user, status, out_early=False):
     filters = [
         {'Title': 'Age Variant', 'Category': user['Age_Category']},
         {'Title': 'Stress Level', 'Category': status['Stress_Level']},
-        {'Title': 'Time Available', 'Category': user['Time_Available']},
         {'Title': 'Show for levels above', 'Category': user['Level']},
         {'Title': 'Show for levels below', 'Category': user['Level']},
         {'Title': 'Show for levels equal', 'Category': user['Level']},
