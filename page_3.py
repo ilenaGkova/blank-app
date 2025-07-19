@@ -92,7 +92,7 @@ def get_time():  # Called with the home page to get the count-down towards the n
     hours, remainder = divmod(time_remaining.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return f"{days_until_sunday} Days {hours:02} Hours {minutes:02} Minutes and {seconds:02} Seconds"  # Will return time remaining repeated
+    return f"{days_until_sunday} Day(s) {hours:02} Hour(s) {minutes:02} Minute(s) and {seconds:02} Second(s)"  # Will return time remaining repeated
 
 
 def create_store_history_graph():  # Called to make a graph of the score history of a user

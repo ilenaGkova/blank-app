@@ -28,6 +28,7 @@ def menu_layout():
     # 7 is the tutorial page where the user can see how the application works
     # 8 is the page where the user can make a confession and manage their confessions
     # 9 is the page where an admin can add entries to the collections of the database
+    # 10 is the evaluation page where the admin can do the evaluation
 
     st.sidebar.markdown(f"<div style='text-align: center;font-size: 20px; font-weight: bold;'>Navigation Menu</div>",
                         unsafe_allow_html=True)
@@ -41,6 +42,11 @@ def menu_layout():
                               use_container_width=True,
                               on_click=change_page,
                               args=[9], key="admin_add_page_admin")
+
+            st.sidebar.button('Do Evaluation', icon=":material/compare:",
+                              use_container_width=True,
+                              on_click=change_page,
+                              args=[10], key="admin_eval_admin")
 
         st.sidebar.button("Home", icon=":material/home:", use_container_width=True, on_click=change_page, args=[3],
                           key="main_page")

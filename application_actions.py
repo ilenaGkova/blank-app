@@ -125,12 +125,14 @@ def determine_level_change(passcode):
 
     new_entry_in_record_collection(passcode, message_for_system, "S")
 
+    number = get_reset_score(user["Score"], user["Level"])
+
     User.update_one({"Passcode": passcode},
-                    {"$set": {"Score": get_reset_score(user["Score"], ["Level"])}})  # We reset the user's score to 0 to start over on this level
+                    {"$set": {"Score": number}})  # We reset the user's score to 0 to start over on this level
 
     new_entry_in_score_history_collection(passcode)
 
-    new_entry_in_record_collection(f"User {passcode} has had their score set to 0", message_for_system, "S")
+    new_entry_in_record_collection(passcode, message_for_system, "S")
 
     return message_for_user
 

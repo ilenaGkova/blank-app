@@ -17,8 +17,8 @@ def generate_valid_index():
 
         if Recommendation.find_one({"ID": potential_recommendation_index}):
 
-            if Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Gemini" or Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Groq":
-
+            if Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Gemini" or \
+                    Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Groq":
                 return potential_recommendation_index  # We only return a valid not AI generated recommendation
 
         recommendation_fail += 1  # If the recommendation with the generated ID isn't found we add the fail count
@@ -39,7 +39,7 @@ def generate_valid_index():
 
 
 # This function gets data to add a recommendation to a user to match it with a user status
-def enter_recommendation_for_user(passcode, rec_id, fails, category):
+def enter_recommendation_for_user(passcode, recommendation_id, fails, category):
     # Find the last status the user made (look in the function for more) and make sure we enter the right amount if return variables
 
     today, yesterday, index = get_status(passcode)
@@ -69,7 +69,7 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
     Recommendation_Per_Person.insert_one(
         {
             'Passcode': passcode,
-            'ID': rec_id,
+            'ID': recommendation_id,
             'Pointer': len(user_recommendations) + 1,
             'Outcome': True,
             'Fail_Count': f"{fails} / {calculate_fail_count()}",
@@ -81,46 +81,50 @@ def enter_recommendation_for_user(passcode, rec_id, fails, category):
     )
 
 
-def pass_filter(title, category, user, status, out_early=False):
-    filters = [
-        {'Title': 'Age Variant', 'Category': user['Age_Category']},
-        {'Title': 'Stress Level', 'Category': status['Stress_Level']},
-        {'Title': 'Gender', 'Category': user['Gender']}
+# This Function takes a category and value from the Tag table
+def pass_filter(title, category, user, status, fully_compatible=False):
+    filters = [  # Create filter table with the User's information
+        {'Title': 'Age Variant', 'Category': user['Age_Category']},  # From User Collection
+        {'Title': 'Stress Level', 'Category': status['Stress_Level']},  # From Status Collection
+        {'Title': 'Time Available', 'Category': user['Time_Available']},  # From User Collection
+        {'Title': 'Show for levels above', 'Category': user['Level']},  # From User Collection
+        {'Title': 'Show for levels below', 'Category': user['Level']},  # From User Collection
+        {'Title': 'Show for levels equal', 'Category': user['Level']},  # From User Collection
+        {'Title': 'Gender', 'Category': user['Gender']}  # From User Collection
     ]
 
     for focus in user.get('Focus_Area', []):
-        filters.append({'Title': 'Focus Area', 'Category': focus})
+        filters.append({'Title': 'Focus Area',
+                        'Category': focus})  # Users can have many focus areas, so we are splitting them in seperate lines
 
     for entry in filters:
-        if entry['Title'] != title:
-            continue  # Only care about filters that match the title
 
-        user_val = entry['Category']
+        if entry['Title'] == title:
 
-        if title == "Show for levels above":
-            condition = int(category) >= int(user_val)
-        elif title == "Show for levels below":
-            condition = int(category) <= int(user_val)
-        elif title == "Show for levels equal":
-            condition = int(category) == int(user_val)
-        elif title == "Stress Level":
-            condition = float(category) >= float(user_val)
-        elif title == "Time Available":
-            condition = int(category) <= int(user_val)
-        else:
-            condition = category == user_val
+            if title == "Show for levels above":
+                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                condition = int(category) >= int(entry['Category'])
+            elif title == "Show for levels below":
+                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                condition = int(category) <= int(entry['Category'])
+            elif title == "Show for levels equal":
+                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                condition = int(category) == int(entry['Category'])
+            elif title == "Stress Level":
+                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                condition = float(category) >= float(entry['Category'])
+            elif title == "Time Available":
+                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                condition = int(category) <= int(entry['Category'])
+            else:
+                condition = category == entry['Category']  # Most categories are True if the value match completely
 
-        if out_early:
-            if not condition:
-                return False  # One failure = reject immediately
-        else:
-            if condition:
-                return True  # One match = accept immediately
+            if condition and not fully_compatible:
+                return True  # If fully_compatible is False then we just need one characteristic to match, if we find a positive we also abort early
+            elif not condition and fully_compatible:
+                return False  # fully_compatible means that the recommendation is appropriate is every characteristic matches the tags so abort early if one is not matching
 
-    # After looping all filters
-    if out_early:
-        return True  # Passed all matches without failing
+    if not fully_compatible:  # If function didn't end early
+        return False  # If fully_compatible was off that means condition was never True so the recommendation was never a match with the User
     else:
-        return False  # No matches found
-
-
+        return True  # If fully_computable was on that means condition was never False so the recommendation matches the user 100%

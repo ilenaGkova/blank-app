@@ -28,7 +28,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
         recommendation_added = False
 
-        if outcome:
+        if outcome:  # Add recommendation only of one was generated
 
             title, description, duration = extract_json(new_recommendation, create_prompt(passcode))
 
@@ -41,6 +41,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                                                                                         title, description, None,
                                                                                         duration * 2,
                                                                                         duration, prompt, new_recommendation)  # We enter OpenAI as the passcode of the creator
+
                 if recommendation_added:
 
                     enter_recommendation_for_user(passcode, recommendation_generated_id, fail_count,
@@ -59,12 +60,13 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
     return index
 
 
+# This function returns the prompt to run through the LLM
 def create_prompt(passcode):
     return (
         f"We have a user in an application. We require one (1) recommendation for the user to release stress today. "
         f"We have information on the user following:"
         f"\n----------------\n"
-        f"{generate_user_profile(passcode)}"
+        f"{generate_user_profile(passcode)}"  # This function creates the user's profile
         f"\n----------------\n"
         f"Please return your  answer exclusively in one (1) JSON request containing a title, a description and a duration between {min_time_limit} - {max_limit} minutes."
         f"A sample answer would look like this:\n"
@@ -78,7 +80,7 @@ def create_prompt(passcode):
 
 
 def call_gemini_api(passcode):
-    url = st.secrets["API"]["geminikey"] # Find gemini key in secret file
+    url = st.secrets["API"]["geminikey"]  # Find gemini key (as URL) in secret file
     headers = {
         "Content-Type": "application/json",
     }
@@ -88,7 +90,7 @@ def call_gemini_api(passcode):
             {
                 "parts": [
                     {
-                        "text": create_prompt(passcode)
+                        "text": create_prompt(passcode)  # Get prompt to submit
                     }
                 ]
             }
@@ -124,7 +126,7 @@ def return_prompt(passcode):
 
             result = model.invoke(messages)  # Call model to generate recommendation
 
-            return True, result  # Return new recommendation
+            return True, result, create_prompt(passcode)  # Return new recommendation
 
         elif active_model == "Gemini":  # Seperate by active model
 

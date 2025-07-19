@@ -30,6 +30,7 @@ if 'error_status' not in st.session_state:
 # 7 is the tutorial page where the user can see how the application works
 # 8 is the page where the user can make a confession and manage their confessions
 # 9 is the page where an admin can add entries to the collections of the database
+# 10 is the evaluation page where the admin can do the evaluation
 
 # Step 1: Show the error if needed
 
@@ -134,6 +135,12 @@ else:
         from page_9 import layout_9
 
         layout_9()
+
+    elif st.session_state.page == 10:  # 10 is the evaluation page where the admin can do the evaluation
+
+        from page_10 import layout_10
+
+        layout_10()
 
     else:
 
