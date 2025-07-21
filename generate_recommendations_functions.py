@@ -28,7 +28,7 @@ def generate_valid_index():
     if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
 
         potential_recommendation_index = Recommendation.find_one(
-            {"Passcode": {"$nin": ["Gemini", "Groq"]}},
+            {"Passcode": {"$nin": ["Gemini", "Groq"]}, 'Category': {"$nin": ["D"]}},
             sort=[("ID", -1)],
             projection={"ID": 1, "_id": 0}
         )
@@ -97,34 +97,44 @@ def pass_filter(title, category, user, status, fully_compatible=False):
         filters.append({'Title': 'Focus Area',
                         'Category': focus})  # Users can have many focus areas, so we are splitting them in seperate lines
 
+    condition = False
+
     for entry in filters:
 
         if entry['Title'] == title:
 
-            if title == "Show for levels above":
-                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
-                condition = int(category) >= int(entry['Category'])
-            elif title == "Show for levels below":
-                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
-                condition = int(category) <= int(entry['Category'])
-            elif title == "Show for levels equal":
-                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
-                condition = int(category) == int(entry['Category'])
-            elif title == "Stress Level":
-                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
-                condition = float(category) >= float(entry['Category'])
-            elif title == "Time Available":
-                # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
-                condition = int(category) <= int(entry['Category'])
-            else:
-                condition = category == entry['Category']  # Most categories are True if the value match completely
+            condition = False
 
-            if condition and not fully_compatible:
-                return True  # If fully_compatible is False then we just need one characteristic to match, if we find a positive we also abort early
-            elif not condition and fully_compatible:
-                return False  # fully_compatible means that the recommendation is appropriate is every characteristic matches the tags so abort early if one is not matching
+            try:
+                if title == "Show for levels above":
+                    # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                    condition = int(category) >= int(entry['Category'])
+                elif title == "Show for levels below":
+                    # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                    condition = int(category) <= int(entry['Category'])
+                elif title == "Show for levels equal":
+                    # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                    condition = int(category) == int(entry['Category'])
+                elif title == "Stress Level":
+                    # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                    condition = float(category) >= float(entry['Category'])
+                elif title == "Time Available":
+                    # The categories with values in numbers and that need comparisons not equal need to convert the table information into numbers
+                    condition = int(category) <= int(entry['Category'])
+                else:
+                    condition = category == entry['Category']  # Most categories are True if the value match completely
 
-    if not fully_compatible:  # If function didn't end early
-        return False  # If fully_compatible was off that means condition was never True so the recommendation was never a match with the User
-    else:
-        return True  # If fully_computable was on that means condition was never False so the recommendation matches the user 100%
+            except (ValueError, TypeError):  # Defensive fallback: if comparison fails, treat as non-match
+                condition = False
+
+            if (condition and not fully_compatible) or (not condition and fully_compatible):
+
+                # If fully_compatible is False then we just need one characteristic to match, if we find a positive we also abort early
+                # fully_compatible means that the recommendation is appropriate is every characteristic matches the tags so abort early if one is not matching
+
+                return condition
+
+    # If fully_compatible was off that means condition was never True so the recommendation was never a match with the User
+    # If fully_computable was on that means condition was never False so the recommendation matches the user 100%
+
+    return condition

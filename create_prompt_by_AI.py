@@ -104,6 +104,7 @@ def call_gemini_api(passcode):
         raise Exception(f"Gemini API error: {response.status_code} {response.text}")  # Return error if happens
 
 
+# This Function call a LLM and returns the answer given
 def return_prompt(passcode):
     try:
 
@@ -141,6 +142,7 @@ def return_prompt(passcode):
         return False, str(e), None  # Return problem with recommendation generation
 
 
+# This function processes a LLM answer and extracts from the JSON request the new recommendation information
 def extract_json(new_recommendation, prompt):
     try:
         text = getattr(new_recommendation, "content", str(new_recommendation)).strip()

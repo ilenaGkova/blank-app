@@ -340,7 +340,7 @@ def section_2(user):
 
             # Create the slider to show the user score, promotion and demotion points
 
-            fig = create_custom_slider(0, up + 50, down, up, user['Score'])
+            fig = create_custom_slider(0, up + 50 * user['Level'], down, up, user['Score'])
             st.plotly_chart(fig, use_container_width=True)
 
         # Step 3: Show message
