@@ -28,7 +28,7 @@ def generate_valid_index():
     if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
 
         potential_recommendation_index = Recommendation.find_one(
-            {"Passcode": {"$nin": ["Gemini", "Groq"]}, 'Category': {"$nin": ["D"]}},
+            {"Passcode": {"$nin": ["Gemini", "Groq"]}},
             sort=[("ID", -1)],
             projection={"ID": 1, "_id": 0}
         )
