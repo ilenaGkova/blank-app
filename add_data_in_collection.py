@@ -32,9 +32,7 @@ def add_recommendation(ID, passcode, title, description, link, points, duration)
             'Title': title,
             'Description': description,
             'Link': link,
-            'Points': points,
-            'Prompt': prompt,
-            'Answer': answer
+            'Points': points
         }
     )
 
