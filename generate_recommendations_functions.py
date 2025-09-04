@@ -27,11 +27,7 @@ def generate_valid_index():
 
     if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
 
-        potential_recommendation_index = Recommendation.find_one(
-            {"Passcode": {"$nin": ["Gemini", "Groq"]}},
-            sort=[("ID", -1)],
-            projection={"ID": 1, "_id": 0}
-        )
+        potential_recommendation_index = Recommendation.find_one({"Passcode": {"$nin": ["Gemini", "Groq"]}})
         if potential_recommendation_index is None:
             return 1
 
@@ -138,3 +134,4 @@ def pass_filter(title, category, user, status, fully_compatible=False):
     # If fully_computable was on that means condition was never False so the recommendation matches the user 100%
 
     return condition
+
