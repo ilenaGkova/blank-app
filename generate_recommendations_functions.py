@@ -27,11 +27,7 @@ def generate_valid_index():
 
     if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
 
-        potential_recommendation_index = Recommendation.find_one({"Passcode": {"$nin": ["Gemini", "Groq"]}})
-        if potential_recommendation_index is None:
-            return 1
-
-    return potential_recommendation_index["ID"]
+        return 1
 
 
 # This function gets data to add a recommendation to a user to match it with a user status
@@ -124,7 +120,6 @@ def pass_filter(title, category, user, status, fully_compatible=False):
                 condition = False
 
             if (condition and not fully_compatible) or (not condition and fully_compatible):
-
                 # If fully_compatible is False then we just need one characteristic to match, if we find a positive we also abort early
                 # fully_compatible means that the recommendation is appropriate is every characteristic matches the tags so abort early if one is not matching
 
@@ -134,4 +129,3 @@ def pass_filter(title, category, user, status, fully_compatible=False):
     # If fully_computable was on that means condition was never False so the recommendation matches the user 100%
 
     return condition
-
