@@ -36,6 +36,10 @@ def add_recommendation(ID, passcode, title, description, link, points, duration)
         }
     )
 
+    add_tag(ID, passcode, "Time Available", duration)
+
+    return True, "Recommendation added"
+
 # This function adds a tag to a recommendation, it returns an indicator that shows whether the function completed and a message
 def add_tag(ID, passcode, title, category):
     ID = int(ID)  # Convert any possible IDs in text into numbers

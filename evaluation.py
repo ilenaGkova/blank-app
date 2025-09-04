@@ -16,6 +16,7 @@ from mongo_connection import Recommendation, Recommendation_Per_Person, User, Ta
 from generate_recommendations_functions import pass_filter
 from check_and_balance import get_status
 from openpyxl import Workbook
+from add_data_in_collection import add_tag
 
 
 def add_recommendation(prompt, answer, passcode, index):
@@ -699,6 +700,10 @@ def make_answer_analysis_table():
                 'Answer': answer
             }
         )
+
+        add_tag(ID, passcode, "Time Available", duration)
+
+        return True, "Recommendation added"
 
 # Changes into create prompt by AI.py to set up saving samples:
 
