@@ -300,8 +300,8 @@ def section_2_5(index, user):
         with st.container(border=True):
             summary()
             st.write(f"Message will be available for the following {5 - user['Days_Summed']} day(s) you visit this page")
-    with st.container(border=True):
-        if Status.find_one({"_id": index})['Stress_Level'] > 3:
+    if Status.find_one({"_id": index})['Stress_Level'] > 3:
+        with st.container(border=True):
             number = Status.find_one({"_id": index})['Stress_Level']
             st.markdown(
                 f"<div style='text-align: center;font-size: 30px;font-weight: bold;'>Your Stress Level was calculated at {number}. You may seek help from an health professional too.</div>",

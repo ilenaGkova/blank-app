@@ -1,5 +1,5 @@
 import streamlit as st  # Streamlit Software
-from initialise_variables import initialize_variables, options, question_passcode  # Application Function
+from initialise_variables import initialize_variables, options  # Application Function
 from check_and_balance import record_question, record_status  # Database Function
 from change_page import change_page  # Application Function
 from mongo_connection import Question_Questionnaire  # Database Function
@@ -86,7 +86,8 @@ def layout_2():
             with st.container(border=True):
                 st.header(f"See your passcode here:")
                 st.text_input("", value=st.session_state.current_passcode, key="passcode", type="password")
-                st.write(f"This message will only appear today. Please remember your passcode to log in next time!")
+                st.write(f"This message will only appear today. Please remember your passcode to log in next time! "
+                         f"You passcode is also available at your profile information.")
 
         st.header("""Please answer the Daily Stress Questioner""")
 

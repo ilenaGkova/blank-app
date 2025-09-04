@@ -92,7 +92,7 @@ def get_limits(level):
     # The calculations below calculate the promotion score. In sum, it's level^2 * 100
 
     x = 100 * level
-    move_up_threshold = x * level
+    move_up_threshold = x*level
 
     # The calculations below calculate the demotion score. It relies on the promotion score and the level
 

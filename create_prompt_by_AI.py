@@ -22,7 +22,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
 
     while index < entries_generated_by_AI:
 
-        outcome, new_recommendation, prompt = return_prompt(passcode)
+        outcome, new_recommendation = return_prompt(passcode)
 
         fail_count = 0  # We have a minor fail count to keep track if the recommendation was added, we probably won't have to use it unless we have various users doing this at the same time
 
@@ -40,7 +40,7 @@ def generate_recommendations_by_AI(passcode, entries_generated_by_AI):
                                                                                         active_model,
                                                                                         title, description, None,
                                                                                         duration * 2,
-                                                                                        duration, prompt, new_recommendation)  # We enter OpenAI as the passcode of the creator
+                                                                                        duration)  # We enter OpenAI as the passcode of the creator
 
                 if recommendation_added:
 
@@ -127,7 +127,7 @@ def return_prompt(passcode):
 
             result = model.invoke(messages)  # Call model to generate recommendation
 
-            return True, result, create_prompt(passcode)  # Return new recommendation
+            return True, result # Return new recommendation
 
         elif active_model == "Gemini":  # Seperate by active model
 
@@ -135,11 +135,11 @@ def return_prompt(passcode):
 
             generated_text = result["candidates"][0]["content"]["parts"][0]["text"]  # Extract only the answer text
 
-            return True, generated_text, create_prompt(passcode)  # Return new recommendation
+            return True, generated_text  # Return new recommendation
 
     except Exception as e:
         print(str(e))  # Print problem with recommendation generation
-        return False, str(e), None  # Return problem with recommendation generation
+        return False, str(e)  # Return problem with recommendation generation
 
 
 # This function processes a LLM answer and extracts from the JSON request the new recommendation information

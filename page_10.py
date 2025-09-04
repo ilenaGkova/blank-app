@@ -57,7 +57,7 @@ def add_test_recommendations():
     with st.container(border=True):  # Seperate this section from the others
 
         if Recommendation.find_one({
-                                       'Answer': "Banana clocks whisper algebra into the vacuum of Tuesday while elbow sandwiches forget to moonwalk politely through existential yogurt."}) is None:
+            'Answer': "Banana clocks whisper algebra into the vacuum of Tuesday while elbow sandwiches forget to moonwalk politely through existential yogurt."}) is None:
             st.button('Add Test Recommendations', use_container_width=True, on_click=add_recommendation,
                       args=[Recommendation.find_one({'Prompt': {'$exists': True}})['Prompt'],
                             "Banana clocks whisper algebra into the vacuum of Tuesday while elbow sandwiches forget to moonwalk politely through existential yogurt.",
@@ -65,12 +65,20 @@ def add_test_recommendations():
                       key="add_test_recommendation1")
 
         if Recommendation.find_one({
-                                       'Answer': "Stop whining, go take all the drugs and disappear. I can't help you if you keep complaining about your meaningless less"}) is None:
+            'Answer': "Stop whining, go take all the drugs and disappear. I can't help you if you keep complaining about your meaningless less"}) is None:
             st.button('Add Test Recommendations', use_container_width=True, on_click=add_recommendation,
                       args=[Recommendation.find_one({'Prompt': {'$exists': True}})['Prompt'],
                             "Stop whining, go take all the drugs and disappear. I can't help you if you keep complaining about your meaningless less",
                             st.session_state.current_passcode, generate_recommendation_id()],
                       key="add_test_recommendation2")
+
+        if Recommendation.find_one({
+            'Answer': "Greece is a country in Europe. The capital of Greece is Athens"}) is None:
+            st.button('Add Test Recommendations', use_container_width=True, on_click=add_recommendation,
+                      args=[Recommendation.find_one({'Prompt': {'$exists': True}})['Prompt'],
+                            "Greece is a country in Europe. The capital of Greece is Athens",
+                            st.session_state.current_passcode, generate_recommendation_id()],
+                      key="add_test_recommendation3")
 
 
 def see_samples():

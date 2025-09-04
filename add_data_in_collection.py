@@ -3,7 +3,7 @@ from mongo_connection import User, Recommendation, Tag, Question_Questionnaire, 
 from generate_items import get_now
 
 
-def add_recommendation(ID, passcode, title, description, link, points, duration, prompt=None, answer=None):
+def add_recommendation(ID, passcode, title, description, link, points, duration):
     ID = int(ID)  # Convert any possible IDs in text into numbers
 
     if not User.find_one(
@@ -37,11 +37,6 @@ def add_recommendation(ID, passcode, title, description, link, points, duration,
             'Answer': answer
         }
     )
-
-    add_tag(ID, passcode, "Time Available", duration)
-
-    return True, "Recommendation added"
-
 
 # This function adds a tag to a recommendation, it returns an indicator that shows whether the function completed and a message
 def add_tag(ID, passcode, title, category):

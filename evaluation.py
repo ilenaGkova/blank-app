@@ -232,6 +232,9 @@ def make_relevant_texts(index, pointer):
 
         entry = Recommendation_Per_Person.find_one({'ID': entry['ID']})
 
+    if entry is None:
+        return []
+
     user = User.find_one({'Passcode': entry['Passcode']})
 
     today, yesterday, index = get_status(user['Passcode'])
@@ -396,15 +399,6 @@ def make_prompt_table():
 
     for entry in recommendations:
 
-        rec_entry = Recommendation_Per_Person.find_one({'ID': entry['ID']})
-
-        if entry is None:
-            rec_entry = Recommendation.find_one({'Passcode': 'Gemini', 'Pointer': rec_entry['Pointer']})
-
-            rec_entry = Recommendation_Per_Person.find_one({'ID': rec_entry['ID']})
-
-        user = User.find_one({'Passcode': rec_entry['Passcode']})
-
         groq_entry = Recommendation.find_one({
             'Passcode': 'Groq',
             'Prompt': {'$exists': True},
@@ -436,7 +430,7 @@ def make_prompt_table():
                 len(entry['Answer']),
                 groq_entry['Answer'],
                 len(groq_entry['Answer']),
-                len(entry['Answer'])-len(groq_entry['Answer'])
+                len(entry['Answer']) - len(groq_entry['Answer'])
             ]
 
         ws.append(add_line)
@@ -458,15 +452,12 @@ def make_eval_table():
         ws['B1'] = "Gemini Maliciousness"
         ws['C1'] = "Gemini Relevance"
         ws['D1'] = "Gemini Coherence"
-        ws['E1'] = "Gemini Stress Reduction"
-        ws['F1'] = "Groq Maliciousness"
-        ws['G1'] = "Groq Relevance"
-        ws['H1'] = "Groq Coherence"
-        ws['I1'] = "Groq Stress Reduction"
-        ws['J1'] = "Difference in Maliciousness"
-        ws['K1'] = "Difference in Relevance"
-        ws['L1'] = "Difference in Coherence"
-        ws['M1'] = "Difference in Stress Reduction"
+        ws['E1'] = "Groq Maliciousness"
+        ws['F1'] = "Groq Relevance"
+        ws['G1'] = "Groq Coherence"
+        ws['H1'] = "Difference in Maliciousness"
+        ws['I1'] = "Difference in Relevance"
+        ws['J1'] = "Difference in Coherence"
         next_row = 2
     else:
         ws = wb["Evaluation Stats"]
@@ -504,12 +495,9 @@ def make_eval_table():
                 "",
                 "",
                 "",
-                "",
-                "",
                 0,
                 0,
-                0,
-                ""
+                0
             ]
 
         else:
@@ -519,21 +507,18 @@ def make_eval_table():
                 entry['Maliciousness'],
                 entry['Relevance'],
                 entry['Coherence'],
-                "",
                 groq_entry['Maliciousness'],
                 groq_entry['Relevance'],
                 groq_entry['Coherence'],
-                "",
-                int(entry['Maliciousness'])-int(groq_entry['Maliciousness']),
-                float(entry['Relevance'])-float(groq_entry['Relevance']),
-                int(entry['Coherence'])-int(groq_entry['Coherence']),
-                ""
+                int(entry['Maliciousness']) - int(groq_entry['Maliciousness']),
+                float(entry['Relevance']) - float(groq_entry['Relevance']),
+                int(entry['Coherence']) - int(groq_entry['Coherence'])
             ]
 
         ws.append(add_line)
 
     # Save workbook
-    wb.save("evaluation.xlsx")
+    wb.save("evaluation V1.xlsx")
 
 
 def make_answer_analysis_table():
@@ -593,7 +578,14 @@ def make_answer_analysis_table():
 
             rec_entry = Recommendation_Per_Person.find_one({'ID': rec_entry['ID']})
 
-        user = User.find_one({'Passcode': entry['Passcode']})
+        if rec_entry is not None:
+
+            user = User.find_one({'Passcode': rec_entry['Passcode']})
+
+        else:
+
+            user = User.find_one({'Passcode': 'Admin123'})
+            rec_entry = Recommendation_Per_Person.find_one({'Passcode': 'Admin123'})
 
         groq_entry = Recommendation.find_one({
             'Passcode': 'Groq',
@@ -606,7 +598,6 @@ def make_answer_analysis_table():
         })
 
         if entry['Title'] is None:
-
             entry['Title'] = "None"
             entry['Description'] = "None"
 
@@ -618,16 +609,14 @@ def make_answer_analysis_table():
                 rec_entry['Status_Created_At'],
                 entry['Title'],
                 entry['Description'],
-                entry['Points']/2,
+                entry['Points'] / 2,
                 "",
                 "",
                 "",
-                100*len(entry['Title'])/len(entry['Answer']),
-                100*len(entry['Description']) / len(entry['Answer']),
-                100*len(str(entry['Points']/2)) / len(entry['Answer']),
-                1 - (len(entry['Title'])/len(entry['Answer'])) + (
-                        len(entry['Description']) / len(entry['Answer'])) + (
-                        len(str(entry['Points']/2)) / len(entry['Answer'])),
+                100 * len(entry['Title']) / len(entry['Answer']),
+                100 * len(entry['Description']) / len(entry['Answer']),
+                100 * len(str(entry['Points'] / 2)) / len(entry['Answer']),
+                "",
                 "",
                 "",
                 "",
@@ -653,18 +642,13 @@ def make_answer_analysis_table():
                 groq_entry['Title'],
                 groq_entry['Description'],
                 groq_entry['Points'] / 2,
-                100*len(entry['Title']) / len(entry['Answer']),
-                100*len(entry['Description']) / len(entry['Answer']),
-                100*len(str(entry['Points']/2)) / len(entry['Answer']),
-                1 - (len(entry['Title']) / len(entry['Answer'])) + (
-                        len(entry['Description']) / len(entry['Answer'])) + (
-                        len(str(entry['Points']/2)) / len(entry['Answer'])),
-                100*len(groq_entry['Title']) / len(groq_entry['Answer']),
-                100*len(groq_entry['Description']) / len(groq_entry['Answer']),
-                100*len(str(groq_entry['Points'] / 2)) / len(groq_entry['Answer']),
-                1 - (len(groq_entry['Title']) / len(groq_entry['Answer'])) + (
-                        len(groq_entry['Description']) / len(groq_entry['Answer'])) + (
-                        len(str(groq_entry['Points'] / 2)) / len(groq_entry['Answer'])),
+                100 * len(entry['Title']) / len(entry['Answer']),
+                100 * len(entry['Description']) / len(entry['Answer']),
+                100 * len(str(entry['Points'] / 2)) / len(entry['Answer']),
+                "",
+                100 * len(groq_entry['Description']) / len(groq_entry['Answer']),
+                100 * len(str(groq_entry['Points'] / 2)) / len(groq_entry['Answer']),
+                "",
                 len(entry['Title']),
                 len(entry['Description']),
                 len(groq_entry['Title']),
@@ -678,3 +662,57 @@ def make_answer_analysis_table():
 
     # Save workbook
     wb.save("evaluation.xlsx")
+
+    # In add_data_in_collection.py to set up saving samples
+    def add_recommendation_Sample(ID, passcode, title, description, link, points, duration, prompt=None, answer=None):
+        ID = int(ID)  # Convert any possible IDs in text into numbers
+
+        if not User.find_one(
+                {"Passcode": passcode}):  # If we can't find the user we can add a recommendation on their behalf
+
+            return False, "Something went wrong, user not registered"
+
+        if Recommendation.find_one({"ID": ID}) or Tag.find_one(
+                {"ID": ID}) or Recommendation_Per_Person.find_one(
+            {"ID": ID}):  # If the ID matches any of the Tags or other Recommendations we can't add it
+
+            return False, "Please try again, it look like the ID generated has already been added."
+
+        if not title.strip() or not description.strip() or points <= 0 or points > 150 or (
+                link is not None and not link.strip()) or duration <= 0:
+            return False, "You need to fill in all mandatory fields"  # Make sure the data entered are appropriate to be added
+
+        # This collection's entries contain an ID that can be used as a key to find the entry across the collections
+        # It also includes the passcode of the user that added it and a timestamp for when it was created
+        # The content is a title, a description, a link that is optional and minimum points assigned to them
+
+        Recommendation.insert_one(
+            {
+                'ID': ID,
+                'Passcode': passcode,
+                'Created_At': get_now(),
+                'Title': title,
+                'Description': description,
+                'Link': link,
+                'Points': points,
+                'Prompt': prompt,
+                'Answer': answer
+            }
+        )
+
+# Changes into create prompt by AI.py to set up saving samples:
+
+# In generate_recommendations_by_AI Line 25:
+# outcome, new_recommendation, prompt = return_prompt(passcode)
+
+# In generate_recommendations_by_AI Line 39:
+# recommendation_added, recommendation_added_message = add_recommendation(recommendation_generated_id, active_model, title, description, None, duration * 2, duration, prompt, new_recommendation)  # We enter OpenAI as the passcode of the creator
+
+# In return_prompt Line 130:
+# return True, result, create_prompt(passcode)
+
+# In return_prompt Line 138:
+# return True, generated_text, create_prompt(passcode)
+
+# In return_prompt Line 142:
+# return False, str(e), None
