@@ -6,7 +6,9 @@ from check_and_balance import get_status
 
 # This function uses the function above to generate a valid recommendation ID, aka an ID that exists
 def generate_valid_index():
+
     recommendation_fail = 0
+    BANNED = {"Gemini", "Groq"}
 
     # We pick a random number between 1 and the amount of available recommendations
     # This works because the last recommendation added will have the biggest ID
@@ -15,19 +17,15 @@ def generate_valid_index():
 
     while recommendation_fail <= calculate_fail_count() and potential_recommendation_index >= 1:
 
-        if Recommendation.find_one({"ID": potential_recommendation_index}):
+        if Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": {"$nin": list(BANNED)}}):
 
-            if Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Gemini" or \
-                    Recommendation.find_one({"ID": potential_recommendation_index})["Passcode"] != "Groq":
-                return potential_recommendation_index  # We only return a valid not AI generated recommendation
+            return potential_recommendation_index  # We only return a valid not AI generated recommendation
 
         recommendation_fail += 1  # If the recommendation with the generated ID isn't found we add the fail count
 
         potential_recommendation_index = random.randint(1, Recommendation.count_documents({}))  # And we try again
 
-    if recommendation_fail > calculate_fail_count():  # We use the above function to stop the algorithm from going in a loop
-
-        return 1
+    return 1
 
 
 # This function gets data to add a recommendation to a user to match it with a user status
