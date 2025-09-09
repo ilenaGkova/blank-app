@@ -112,7 +112,7 @@ def update_samples():
 
         st.write(f"You now have {number} Gemini Samples with {unique_count} unique pointers.")
 
-        if number != unique_count:
+        if number != unique_count:  # If not all samples have been cataloged, we need to add pointers for the rest
             st.button('Update Gemini Samples', use_container_width=True, on_click=update_sample, args=[],
                       key="update_gemini_samples")
 

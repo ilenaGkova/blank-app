@@ -22,7 +22,7 @@ if 'error_status' not in st.session_state:
     st.session_state.error_status = None  # Will indicate whether there is an error to show
 
 
-def set_username(passcode_for_setting_username, disclaimer):  # Called when user signs in or makes a new account
+def set_username(passcode_for_setting_username):  # Called when user signs in or makes a new account
 
     st.session_state.current_passcode = passcode_for_setting_username  # Will register the user as the current user for this session
 
@@ -44,7 +44,7 @@ def set_username(passcode_for_setting_username, disclaimer):  # Called when user
         change_page(2)  # If the user hasn't made a status today the need to make one
 
 
-def log_in_user(passcode_for_signing_in_user, disclaimer):  # Called when user tries to long in
+def log_in_user(passcode_for_signing_in_user):  # Called when user tries to long in
 
     st.session_state.error_status, st.session_state.error = validate_user(
         passcode_for_signing_in_user)  # Will update the session error variables
@@ -55,11 +55,11 @@ def log_in_user(passcode_for_signing_in_user, disclaimer):  # Called when user t
         record_question(question_passcode, passcode_for_signing_in_user, passcode_for_signing_in_user)
 
         set_username(
-            passcode_for_signing_in_user, disclaimer)  # Will call the function to register the user as the current user and move on to the next page
+            passcode_for_signing_in_user)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def create_user(user_username, user_passcode, age, focus_area, time_available, suggestions,
-                gender, disclaimer):  # Called when a user wants to make a new account
+                gender):  # Called when a user wants to make a new account
 
     st.session_state.error_status, st.session_state.error = new_user(user_username, user_passcode, age,
                                                                      focus_area,
@@ -79,7 +79,7 @@ def create_user(user_username, user_passcode, age, focus_area, time_available, s
         record_question(question_suggestions, suggestions, user_passcode)
 
         set_username(
-            user_passcode, disclaimer)  # Will call the function to register the user as the current user and move on to the next page
+            user_passcode)  # Will call the function to register the user as the current user and move on to the next page
 
 
 def layout():

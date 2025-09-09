@@ -17,7 +17,7 @@ def generate_valid_index():
 
     while recommendation_fail <= calculate_fail_count() and potential_recommendation_index >= 1:
 
-        if Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": {"$nin": list(BANNED)}}):
+        if Recommendation.find_one({"ID": potential_recommendation_index, "Passcode": {"$exists": True, "$nin": list(BANNED)}}):
 
             return potential_recommendation_index  # We only return a valid not AI generated recommendation
 

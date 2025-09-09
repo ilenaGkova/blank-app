@@ -2,11 +2,600 @@ Codebase Function Documentation
 
 Page 1: Creating a user profile and signing in as an existing user
 
-    Functions
+    + Run streamlit_app.py file
 
+        + page from st.session_state
+
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+        + layout() from page_1.py
+
+            + log_in_user() from page_1.py
+
+                + error from st.session_state
+
+                    + validate_user() from log_in_page_create_user_page.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + new_entry_in_record_collection() from check_and_balance.py
+
+                            + Record from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                + error_status from st.session_state
+
+                    + validate_user(passcode) from log_in_page_create_user_page.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + new_entry_in_record_collection() from check_and_balance.py
+
+                            + Record from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                + record_question() from check_and_balance.py
+
+                    + User from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                + set_username() from page_1.py
+
+                    + current_passcode from st.session_state
+
+                    + get_status() from check_and_balance.py
+
+                        + Status from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                    + update_user_streak(passcode) from application_actions.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + Record from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + new_entry_in_record_collection() from check_and_balance.py
+
+                            + Record from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                    + change_page() from change_page.py
+
+                        + page from st.session_state
+
+                        + error_status from st.session_state
+
+            + generate_animal_username() from generate_items.py
+
+                + User from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+            + generate_unique_passcode() from generate_items.py
+
+                + User from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Question from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Record from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Status from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Tag from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Favorite_Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Removed_Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Recommendation_Per_Person from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Question_Questionnaire from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Score_History from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+            + question_username from initialise_variables.py
+
+            + question_age from initialise_variables.py
+
+            + ages from initialise_variables.py
+
+            + question_gender from initialise_variables.py
+
+            + genders from initialise_variables.py
+
+            + question_focus_area from initialise_variables.py
+
+            + focus_areas from initialise_variables.py
+
+            + question_time_available from initialise_variables.py
+
+            + min_time_limit from initialise_variables.py
+
+            + max_limit from initialise_variables.py
+
+            + question_suggestions from initialise_variables.py
+
+            + min_limit from initialise_variables.py
+
+            + max_recommendation_limit from initialise_variables.py
+
+                + get_maximum_entries() from generate_items.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + create_user() from page_1.py
+
+                + error from st.session_state
+
+                    + new_user() from log_in_page_create_user_page.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                + error_status from st.session_state
+
+                    + new_user() from log_in_page_create_user_page.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                + record_question() from check_and_balance.py
+
+                    + User from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                + set_username() from page_1.py
+
+                    + current_passcode from st.session_state
+
+                    + get_status() from check_and_balance.py
+
+                        + Status from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                    + update_user_streak(passcode) from application_actions.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + Record from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                        + new_entry_in_record_collection() from check_and_balance.py
+
+                            + Record from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                    + change_page() from change_page.py
+
+                        + page from st.session_state
+
+                        + error_status from st.session_state
 Page 2: Submitting the Daily stress questionnaire
 
-    Functions
+    + Run streamlit_app.py file
+
+        + page from st.session_state
+
+        + error from st.session_state
+
+        + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+        + layout_2() from page_2.py
+
+            + initialize_variables() from initialise_variables.py
+
+                + User from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+                + get_status() from check_and_balance.py
+
+                    + Status from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + change_page() from change_page.py
+
+                + page from st.session_state
+
+                + error_status from st.session_state
+
+            + current_passcode from st.session_state
+
+            + options from initialise_variables.py
+
+            + submit_questionnaire() from page_2.py
+
+                + current_passcode from st.session_state
+
+                + catalog_question() from page_2.py
+
+                    + record_question() from check_and_balance.py
+
+                        + User from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                    + options from initialise_variables.py
+
+                + make_status from page_2.py
+
+                    + error from st.session_state
+
+                        + record_status from check_and_balance.py
+
+                            + User from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                            + Status from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                    + error_status from st.session_state
+
+                        + record_status from check_and_balance.py
+
+                            + User from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                            + Status from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                    + change_page() from change_page.py
+
+                        + page from st.session_state
+
+                        + error_status from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
+
+
+
+
 
 Page 3: Application home page
 
@@ -104,7 +693,7 @@ Page 3: Application home page
 
             + section_2() from page_3.py
 
-                + determine_level_change(passcode)
+                + determine_level_change() from application_actions.py
 
                     + User from mongo_connection.py
 
@@ -115,6 +704,10 @@ Page 3: Application home page
                                 + init_connection() from mongo_connection.py
 
                                     + Database_Connection from st.secrets
+
+                    + get_reset_score from application_actions.py
+
+                        + get_limits() from generate_items.py
 
                     + new_entry_in_record_collection() from check_and_balance.py
 
@@ -2292,7 +2885,7 @@ Page 8: Confession page
 
 Page 9: Datapage management page
 
-   + Run streamlit_app.py file
+    + Run streamlit_app.py file
 
        + page from st.session_state
 
@@ -2300,7 +2893,7 @@ Page 9: Datapage management page
 
        + error_status from st.session_state
 
-       + insert_data() from mongo_connection.py
+        + insert_data() from mongo_connection.py
 
             + User from mongo_connection.py
 
@@ -2332,7 +2925,7 @@ Page 9: Datapage management page
 
                             + Database_Connection from st.secrets
 
-       + menu_layout() from menu.py
+        + menu_layout() from menu.py
 
             + current_passcode from st.session_state
 
@@ -2342,7 +2935,7 @@ Page 9: Datapage management page
 
             + error_status from st.session_state
 
-       + layout_9() from page_9.py
+        + layout_9() from page_9.py
 
             + current_passcode from st.session_state
 
@@ -2911,3 +3504,501 @@ Page 9: Datapage management page
                         + page from st.session_state
 
                         + error_status from st.session_state
+
+Page 10: Evaluation Page
+
+    + Run streamlit_app.py file
+
+       + page from st.session_state
+
+       + error from st.session_state
+
+       + error_status from st.session_state
+
+        + insert_data() from mongo_connection.py
+
+            + User from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Recommendation from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+            + Tag from mongo_connection.py
+
+                + db from mongo_connection.py
+
+                    + client from mongo_connection.py
+
+                        + init_connection() from mongo_connection.py
+
+                            + Database_Connection from st.secrets
+
+        + menu_layout() from menu.py
+
+            + current_passcode from st.session_state
+
+            + open_recommendation from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
+
+        + layout_10() from page_10.py
+
+            + current_passcode from st.session_state
+
+            + page from st.session_state
+
+            + error from st.session_state
+
+            + error_status from st.session_state
+
+            + initialize_variables() from initialise_variables.py
+
+                + User from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                         + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + get_status() from check_and_balance.py
+
+                    + Status from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + add_test_recommendations() from page_10.py
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + add_recommendation() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + get_status() from check_and_balance.py
+
+                        + Status from mongo_connection.py
+
+                            + db from mongo_connection.py
+
+                                + client from mongo_connection.py
+
+                                    + init_connection() from mongo_connection.py
+
+                                        + Database_Connection from st.secrets
+
+                    + Status from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + Recommendation_Per_Person from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + see_samples() from page_10.py
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+            + update_samples() from page_10.py
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + update_sample() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + generate_matching_samples() from page_10
+
+                + Recommendation from mongo_connection.py
+
+                    + db from mongo_connection.py
+
+                        + client from mongo_connection.py
+
+                            + init_connection() from mongo_connection.py
+
+                                + Database_Connection from st.secrets
+
+                + add_samples() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + use_groq() from evaluation.py
+
+                        + groqkey from st.secrets
+
+                    + extract_json() from evaluation.py
+
+                + delete_samples() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+            + evaluate_samples() from page_10.py
+
+                + maliciousness() from page_10.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + start_evaluation() from evaluation.py
+
+                        + inner() from evaluation.py
+
+                            + Recommendation from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                            + make_relevant_texts() from evaluation.py
+
+                                + User from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation_Per_Person from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + get_status() from check_and_balance.py
+
+                                    + Status from mongo_connection.py
+
+                                        + db from mongo_connection.py
+
+                                            + client from mongo_connection.py
+
+                                                + init_connection() from mongo_connection.py
+
+                                                    + Database_Connection from st.secrets
+
+                                + pass_filter() from generate_recommendations_functions.py
+
+                            + do_evaluation() from evaluation.py
+
+                                + geminikey from st.secrets
+
+                + relevance() from page_10.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + start_evaluation() from evaluation.py
+
+                        + inner() from evaluation.py
+
+                            + Recommendation from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                            + make_relevant_texts() from evaluation.py
+
+                                + User from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation_Per_Person from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + get_status() from check_and_balance.py
+
+                                    + Status from mongo_connection.py
+
+                                        + db from mongo_connection.py
+
+                                            + client from mongo_connection.py
+
+                                                + init_connection() from mongo_connection.py
+
+                                                    + Database_Connection from st.secrets
+
+                                + pass_filter() from generate_recommendations_functions.py
+
+                            + do_evaluation() from evaluation.py
+
+                                + geminikey from st.secrets
+
+                + coherence() from page_10.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                    + start_evaluation() from evaluation.py
+
+                        + inner() from evaluation.py
+
+                            + Recommendation from mongo_connection.py
+
+                                + db from mongo_connection.py
+
+                                    + client from mongo_connection.py
+
+                                        + init_connection() from mongo_connection.py
+
+                                            + Database_Connection from st.secrets
+
+                            + make_relevant_texts() from evaluation.py
+
+                                + User from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + Recommendation_Per_Person from mongo_connection.py
+
+                                    + db from mongo_connection.py
+
+                                        + client from mongo_connection.py
+
+                                            + init_connection() from mongo_connection.py
+
+                                                + Database_Connection from st.secrets
+
+                                + get_status() from check_and_balance.py
+
+                                    + Status from mongo_connection.py
+
+                                        + db from mongo_connection.py
+
+                                            + client from mongo_connection.py
+
+                                                + init_connection() from mongo_connection.py
+
+                                                    + Database_Connection from st.secrets
+
+                                + pass_filter() from generate_recommendations_functions.py
+
+                            + do_evaluation() from evaluation.py
+
+                                + geminikey from st.secrets
+
+            + generate_tables() from page_10.py
+
+                + make_prompt_table() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                + make_eval_table() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets
+
+                + make_answer_analysis_table() from evaluation.py
+
+                    + Recommendation from mongo_connection.py
+
+                        + db from mongo_connection.py
+
+                            + client from mongo_connection.py
+
+                                + init_connection() from mongo_connection.py
+
+                                    + Database_Connection from st.secrets

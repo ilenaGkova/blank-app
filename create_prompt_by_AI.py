@@ -113,7 +113,7 @@ def return_prompt(passcode):
                 os.environ["GROQ_API_KEY"] = st.secrets["API"]["groqkey"]  # Find groq key in secret file
 
             model = init_chat_model(
-                "llama3-8b-8192",  # Specify model
+                "llama-3.3-70b-versatile",  # Specify model
                 model_provider="groq"
             )
 

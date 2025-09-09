@@ -137,16 +137,20 @@ def determine_level_change(passcode):
     return message_for_user
 
 
+# This function calculates if when changing levels, the user will need to keep some points to be able to keep playing and move up if needed
 def get_reset_score(current_score, new_level, task_base=25, max_weekly_tasks=50):
-    move_up_threshold, move_down_threshold = get_limits(new_level)
-    points_per_task = task_base * new_level
-    max_weekly_points = points_per_task * max_weekly_tasks
 
-    target_score = max(move_up_threshold - max_weekly_points, 0)
+    move_up_threshold, move_down_threshold = get_limits(new_level)  # Get new level limits
 
-    # Calculate carryover percentage
+    points_per_task = task_base * new_level  # Get the amount of points the use will be able to earn assuming each recommendation will be around 25 points
+
+    max_weekly_points = points_per_task * max_weekly_tasks  # Get how many point the user can earn in a week, assuming they do around 6/7/8 every day
+
+    target_score = max(move_up_threshold - max_weekly_points, 0)  # See if the move up target score is more than the predicted points
+
+    # Calculate carryover percentage and score
     carryover_percentage = min(5 + new_level, 35) / 100
-    carryover_points = (current_score - move_up_threshold) * carryover_percentage if current_score > move_up_threshold else 0
+    carryover_points = (current_score - move_up_threshold) * carryover_percentage
 
     target_score += max(carryover_points, 0)
 
