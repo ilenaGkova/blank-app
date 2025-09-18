@@ -89,7 +89,7 @@ def layout():
 
     passcode = st.sidebar.text_input(question_passcode, key="passcode", type="password")  # Save the previous passcode on the session variable
 
-    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode, False],
+    st.sidebar.button('Log in', use_container_width=True, on_click=log_in_user, args=[passcode],
                       key="sign_in_user")
 
     # The Title
@@ -133,5 +133,5 @@ def layout():
             # Step 5: User clicks button to create an account
 
             st.button('Let us get started with your first daily stress questionnaire', use_container_width=True, on_click=create_user,
-                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender, False],
+                      args=[user_username, user_passcode, age, focus_area, time_available, suggestions, gender],
                       key="create_user")
