@@ -35,7 +35,7 @@ def add_recommendation(prompt, answer, passcode, index):
         }
     )
 
-    today, yesterday, index = get_status("Admin123")
+    today, yesterday, index = get_status(passcode)
 
     status = Status.find_one({"_id": index})  # Find the status to find the timestamp
 
@@ -260,7 +260,7 @@ def make_relevant_texts(index, pointer):
 
     recommendations_passed = []  # Set up the table of the recommendation to return
 
-    recommendations = list(Recommendation.find({'Passcode': "Admin123"}))  # Isolate recommendations to only human made, there is only one human profile making recommendations
+    recommendations = list(Recommendation.find({"Passcode": {"$exists": True, "$nin": list({"Gemini", "Groq"})}}))  # Isolate recommendations to only human made, there is only one human profile making recommendations
 
     for recommendation_entry in recommendations:
 
