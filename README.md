@@ -28,10 +28,15 @@ The original template is right here: [![Open in Streamlit](https://static.stream
 ### To build the secrets file follow this format
 
 [mongo]
+
 uri = URL to Mongo Database
+
 [API]
+
 groqkey = Groq access key
+
 geminikey = URL to Gemini access key
+
 active_model = "Groq" or "Gemini"
 
 ### For Admins
@@ -45,3 +50,4 @@ Documentation will be found via
 1. Comments in the code
 2. README.txt where all functions and global variables can be found in a tree like structure. Functions/Variables called by an function is seen a tad forward that said function
 3. find_your_function.txt has all functions/global variables will tell you everything you need to know: how to call them, parameters required, results, what they do and what safe guards exist. Use README.txt and find_your_function.txt together
+
