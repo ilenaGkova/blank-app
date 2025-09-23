@@ -88,7 +88,7 @@ def layout_2():
                 st.write(f"This message will only appear today. Please remember your passcode to log in next time! "
                          f"You passcode is also available at your profile information.")
 
-        st.header("""Please answer the Daily Stress Questioner""")
+        st.header("""Please answer the Daily Stress Questionnaire""")
 
         # The Daily Question Section
         # For each question we will have a slider for the user to answer
